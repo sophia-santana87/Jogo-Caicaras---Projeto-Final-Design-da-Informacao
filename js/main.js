@@ -2,22 +2,23 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=37';
-import { INTERIORES } from '../dados/interiores.js?v=37';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=37';
-import { DialogoController } from './dialogo.js?v=37';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=37';
-import { SomManager } from './som.js?v=37';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=37';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=37';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=37';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=37';
+import { CONTEUDO } from '../dados/conteudo.js?v=38';
+import { INTERIORES } from '../dados/interiores.js?v=38';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=38';
+import { DialogoController } from './dialogo.js?v=38';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=38';
+import { SomManager } from './som.js?v=38';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=38';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=38';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=38';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=38';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
 const dialogController = new DialogoController(document);
 const som = new SomManager();
 const estado = carregarEstado();
+const modoDebug = new URLSearchParams(window.location.search).get('debug') === '1';
 
 function syncAudioState() {
   som.enabled = Boolean(estado.somLigado);
@@ -859,6 +860,70 @@ function desenharIdentificacaoLocal(tile, camera) {
   ctx.stroke();
   ctx.fillStyle = estado.altoContraste ? '#FFFFFF' : '#3B2A1A';
   ctx.fillText(local.nome, x, y);
+  ctx.restore();
+}
+
+function nomeDebug(tipo) {
+  const nomes = {
+    barraca: 'barraca', varapesca: 'vara de pesca', 'vara-pesca': 'vara de pesca', casa: 'casa', casaFarinha: 'casa de farinha', mercadinho: 'mercadinho', pavilhao: 'terreiro dos fandangos', luminaria: 'luminaria', banco: 'banco', placa: 'placa', 'ponte-saber': 'placa Ponte do Saber', arvore: 'arvore', palmeira: 'palmeira', mangue: 'mangue', arbusto: 'arbusto', flor: 'flor', pedra: 'pedra', capim: 'capim', cerca: 'cerca', 'vitoria-regia': 'vitoria-regia', junco: 'junco', tronco: 'tronco', lixeiraOrganica: 'lixeira organica', lixeiraReciclavel: 'lixeira reciclavel', viola: 'viola', rabeca: 'rabeca', adufo: 'adufo', forno: 'forno', prensa: 'prensa', peneira: 'peneira', rede: 'rede', peixe: 'peixe', cataia: 'cataia', biju: 'biju'
+  };
+  return nomes[tipo] || tipo;
+}
+
+function desenharDebugMapa(tile, camera) {
+  if (!modoDebug) return;
+
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'bottom';
+  ctx.font = `bold ${Math.max(9, Math.min(12, tile * 0.22))}px monospace`;
+
+  const objetos = [];
+  EDIFICIOS.forEach((edificio, indice) => objetos.push({
+    id: `edificio_${indice + 1}_${edificio.id}`, nome: nomeDebug(edificio.tipo), x: edificio.x, y: edificio.y, largura: edificio.largura, altura: edificio.altura, porta: edificio.entrada
+  }));
+  MAPA_DECORACOES.forEach((objeto, indice) => objetos.push({
+    id: `${objeto.tipo}_${String(indice + 1).padStart(2, '0')}`, nome: nomeDebug(objeto.tipo), x: objeto.x, y: objeto.y, largura: 1, altura: 1
+  }));
+  NPCS.forEach((npc) => objetos.push({ id: `npc_${npc.id}`, nome: npc.nome, x: npc.x, y: npc.y, largura: 1, altura: 1 }));
+  PONTOS_PESCA.forEach((ponto, indice) => objetos.push({ id: `pesca_${indice + 1}`, nome: ponto.tipo === 'mar' ? 'ponto de pesca mar' : 'ponto de pesca lagoa', x: ponto.x, y: ponto.y, largura: 1, altura: 1 }));
+  objetos.push({ id: 'terreiro_fandango', nome: 'Terreiro dos Fandangos', x: CENA_FANDANGO.x, y: CENA_FANDANGO.y, largura: 5, altura: 4 });
+
+  objetos.forEach((objeto) => {
+    const esquerda = (objeto.x - (objeto.largura > 1 ? objeto.largura / 2 : 0)) * tile - camera.x;
+    const topo = (objeto.y - (objeto.altura > 1 ? objeto.altura : 1)) * tile - camera.y;
+    const largura = objeto.largura * tile;
+    const altura = objeto.altura * tile;
+
+    ctx.strokeStyle = '#FF0000';
+    ctx.lineWidth = Math.max(1, tile * 0.035);
+    ctx.strokeRect(esquerda, topo, largura, altura);
+
+    const texto = `${objeto.id} | ${objeto.nome}`;
+    const medida = ctx.measureText(texto);
+    const textoX = Math.max(2, Math.min(canvas.width - medida.width - 4, esquerda));
+    const textoY = Math.max(10, topo - 2);
+    ctx.fillStyle = 'rgba(0,0,0,0.82)';
+    ctx.fillRect(textoX - 2, textoY - 12, medida.width + 4, 14);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.fillText(texto, textoX, textoY);
+
+    if (objeto.porta) {
+      ctx.strokeStyle = '#00E5FF';
+      ctx.strokeRect((objeto.porta.x - 0.5) * tile - camera.x, (objeto.porta.y - 0.5) * tile - camera.y, tile, tile);
+    }
+  });
+
+  const jogadorX = (estado.jogador.x + 0.5) * tile - camera.x;
+  const jogadorY = (estado.jogador.y + 1) * tile - camera.y;
+  ctx.strokeStyle = '#FF0000';
+  ctx.lineWidth = Math.max(2, tile * 0.05);
+  ctx.strokeRect(jogadorX - tile * 0.5, jogadorY - tile, tile, tile);
+  const textoJogador = `jogador | x=${estado.jogador.x} y=${estado.jogador.y}`;
+  ctx.fillStyle = 'rgba(0,0,0,0.82)';
+  ctx.fillRect(jogadorX - tile * 0.5, jogadorY - tile - 14, ctx.measureText(textoJogador).width + 8, 14);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(textoJogador, jogadorX - tile * 0.5 + 4, jogadorY - tile - 3);
   ctx.restore();
 }
 
@@ -2302,6 +2367,7 @@ function desenhoMapa(agora = performance.now()) {
   desenharLuzes(tile, camera);
   desenharIndicadorMissao(tile, camera);
   desenharIdentificacaoLocal(tile, camera);
+  desenharDebugMapa(tile, camera);
 }
 
 function loop(agora = performance.now()) {

@@ -52,3 +52,20 @@
 - F concluido: interiores agora usam Canvas reutilizável, 16 px de base em escala inteira, parede/porta, personagem, objetos e y-sorting.
 - G concluido: mapa do Caderno usa o layout v2.1 com cinco casas, lago, pavilhao lateral, barracas e Terreiro.
 - H concluido: revisão cultural ampliada para vara, canoas, lago, peixes e ocupacao do terreiro.
+
+## Fase 0 - Auditoria
+- Arquitetura atual: mundo em grid 48x32, cada tile mede 16 px na base e usa escalas inteiras no Canvas.
+- Terreno, objetos e personagens usam atlas Canvas, com terreno estático em cache offscreen e y-sorting no loop principal.
+- Colisão: `isPassable()` bloqueia mar, lagoa, céu, mato e retângulos derivados de `EDIFICIOS`; BFS usa tiles adjacentes para caminho.
+- Câmera: centraliza o jogador com margem vertical diferente em retrato/paisagem e limita às bordas do mapa; não estica pixels.
+- Interação: proximidade em Manhattan, tecla E/Enter/espaço, toque no mapa e botão Interagir; objetos interativos têm cadastro em `MAPA_DECORACOES` ou módulos específicos.
+- Diálogos: DOM em `js/dialogo.js`, com retrato Canvas e opção de digitação sem som fora da opção Som.
+- Missões: estrutura em `dados/personagens.js` e `dados/conteudo.js`; progresso é salvo por etapa e alvos concluídos.
+- Mochila: inventário em `estado.inventario`, itens únicos em `itensArmazemColetados` e cartas em `cartasColetadas`.
+- Save: localStorage com merge do estado antigo em `ESTADO_PADRAO`, incluindo campos novos por retrocompatibilidade.
+- Acessibilidade: texto grande/fácil, alto contraste, reduzir movimento, som, setas, teclado, toque e áreas seguras.
+
+### Modo debug
+- URL: `?debug=1`.
+- Não altera o mapa ou o layout normal.
+- Exibe ID/nome sobre edificações, NPCs, decoração, pontos de pesca e praça; caixas vermelhas de colisão; coordenadas do jogador.

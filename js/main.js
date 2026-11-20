@@ -97,6 +97,7 @@ const ITENS_DESTAQUE = new Set([
 ]);
 let coletaNotificacaoTimer = null;
 let portaAnimacao = null;
+let ritmoTentativa = [];
 const ESPECIES_PEIXES = [
   { id: 'tainha', nome: 'Tainha', raridade: 4, ficha: 'Peixe ligado ao mar; redes de cerco fazem parte do saber artesanal. Época relevante depende da comunidade e do tempo local.' },
   { id: 'robaldo', nome: 'Robalo', raridade: 3, ficha: 'Peixe de estuários e regiões costeiras. Sua presença varia com vento, maré e estação.' },
@@ -452,6 +453,19 @@ function atualizarMapaDoCaderno(section) {
   wrapper.appendChild(legenda);
   section.appendChild(wrapper);
   desenharMinimapa(canvasMapa, true);
+  const ctxMapa = canvasMapa.getContext('2d');
+  EDIFICIOS.forEach((edificio) => {
+    const visitado = estado.locaisVisitados.includes(edificio.id) || edificio.id === 'armazem' && estado.itensArmazemColetados.length > 0;
+    const x = edificio.entrada.x * 16 * (canvasMapa.width / (MAPA[0].length * 16));
+    const y = edificio.entrada.y * 16 * (canvasMapa.height / (MAPA.length * 16));
+    ctxMapa.fillStyle = visitado ? '#FFE066' : 'rgba(246,231,193,0.35)';
+    ctxMapa.strokeStyle = '#2B1A0E';
+    ctxMapa.lineWidth = 2;
+    ctxMapa.beginPath();
+    ctxMapa.arc(x, y, 3.5, 0, Math.PI * 2);
+    ctxMapa.fill();
+    ctxMapa.stroke();
+  });
 }
 
 function iniciarTutorial() {
@@ -527,7 +541,16 @@ function mostrarJogo() {
 
 function continuarJogo() {
   estado.fase = 'jogo';
+  if (estado.interiorAtivo && INTERIORES[estado.interiorAtivo]) {
+    const edificio = EDIFICIOS.find((item) => item.id === estado.interiorAtivo);
+    if (edificio) {
+      showScreen('screen-game');
+      abrirInterior(edificio);
+      return;
+    }
+  }
   estado.interiorAtivo = null;
+  estado.cenaAtual = 'exterior';
   if (!isPassable(estado.jogador.x, estado.jogador.y)) estado.jogador = posicaoInicialJogador();
   if (!isPassable(estado.cachorro.x, estado.cachorro.y)) estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   showScreen('screen-game');
@@ -1213,26 +1236,38 @@ function interagirNoInterior() {
   }
 
   if (objeto.tipo === 'ritmo') {
-    dialogController.open({
-      nome: 'Mestre Tiao',
-      personagemId: 'tiao',
-      texto: 'Toque a sequência visual: forte, pausa, forte.',
-      choices: [{ text: 'Forte' }, { text: 'Pausa' }, { text: 'Forte' }, { text: 'Pular atividade' }],
-      onChoice: (indice) => {
-        if (indice === 3) {
-          feedback.textContent = 'Atividade pulada. Você ainda pode ouvir os instrumentos.';
-          return;
+    ritmoTentativa = [];
+    function abrirRitmo() {
+      dialogController.open({
+        nome: 'Mestre Tiao',
+        personagemId: 'tiao',
+        texto: `Sequência ${ritmoTentativa.length + 1} de 3: forte, pausa ou forte?`,
+        choices: [{ text: 'Forte' }, { text: 'Pausa' }, { text: 'Pular atividade' }],
+        onChoice: (indice) => {
+          if (indice === 2) {
+            ritmoTentativa = [];
+            feedback.textContent = 'Atividade pulada. Você ainda pode ouvir os instrumentos.';
+            return;
+          }
+          ritmoTentativa.push(indice);
+          if (ritmoTentativa.length < 3) {
+            abrirRitmo();
+            return;
+          }
+          if (ritmoTentativa.join(',') === '0,1,0') {
+            estado.ritmoMusicalConcluido = true;
+            ajustarIndicadores(estado, { Cultura: 1, Comunidade: 1 });
+            feedback.textContent = 'Ritmo registrado. O Terreiro dos Fandangos ficou mais vivo.';
+            atualizarHud();
+            salvar();
+          } else {
+            ritmoTentativa = [];
+            feedback.textContent = 'Quase: tente novamente. A sequência é forte, pausa, forte. Tentativas ilimitadas.';
+          }
         }
-        const correta = [0, 1, 2][indice] === indice;
-        if (correta) {
-          estado.ritmoMusicalConcluido = true;
-          ajustarIndicadores(estado, { Cultura: 1, Comunidade: 1 });
-          feedback.textContent = 'Ritmo registrado. O Terreiro dos Fandangos ficou mais vivo.';
-          atualizarHud();
-          salvar();
-        }
-      }
-    });
+      });
+    }
+    abrirRitmo();
     return;
   }
 
@@ -1261,6 +1296,14 @@ function fecharInterior() {
 }
 
 function interagirComPesca(ponto) {
+  if (!estado.temVara) {
+    dialogController.open({
+      nome: 'Caderno de Saberes',
+      texto: 'Você não tem a vara disponível. Procure uma vara no píer ou retome a atividade de pesca.',
+      typewriter: false
+    });
+    return;
+  }
   if (estado.peixesDisponiveis <= 0) {
     dialogController.open({
       nome: 'Caderno de Saberes',
@@ -1895,7 +1938,8 @@ function desenharMinimapa(canvas, ampliar = false) {
   ctxMinimapa.fillStyle = estado.altoContraste ? '#FFFFFF' : '#FFE066';
   ctxMinimapa.strokeStyle = '#2B1A0E';
   ctxMinimapa.beginPath();
-  ctxMinimapa.arc(jogadorX, jogadorY, ampliar ? 4 : 2.5, 0, Math.PI * 2);
+  const pulsoJogador = estado.reduzirMovimento ? 1 : 1 + Math.sin(animationTick / 14) * 0.12;
+  ctxMinimapa.arc(jogadorX, jogadorY, (ampliar ? 4 : 2.5) * pulsoJogador, 0, Math.PI * 2);
   ctxMinimapa.fill();
   ctxMinimapa.stroke();
 
@@ -2330,7 +2374,6 @@ function init() {
 
 function applyDefaults() {
   estado.fase = 'abertura';
-  estado.interiorAtivo = null;
   if (!estado.progressoSalvo) {
     estado.horario = '08:00';
     estado.jogador = posicaoInicialJogador();

@@ -4,11 +4,6 @@
 
 export const CONTEUDO = {
   titulo: 'Dia na Ponta Oeste',
-  placasLimite: {
-    nomeProvisorio: 'Limite da Ponta Oeste',
-    descricao: 'Sinaliza a borda acessível da vila no mapa.',
-    validar: true
-  },
   equipe: [
     'Bianca Vasconcelos de Lima',
     'Katryni Haaby dos Santos Bueno',

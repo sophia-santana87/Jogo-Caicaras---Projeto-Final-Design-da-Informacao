@@ -25,7 +25,6 @@ Todos os textos são rascunhos. Siga a seção «Linguagem» de docs/NARRATIVA.m
 | casa-rural | 3x3 | não | Afastada, ligada à vila por estrada sinuosa com cerca, flores e pedras |
 | pavilhao-fandango | 5x4 + terreiro | não | Terreiro aberto onde fica a roda de dança |
 | barraca | 3x2 | não | Artesanato e comida, com placa, biju, cataia e lixeiras |
-| limite-da-ponta-oeste | borda do mapa | não | Placas provisórias "Limite da Ponta Oeste" nas bordas da vila; nome e sinalização a validar com a comunidade |
 | trilha-da-mata | área aberta da mata | não | Caminho de observação com plantas; os usos locais precisam ser validados |
 
 O núcleo da vila reúne as casas em ruas próximas ao pavilhão e ao armazém. Residências decorativas mantêm quintais e áreas livres. Caminhos conectam as portas, o mercadinho, a praia, a casa de farinha e a trilha da mata. O pavilhão tem um pequeno espaço de convivência com bancos e iluminação.

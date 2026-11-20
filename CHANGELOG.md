@@ -13,3 +13,18 @@
 - P2/P7: remover transparencia das casas, usar profundidade por `y`, marcar `enterable` no cadastro e substituir limites textuais por elementos naturais.
 - P3-P9: criar cenas internas modulares, completar farinha, musica e mercadinho, ampliar pesca, reformar lago e placas, centralizar o Terreiro dos Fandangos e manter saves retrocompativeis.
 - Validar desktop 1280x720, celular 390x844 e paisagem, alto contraste, texto maior, reduzir movimento, teclado e toque, sem erros no console.
+
+## Implementacao da versao 2
+- P1 concluido: minimapa removido da tela principal e integrado as abas Saberes/Mapa do Caderno; M abre o mapa.
+- P2 concluido: transparencia das casas removida; EDIFICIOS ganha enterable e casas fechadas mostram baloes no Interagir.
+- P3 concluido: sistema modular de interiores com grid, spawn, saida, movimento por teclado/toque e save de cena.
+- P4 concluido: placa Ponte do Saber localizada com identificacao ampliada; placass de limite removidas.
+- P5 concluido: vara redesenhada, sete especies com raridade, fichas e colecao no Caderno.
+- P6 concluido: lago reformulado com bordas irregulares e detalhes naturais.
+- P7 concluido: limites textuais removidos e bordas naturais preservadas.
+- P8 concluido: Terreiro dos Fandangos centralizado no fluxo principal.
+- P9 concluido: casa musical, instrumentos, mercadinho e observacao de produtos usam o novo sistema interno.
+
+## Pendencias
+- Validacao cultural dos textos novos sobre farinha, pesca, instrumentos e especies; ver REVISAO_CONTEUDO.md.
+- Revisao humana da tradicao de cerco/tainha e de detalhes sazonais antes da publicacao ampla.

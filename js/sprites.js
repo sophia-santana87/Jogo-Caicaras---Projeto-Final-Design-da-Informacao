@@ -740,9 +740,7 @@ export function desenharCantosArredondadosMapa(ctx, larguraTiles, alturaTiles, t
 export function desenharObjeto(ctx, tipo, x, y, tile, seed = 0) {
   let objeto = null;
   let variante = Math.abs(seed) % 3;
-  const tipoDesenho = tipo.startsWith('planta-medicinal-') ? 'cataia'
-    : tipo === 'placa-limite' ? 'placa'
-      : tipo;
+  const tipoDesenho = tipo.startsWith('planta-medicinal-') ? 'cataia' : tipo;
   if (tipo === 'mato') {
     if (Math.abs(seed * 13 + 7) % 5 === 0) objeto = 'palmeira';
     else if (Math.abs(seed * 7 + 3) % 7 === 0) objeto = 'mangue';

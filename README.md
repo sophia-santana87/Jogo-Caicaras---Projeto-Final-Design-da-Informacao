@@ -80,9 +80,12 @@ Antes de tornar o repositório público, a equipe deve definir a licença do pro
 - A vila foi reorganizada com mais espaço entre fachadas, fileiras escalonadas e respiros entre núcleo comunitário, praia, lagoa e trilha da mata. NPCs e pontos interativos foram afastados das zonas de oclusão das casas.
 - Edifícios recebem transparência quando o jogador ou o destino da missão fica atrás da fachada; em alto contraste, uma silhueta amarela contorna o personagem coberto.
 - O minimapa lateral usa uma camada estática gerada uma vez, mostra ponto/direção do jogador, área visível e destino da missão, e pode ser recolhido, ampliado por toque ou aberto pela tecla M. A preferência é salva junto ao estado do jogo.
-- Versão dos módulos atualizada para `v=28`; o modo `?dev=1` registra pares de edifícios com distância insuficiente e portas inacessíveis no console, sem custo na execução normal.
+- Versão dos módulos atualizada para `v=29`; o modo `?dev=1` registra pares de edifícios com distância insuficiente e portas inacessíveis no console, sem custo na execução normal.
 - Residências decorativas foram reduzidas e espaçadas; a rua central liga portas, área comercial e o caminho da praia. O mercadinho tem fachada, interior demonstrativo e interação sem compras, pois a economia depende de validação comunitária.
 - O pavilhão ganhou bancos, vegetação e iluminação de apoio, e uma placa sinaliza a entrada da comunidade.
+- Versão 2: o minimapa passou para o Caderno, casas fechadas usam balão curto, interiores são navegáveis e a casa de farinha possui cinco etapas jogáveis.
+- A casa musical concentra instrumentos e ritmo do Mestre Tião, o mercadinho permite observar produtos e a pesca registra espécies com fichas no Caderno.
+- O lago usa margem irregular, a placa “Ponte do Saber” tem rótulo legível e o Terreiro dos Fandangos fica no fluxo central da vila.
 - Licença a definir pela equipe.
 
 ## Validação cultural

@@ -36,6 +36,7 @@ export const ESTADO_PADRAO = {
   mostrarSetas: true,
   locaisVisitados: [],
   colecaoPeixes: [],
+  temVara: true,
   cenaAtual: 'exterior',
   posicaoInterior: null,
   progressoFarinha: 0,

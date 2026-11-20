@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=27';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=28';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 32;
@@ -77,19 +77,36 @@ export const MAPA = DESENHO_MAPA.map((linha) => Array.from(linha, (simbolo) => {
   return terreno;
 }));
 
-const CASA_RURAL = { x: 43, y: 8 };
-for (let y = 7; y <= 11; y += 1) {
-  for (let x = 39; x <= 47; x += 1) {
-    MAPA[y][x] = 'grama';
+const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho']);
+
+export const POSICOES_EDIFICIOS = {
+  'casa-de-farinha': { x: 26, y: 7, tipo: 'casaFarinha' },
+  'casa-rural': { x: 43, y: 8, tipo: 'casaRural' },
+  escola: { x: 11, y: 12, tipo: 'casa' },
+  capela: { x: 17, y: 14, tipo: 'casa' },
+  armazem: { x: 23, y: 14, tipo: 'casa' },
+  'pavilhao-fandango': { x: 29, y: 14, tipo: 'pavilhao' },
+  'casa-4': { x: 35, y: 14, tipo: 'casa' },
+  'casa-5': { x: 43, y: 14, tipo: 'casa' },
+  'casa-6': { x: 13, y: 18, tipo: 'casa' },
+  'casa-7': { x: 31, y: 20, tipo: 'casa' },
+  'casa-8': { x: 16, y: 24, tipo: 'casa' },
+  mercadinho: { x: 24, y: 24, tipo: 'mercadinho' },
+  'casa-9': { x: 33, y: 26, tipo: 'casa' },
+  barraca: { x: 42, y: 24, tipo: 'barraca' }
+};
+
+for (let y = 0; y < MAPA_ALTURA; y += 1) {
+  for (let x = 0; x < MAPA_LARGURA; x += 1) {
+    if (TIPOS_DE_EDIFICIO.has(MAPA[y][x])) MAPA[y][x] = 'grama';
   }
 }
-MAPA[CASA_RURAL.y][CASA_RURAL.x] = 'casaRural';
-MAPA[17][21] = 'vila';
-MAPA[22][42] = 'barraca';
-for (const [x, y] of [[17, 16], [35, 16], [20, 20], [27, 20]]) {
-  MAPA[y][x] = 'grama';
-}
-MAPA[20][24] = 'mercadinho';
+Object.values(POSICOES_EDIFICIOS).forEach((posicao) => {
+  MAPA[posicao.y][posicao.x] = posicao.tipo;
+});
+MAPA[9][43] = 'caminho';
+MAPA[5][39] = 'grama';
+MAPA[6][39] = 'grama';
 for (let x = 19; x <= 28; x += 1) MAPA[15][x] = 'caminho';
 for (let y = 21; y <= 24; y += 1) {
   for (let x = 35; x <= 39; x += 1) MAPA[y][x] = 'lagoa';
@@ -133,11 +150,11 @@ MAPA[20][22] = 'caminho';
 export const NPCS = [
   { ...PERSONAGENS['dona-cida'], x: 21, y: 10 },
   { ...PERSONAGENS.nelson, x: 13, y: 26 },
-  { ...PERSONAGENS.jaque, x: 33, y: 22 },
+  { ...PERSONAGENS.jaque, x: 34, y: 27 },
   { ...PERSONAGENS.tiao, x: 29, y: 15 },
-  { ...PERSONAGENS.rita, x: 41, y: 23 },
+  { ...PERSONAGENS.rita, x: 39, y: 25 },
   { ...PERSONAGENS.davi, x: 11, y: 23 },
-  { ...PERSONAGENS.erveiro, x: 43, y: 4 }
+  { ...PERSONAGENS.erveiro, x: 40, y: 5 }
 ];
 
 const npcPorId = new Map(NPCS.map((npc) => [npc.id, npc]));
@@ -148,23 +165,14 @@ export const MISSION_POINTS = Object.fromEntries(
   })
 );
 
-const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho']);
-const CONTADORES_EDIFICIOS = new Map();
+const nomePorPosicao = new Map(
+  Object.entries(POSICOES_EDIFICIOS).map(([id, posicao]) => [`${posicao.x},${posicao.y}`, id])
+);
+
 export const EDIFICIOS = MAPA.flatMap((linha, y) => linha.flatMap((tipo, x) => {
   if (!TIPOS_DE_EDIFICIO.has(tipo)) return [];
-  const indice = CONTADORES_EDIFICIOS.get(tipo) || 0;
-  CONTADORES_EDIFICIOS.set(tipo, indice + 1);
-  const nomesPorLocal = new Map([
-    ['19,14', 'armazem'],
-    ['11,14', 'escola'],
-    ['15,14', 'capela']
-  ]);
-  const id = tipo === 'casaFarinha' ? 'casa-de-farinha'
-    : tipo === 'casaRural' ? 'casa-rural'
-      : tipo === 'pavilhao' ? 'pavilhao-fandango'
-        : tipo === 'barraca' ? 'barraca'
-          : tipo === 'mercadinho' ? 'mercadinho'
-            : nomesPorLocal.get(`${x},${y}`) || `casa-${indice + 1}`;
+  const id = nomePorPosicao.get(`${x},${y}`);
+  if (!id) return [];
   const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho';
   return [{ id, tipo, x, y, largura: 3, altura: 2, entrada: { x, y: y + 1 }, temInterior }];
 }));
@@ -173,7 +181,7 @@ export const PONTOS_DE_OBSERVACAO = {
   mare: { x: 13, y: 26 },
   vento: { x: 15, y: 28 },
   ceu: { x: 16, y: 26 },
-  'manejo-mata': { x: 43, y: 6 }
+  'manejo-mata': { x: 40, y: 6 }
 };
 
 export const PONTOS_PESCA = [
@@ -192,30 +200,30 @@ export const MAPA_DECORACOES = [
   { tipo: 'placa-limite', x: 46, y: 11, nome: 'Limite da Ponta Oeste', validar: true },
   { tipo: 'placa-limite', x: 1, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
   { tipo: 'placa-limite', x: 46, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
-  { tipo: 'forno', x: 24, y: 8 },
-  { tipo: 'prensa', x: 25, y: 8 },
-  { tipo: 'peneira', x: 24, y: 9 },
+  { tipo: 'forno', x: 23, y: 8 },
+  { tipo: 'prensa', x: 22, y: 8 },
+  { tipo: 'peneira', x: 22, y: 9 },
   { tipo: 'rede', x: 12, y: 28 },
   { tipo: 'bandeira', x: 15, y: 28 },
-  { tipo: 'luminaria', x: 26, y: 13 },
+  { tipo: 'luminaria', x: 24, y: 12 },
   { tipo: 'luminaria', x: 9, y: 18 },
   { tipo: 'luminaria', x: 26, y: 18 },
-  { tipo: 'luminaria', x: 41, y: 18 },
-  { tipo: 'luminaria', x: 30, y: 12 },
-  { tipo: 'luminaria', x: 38, y: 12 },
-  { tipo: 'banco', x: 31, y: 12 },
-  { tipo: 'banco', x: 37, y: 12 },
-  { tipo: 'placa', x: 14, y: 12 },
-  { tipo: 'planta-medicinal-a', x: 41, y: 4 },
+  { tipo: 'luminaria', x: 39, y: 18 },
+  { tipo: 'luminaria', x: 28, y: 12 },
+  { tipo: 'luminaria', x: 36, y: 12 },
+  { tipo: 'banco', x: 27, y: 12 },
+  { tipo: 'banco', x: 35, y: 12 },
+  { tipo: 'placa', x: 18, y: 13 },
+  { tipo: 'planta-medicinal-a', x: 38, y: 4 },
   { tipo: 'planta-medicinal-b', x: 45, y: 4 },
-  { tipo: 'planta-medicinal-c', x: 46, y: 5 },
+  { tipo: 'planta-medicinal-c', x: 46, y: 6 },
   { tipo: 'arvore', x: 40, y: 3 },
   { tipo: 'arbusto', x: 47, y: 5 },
   { tipo: 'arbusto', x: 40, y: 5 },
   { tipo: 'arbusto', x: 47, y: 4 },
-  { tipo: 'viola', x: 25, y: 15 },
-  { tipo: 'rabeca', x: 26, y: 15 },
-  { tipo: 'adufo', x: 27, y: 15 },
+  { tipo: 'viola', x: 26, y: 17 },
+  { tipo: 'rabeca', x: 28, y: 17 },
+  { tipo: 'adufo', x: 30, y: 17 },
   { tipo: 'placa', x: 40, y: 24 },
   { tipo: 'peixe', x: 41, y: 25 },
   { tipo: 'biju', x: 42, y: 25 },
@@ -347,6 +355,36 @@ export function findPath(start, goal) {
   }
 
   return [];
+}
+
+export function verificarEdificios(consoleRef = console) {
+  const paresViolados = [];
+  for (let i = 0; i < EDIFICIOS.length; i += 1) {
+    for (let j = i + 1; j < EDIFICIOS.length; j += 1) {
+      const a = EDIFICIOS[i];
+      const b = EDIFICIOS[j];
+      const aArea = { left: a.x - 1, right: a.x + a.largura - 2, top: a.y - a.altura + 1, bottom: a.y };
+      const bArea = { left: b.x - 1, right: b.x + b.largura - 2, top: b.y - b.altura + 1, bottom: b.y };
+      const horizontal = aArea.right < bArea.left
+        ? bArea.left - aArea.right - 1
+        : bArea.right < aArea.left ? aArea.left - bArea.right - 1 : 0;
+      const vertical = aArea.bottom < bArea.top
+        ? bArea.top - aArea.bottom - 1
+        : bArea.bottom < aArea.top ? aArea.top - bArea.bottom - 1 : 0;
+      const temSobreposicaoHorizontal = !(aArea.right < bArea.left || bArea.right < aArea.left);
+      const temSobreposicaoVertical = !(aArea.bottom < bArea.top || bArea.bottom < aArea.top);
+      if ((temSobreposicaoVertical && horizontal > 0 && horizontal < 3)
+        || (temSobreposicaoHorizontal && vertical > 0 && vertical < 4)) {
+        paresViolados.push({ a: a.id, b: b.id, horizontal, vertical });
+      }
+    }
+  }
+
+  const portas = EDIFICIOS.map((edificio) => edificio.entrada);
+  const inacessiveis = portas.filter((porta) => !findPath(POSICAO_INICIAL_JOGADOR, porta).length);
+  if (paresViolados.length) consoleRef.warn('EDIFICIOS: pares com espaço insuficiente', paresViolados);
+  if (inacessiveis.length) consoleRef.warn('EDIFICIOS: portas fora do caminho', inacessiveis);
+  return { paresViolados, inacessiveis };
 }
 
 export function distancia(x1, y1, x2, y2) {

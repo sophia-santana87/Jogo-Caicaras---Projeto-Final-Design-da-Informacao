@@ -2,15 +2,15 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=27';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=27';
-import { DialogoController } from './dialogo.js?v=27';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=27';
-import { SomManager } from './som.js?v=27';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=27';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt } from './mundo.js?v=27';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=27';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=27';
+import { CONTEUDO } from '../dados/conteudo.js?v=28';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=28';
+import { DialogoController } from './dialogo.js?v=28';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=28';
+import { SomManager } from './som.js?v=28';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=28';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=28';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=28';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=28';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -76,6 +76,8 @@ let dogDirection = 'left';
 let dogNextMoveAt = 0;
 let dogPetUntil = 0;
 let camadaEstatica = null;
+let camadaEstaticaMinimapa = null;
+let ultimaAtualizacaoMinimapa = -1;
 const PARTICULAS = Array.from({ length: 42 }, (_, index) => ({
   x: ((index * 73 + 19) % 997) / 997,
   y: ((index * 137 + 41) % 991) / 991,
@@ -292,6 +294,7 @@ function fecharResumo() {
     altoContraste: estado.altoContraste,
     reduzirMovimento: estado.reduzirMovimento,
     mostrarSetas: estado.mostrarSetas,
+    minimapaRecolhido: estado.minimapaRecolhido,
     somLigado: estado.somLigado
   };
   Object.assign(estado, structuredClone(ESTADO_PADRAO), preferencias);
@@ -1523,6 +1526,15 @@ function desenharIluminacao() {
   ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
+function posicaoOcultaPorEdificio(posicao) {
+  return EDIFICIOS.find((edificio) => (
+    posicao.x >= edificio.x - 1.8
+    && posicao.x <= edificio.x + 1.8
+    && posicao.y >= edificio.y - 3.6
+    && posicao.y <= edificio.y + 1
+  )) || null;
+}
+
 function desenharLuzes(tile, camera) {
   if (estado.horario !== '17:30') return;
   MAPA_DECORACOES.filter((item) => item.tipo === 'luminaria').forEach((luz) => {
@@ -1634,6 +1646,110 @@ function desenharAnimacaoPesca(tile, camera, agora) {
   ctx.restore();
 }
 
+function criarCamadaEstaticaMinimapa() {
+  if (camadaEstaticaMinimapa) return camadaEstaticaMinimapa;
+  const escala = 4;
+  camadaEstaticaMinimapa = document.createElement('canvas');
+  camadaEstaticaMinimapa.width = MAPA[0].length * escala;
+  camadaEstaticaMinimapa.height = MAPA.length * escala;
+  const minimapaCtx = camadaEstaticaMinimapa.getContext('2d');
+  minimapaCtx.imageSmoothingEnabled = false;
+
+  MAPA.forEach((linha, y) => linha.forEach((tipo, x) => {
+    desenharPiso(minimapaCtx, tipo, x * escala, y * escala, escala, x * 31 + y, y >= 30);
+  }));
+  EDIFICIOS.forEach((edificio) => {
+    minimapaCtx.fillStyle = '#8A5A33';
+    minimapaCtx.fillRect(edificio.x * escala - escala, edificio.y * escala - escala * 1.5, escala * 3, escala * 2);
+    minimapaCtx.fillStyle = edificio.temInterior ? '#D9A441' : '#F6E7C1';
+    minimapaCtx.fillRect(edificio.x * escala - escala, edificio.y * escala - escala, escala * 3, escala);
+  });
+  return camadaEstaticaMinimapa;
+}
+
+function desenharIconeInteresse(ctx, tipo, x, y) {
+  ctx.save();
+  ctx.fillStyle = '#FFE066';
+  ctx.strokeStyle = '#2B1A0E';
+  ctx.lineWidth = 1;
+  if (tipo === 'pavilhao' || tipo === 'casa-de-farinha') {
+    ctx.fillRect(x - 2, y - 2, 4, 4);
+  } else if (tipo === 'lagoa' || tipo === 'praia') {
+    ctx.beginPath();
+    ctx.arc(x, y, 2, 0, Math.PI * 2);
+    ctx.fill();
+  } else {
+    ctx.beginPath();
+    ctx.moveTo(x, y - 3);
+    ctx.lineTo(x - 3, y + 2);
+    ctx.lineTo(x + 3, y + 2);
+    ctx.closePath();
+    ctx.fill();
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function desenharMinimapa(canvas, ampliar = false) {
+  if (!canvas) return;
+  const ctxMinimapa = canvas.getContext('2d');
+  ctxMinimapa.imageSmoothingEnabled = false;
+  ctxMinimapa.clearRect(0, 0, canvas.width, canvas.height);
+  ctxMinimapa.drawImage(criarCamadaEstaticaMinimapa(), 0, 0, canvas.width, canvas.height);
+
+  const escalaX = canvas.width / (MAPA[0].length * 16);
+  const escalaY = canvas.height / (MAPA.length * 16);
+  const px = (x) => x * 16 * escalaX;
+  const py = (y) => y * 16 * escalaY;
+
+  const pontos = ampliar
+    ? [
+      { tipo: 'pavilhao', x: 29, y: 14, nome: 'Pavilhão' },
+      { tipo: 'armazem', x: 23, y: 14, nome: 'Armazém' },
+      { tipo: 'mercadinho', x: 24, y: 22, nome: 'Mercadinho' },
+      { tipo: 'casa-de-farinha', x: 26, y: 7, nome: 'Casa de farinha' },
+      { tipo: 'pier', x: 13, y: 28, nome: 'Píer' },
+      { tipo: 'praia', x: 13, y: 25, nome: 'Praia' },
+      { tipo: 'trilha', x: 40, y: 6, nome: 'Trilha da mata' },
+      { tipo: 'lagoa', x: 37, y: 22, nome: 'Lagoa' }
+    ]
+    : [];
+  pontos.forEach((ponto) => desenharIconeInteresse(ctxMinimapa, ponto.tipo, px(ponto.x), py(ponto.y)));
+
+  const tile = escalaDoMapa() * 16;
+  const camera = posicaoCamera(tile);
+  ctxMinimapa.save();
+  ctxMinimapa.strokeStyle = estado.altoContraste ? '#FFFFFF' : '#2B1A0E';
+  ctxMinimapa.lineWidth = ampliar ? 2 : 1;
+  const escalaTela = escalaDoMapa();
+  const mundoLargura = MAPA[0].length * 16;
+  const mundoAltura = MAPA.length * 16;
+  const larguraVisibleMundo = canvas.width * (canvas.width / (16 * escalaTela)) * 16 / mundoLargura;
+  const alturaVisibleMundo = canvas.height * (canvas.height / (16 * escalaTela)) * 16 / mundoAltura;
+  ctxMinimapa.strokeRect(
+    camera.x / mundoLargura * canvas.width,
+    camera.y / mundoAltura * canvas.height,
+    larguraVisibleMundo,
+    alturaVisibleMundo
+  );
+
+  const jogadorX = px(estado.jogador.x);
+  const jogadorY = py(estado.jogador.y);
+  ctxMinimapa.fillStyle = estado.altoContraste ? '#FFFFFF' : '#FFE066';
+  ctxMinimapa.strokeStyle = '#2B1A0E';
+  ctxMinimapa.beginPath();
+  ctxMinimapa.arc(jogadorX, jogadorY, ampliar ? 4 : 2.5, 0, Math.PI * 2);
+  ctxMinimapa.fill();
+  ctxMinimapa.stroke();
+
+  const destino = destinoDaMissao();
+  if (destino) {
+    ctxMinimapa.fillStyle = '#A64C3A';
+    ctxMinimapa.fillRect(px(destino.x) - 2, py(destino.y) - 2, 4, 4);
+  }
+  ctxMinimapa.restore();
+}
+
 function criarCamadaEstatica() {
   if (camadaEstatica) return camadaEstatica;
   camadaEstatica = document.createElement('canvas');
@@ -1731,6 +1847,17 @@ function desenhoMapa(agora = performance.now()) {
     const baseY = (element.y + 1) * tile - camera.y;
     const tick = estado.reduzirMovimento ? 0 : animationTick;
     if (element.tipo === 'objeto' || element.tipo === 'decoracao') {
+      const casa = ['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho'].includes(element.objeto);
+      const destino = destinoDaMissao();
+      const edificio = EDIFICIOS.find((item) => item.x === element.x && item.y === element.y);
+      const casaDoJogador = posicaoOcultaPorEdificio(jogadorVisual);
+      const casaDoDestino = destino ? posicaoOcultaPorEdificio(destino) : null;
+      const alvoOculto = casa && edificio && (
+        casaDoJogador?.id === edificio.id
+        || casaDoDestino?.id === edificio.id
+      );
+      if (casa && alvoOculto) ctx.save();
+      if (casa && alvoOculto) ctx.globalAlpha = estado.reduzirMovimento ? 0.52 : 0.52;
       const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'].includes(element.objeto);
       const destaque = element.tipo === 'decoracao' && ITENS_DESTAQUE.has(element.objeto);
       const salto = destaque && !estado.reduzirMovimento
@@ -1738,6 +1865,7 @@ function desenhoMapa(agora = performance.now()) {
         : 0;
       desenharSombra(centerX, baseY, tile, grande ? 1.7 : 0.8, grande ? 1 : 0);
       desenharObjeto(ctx, element.objeto, centerX, baseY - salto, tile, element.seed);
+      if (casa && alvoOculto) ctx.restore();
       if (destaque) {
         const brilho = estado.reduzirMovimento ? 0.55 : 0.35 + (Math.sin(tick / 8 + element.seed) + 1) * 0.2;
         const pontoY = baseY - tile * 0.48 - salto;
@@ -1791,6 +1919,13 @@ function desenhoMapa(agora = performance.now()) {
         Boolean(playerMotion),
         estado.avatar
       );
+      if (element.tipo === 'player' && estado.altoContraste && posicaoOcultaPorEdificio(jogadorVisual)) {
+        ctx.save();
+        ctx.strokeStyle = '#FFE066';
+        ctx.lineWidth = Math.max(2, tile * 0.08);
+        ctx.strokeRect(centerX - tile * 0.28, baseY - tile * 1.1, tile * 0.56, tile * 1.1);
+        ctx.restore();
+      }
     }
   });
 
@@ -1820,6 +1955,7 @@ function desenhoMapa(agora = performance.now()) {
   });
 
   desenharIluminacao();
+  desenharMinimapa(document.getElementById('minimapa-canvas'), false);
   desenharLuzes(tile, camera);
   desenharIndicadorMissao(tile, camera);
   desenharIdentificacaoLocal(tile, camera);
@@ -1929,6 +2065,47 @@ function setupEventos() {
   });
 
   document.getElementById('btn-caderno').addEventListener('click', abrirCaderno);
+
+  const containerMinimapa = document.getElementById('minimapa-container');
+  const botaoMinimapa = document.getElementById('btn-minimapa');
+  const modalMinimapa = document.getElementById('minimapa-modal');
+  function atualizarMinimapa() {
+    containerMinimapa.classList.toggle('recolhido', estado.minimapaRecolhido);
+    botaoMinimapa.setAttribute('aria-expanded', String(!estado.minimapaRecolhido));
+    botaoMinimapa.textContent = estado.minimapaRecolhido ? '+' : '−';
+    botaoMinimapa.setAttribute('aria-label', estado.minimapaRecolhido ? 'Expandir minimapa' : 'Recolher minimapa');
+  }
+  function alternarMinimapa() {
+    estado.minimapaRecolhido = !estado.minimapaRecolhido;
+    atualizarMinimapa();
+    salvar();
+  }
+  function fecharModalMinimapa() {
+    modalMinimapa.classList.add('hidden');
+  }
+  botaoMinimapa.addEventListener('click', alternarMinimapa);
+  document.getElementById('minimapa-canvas').addEventListener('click', () => {
+    if (estado.minimapaRecolhido) return;
+    modalMinimapa.classList.remove('hidden');
+    desenharMinimapa(document.getElementById('minimapa-ampliado'), true);
+  });
+  document.getElementById('btn-minimapa-fechar').addEventListener('click', fecharModalMinimapa);
+  const legenda = document.getElementById('minimapa-legenda');
+  legenda.replaceChildren();
+  const itensLegenda = [
+    ['■', 'Pavilhão'], ['▲', 'Armazém'], ['◆', 'Mercadinho'],
+    ['▰', 'Casa de farinha'], ['Ⅱ', 'Píer'], ['◯', 'Praia'],
+    ['⌁', 'Trilha da mata'], ['●', 'Lagoa']
+  ];
+  itensLegenda.forEach(([icone, nome]) => {
+    const item = document.createElement('span');
+    const simbolo = document.createElement('strong');
+    simbolo.textContent = icone;
+    simbolo.setAttribute('aria-hidden', 'true');
+    item.append(simbolo, document.createTextNode(nome));
+    legenda.appendChild(item);
+  });
+  atualizarMinimapa();
   document.getElementById('btn-interagir').addEventListener('click', interagir);
   document.addEventListener('keydown', (event) => {
     const ativo = document.activeElement;
@@ -1949,11 +2126,20 @@ function setupEventos() {
       event.preventDefault();
       interagir();
     }
-    if (event.key === 'Escape' && estado.fase === 'jogo') {
+    if (event.key === 'Escape' && !document.getElementById('minimapa-modal').classList.contains('hidden')) {
+      document.getElementById('minimapa-modal').classList.add('hidden');
+    } else if (event.key === 'Escape' && estado.fase === 'jogo') {
       alternarPausa();
     }
     if (key === 'm') {
-      document.getElementById('panel-missoes').classList.toggle('hidden');
+      const container = document.getElementById('minimapa-container');
+      if (container.classList.contains('recolhido')) alternarMinimapa();
+      else {
+        document.getElementById('minimapa-modal').classList.toggle('hidden');
+        if (!document.getElementById('minimapa-modal').classList.contains('hidden')) {
+          desenharMinimapa(document.getElementById('minimapa-ampliado'), true);
+        }
+      }
     }
     if (key === 'c') {
       abrirCaderno();
@@ -2001,6 +2187,9 @@ function setupEventos() {
 
 function init() {
   applyDefaults();
+  if (new URLSearchParams(window.location.search).get('dev') === '1') {
+    verificarEdificios(console);
+  }
   redimensionarCanvas();
   syncAudioState();
   setupEventos();

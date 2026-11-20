@@ -209,7 +209,7 @@ const TIPOS_DE_PISO = ['vila', 'grama', 'mato', 'roca', 'plantacao', 'praia', 'm
 const TIPOS_DE_OBJETO = [
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
-  'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'lixeiraOrganica', 'lixeiraReciclavel',
+  'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'vara-pesca', 'lixeiraOrganica', 'lixeiraReciclavel',
   'arbusto', 'flor', 'pedra', 'capim', 'cerca'
 ];
 const OBJETOS_GRANDES = new Set([
@@ -486,6 +486,18 @@ function pintarObjeto(ctx, tipo, variante) {
     ctx.fillRect(14, 14, 1, 6);
     ctx.fillRect(18, 14, 1, 6);
     ctx.fillRect(22, 14, 1, 6);
+  } else if (tipo === 'vara-pesca') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 25, 3, 4);
+    ctx.fillStyle = '#8A5A33';
+    ctx.fillRect(8, 8, 3, 19);
+    ctx.fillRect(9, 7, 18, 2);
+    ctx.fillStyle = '#D9A441';
+    ctx.fillRect(10, 6, 16, 1);
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(23, 8, 4, 3);
+    ctx.fillStyle = '#F6E7C1';
+    ctx.fillRect(23, 11, 4, 2);
   } else if (tipo === 'rede') {
     ctx.fillStyle = '#68452B';
     ctx.fillRect(5, 4, 2, 25);
@@ -858,6 +870,47 @@ export function desenharMusico(ctx, centroX, baseY, tile, tick, instrumento) {
       retanguloPixel(ctx, x + 8 * px, base - 14 * px, 1 * px, 10 * px, '#5A3A1E');
     }
   }
+}
+
+export function desenharVaraPesca(ctx, maoX, maoY, pontaX, pontaY, aguaX, aguaY, tile, direcao, fase, progresso, reduzirMovimento) {
+  ctx.save();
+  ctx.lineCap = 'round';
+  ctx.strokeStyle = '#68452B';
+  ctx.lineWidth = Math.max(2, tile * 0.055);
+  ctx.beginPath();
+  ctx.moveTo(maoX, maoY);
+  ctx.quadraticCurveTo(
+    pontaX + tile * (direcao === 'left' ? -0.24 : 0.24),
+    pontaY - tile * 0.36,
+    pontaX,
+    pontaY
+  );
+  ctx.stroke();
+
+  ctx.strokeStyle = '#D9A441';
+  ctx.lineWidth = Math.max(1, tile * 0.018);
+  ctx.beginPath();
+  ctx.moveTo(pontaX, pontaY);
+  ctx.quadraticCurveTo((pontaX + aguaX) / 2, (pontaY + aguaY) / 2 - tile * 0.12, aguaX, aguaY);
+  ctx.stroke();
+
+  ctx.fillStyle = '#A64C3A';
+  ctx.fillRect(Math.round(maoX - tile * 0.06), Math.round(maoY - tile * 0.06), tile * 0.12, tile * 0.12);
+
+  const flutuadorX = fase === 'lancamento' ? pontaX + (aguaX - pontaX) * progresso : aguaX;
+  const flutuadorY = fase === 'lancamento' ? pontaY + (aguaY - pontaY) * progresso : aguaY;
+  ctx.fillStyle = '#A64C3A';
+  ctx.fillRect(Math.round(flutuadorX - tile * 0.05), Math.round(flutuadorY - tile * 0.05), tile * 0.1, tile * 0.06);
+  ctx.fillStyle = '#F6E7C1';
+  ctx.fillRect(Math.round(flutuadorX - tile * 0.05), Math.round(flutuadorY), tile * 0.1, tile * 0.045);
+
+  ctx.strokeStyle = '#5A3A1E';
+  ctx.lineWidth = Math.max(1, tile * 0.025);
+  ctx.beginPath();
+  ctx.moveTo(flutuadorX, flutuadorY + tile * 0.09);
+  ctx.lineTo(flutuadorX + tile * (reduzirMovimento ? 0.04 : 0.07), flutuadorY + tile * 0.18);
+  ctx.stroke();
+  ctx.restore();
 }
 
 export function desenharAve(ctx, x, y, tile, tick, pousada = false) {

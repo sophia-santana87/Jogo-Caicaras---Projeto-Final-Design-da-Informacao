@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=29';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=31';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 32;
@@ -202,6 +202,7 @@ export function getNPCsNoHorario(horario) {
 }
 
 export const MAPA_DECORACOES = [
+  { tipo: 'vara-pesca', x: 12, y: 27, nome: 'Vara de pesca' },
   { tipo: 'forno', x: 23, y: 8 },
   { tipo: 'prensa', x: 22, y: 8 },
   { tipo: 'peneira', x: 22, y: 9 },

@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=29';
-import { INTERIORES } from '../dados/interiores.js?v=29';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=29';
-import { DialogoController } from './dialogo.js?v=29';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=29';
-import { SomManager } from './som.js?v=29';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=29';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=29';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=29';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=29';
+import { CONTEUDO } from '../dados/conteudo.js?v=31';
+import { INTERIORES } from '../dados/interiores.js?v=31';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=31';
+import { DialogoController } from './dialogo.js?v=31';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=31';
+import { SomManager } from './som.js?v=31';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=31';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=31';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=31';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=31';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -1061,6 +1061,22 @@ function interagir() {
   }
 
   const pontoPesca = pontoPescaProximo();
+  const varaNoPier = MAPA_DECORACOES.find((item) => item.tipo === 'vara-pesca'
+    && distancia(estado.jogador.x, estado.jogador.y, item.x, item.y) <= 1.5);
+  if (varaNoPier && !estado.temVara) {
+    estado.temVara = true;
+    estado.locaisVisitados = [...new Set([...(estado.locaisVisitados || []), 'vara-pesca'])];
+    mostrarNotificacaoColeta('Vara de pesca encontrada');
+    dialogController.open({
+      nome: 'Seu Nelson',
+      personagemId: 'nelson',
+      texto: 'Esta vara fica no píer. Use-a junto ao deque para pescar com cuidado.',
+      typewriter: false
+    });
+    atualizarHud();
+    salvar();
+    return;
+  }
   if (pontoPesca) {
     interagirComPesca(pontoPesca);
     return;
@@ -1780,13 +1796,10 @@ function desenharAnimacaoPesca(tile, camera, agora) {
   const progressoVisual = estado.reduzirMovimento ? 0 : progresso;
 
   ctx.save();
+  desenharVaraPesca(ctx, maoX, maoY, pontaX, pontaY, aguaX, aguaY, tile, direcao, pescaAnimacao.fase, progressoVisual, estado.reduzirMovimento);
   ctx.fillStyle = '#8A5A33';
   ctx.strokeStyle = '#5A3A1E';
   ctx.lineWidth = Math.max(2, tile * 0.035);
-  ctx.beginPath();
-  ctx.moveTo(maoX - tile * 0.02, maoY);
-  ctx.quadraticCurveTo(pontaX, pontaY - tile * 0.18, pontaX + tile * (direcao === 'left' ? -0.12 : 0.12), pontaY);
-  ctx.stroke();
   ctx.fillStyle = '#D9A441';
   ctx.fillRect(Math.round(maoX - tile * 0.06), Math.round(maoY - tile * 0.06), tile * 0.12, tile * 0.12);
   ctx.strokeStyle = '#5A3A1E';

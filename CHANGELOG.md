@@ -28,3 +28,19 @@
 ## Pendencias
 - Validacao cultural dos textos novos sobre farinha, pesca, instrumentos e especies; ver REVISAO_CONTEUDO.md.
 - Revisao humana da tradicao de cerco/tainha e de detalhes sazonais antes da publicacao ampla.
+
+## v2.1 - Reorganizacao
+- Arquitetura: a v2 ja separa dados de interiores, estado localStorage, mapa 48x32, cache de terreno, y-sorting e Caderno com abas Saberes/Mapa.
+- A vara so era desenhada dentro da animacao de pesca; não havia aquisicao visual nem deque identificavel. A correção adicionara vara persistente, ponto no deque e indicador "Pescar".
+- Plano A: corrigir primeiro o estado, sprite e interação da pesca.
+- Plano B: consolidar até cinco edificios em uma vilinha, separar lago, costa, terreiro lateral e trilhas.
+- Plano C/D/E: separar vegetacao aquatica/terrestre, peixes pulantes, canoas reutilizaveis e barracas funcionais.
+- Plano F: substituir o painel CSS atual dos interiores por uma cena canvas reutilizavel no mesmo tile 16 px e y-sorting.
+- Plano G/H: atualizar mapa do Caderno, revisão cultural, README e documentação manual de testes.
+
+### Teste manual da vara (A)
+1. Iniciar uma jornada nova e ir ao deque/pontão oeste da praia.
+2. Confirmar que a vara aparece apoiada no deque antes da pesca.
+3. Aproximar-se e confirmar o botão "Pescar"; Interagir mostra a ação apenas com a vara disponível.
+4. Durante a pesca, confirmar haste longa curva, cabo, linha fina, boia vermelha/branca e anzol visível.
+5. Recarregar a página e confirmar que a vara continua no inventário salvo.

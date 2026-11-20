@@ -10,7 +10,7 @@ import { SomManager } from './som.js?v=27';
 import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=27';
 import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt } from './mundo.js?v=27';
 import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=27';
-import { desenharAve, desenharCachorro, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=27';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=27';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -769,6 +769,14 @@ function desenharIdentificacaoLocal(tile, camera) {
       y: ponto.y,
       alturaMarcador: 0.65
     })),
+    ...MAPA_DECORACOES
+      .filter((decoracao) => decoracao.tipo === 'placa-limite')
+      .map((decoracao) => ({
+        nome: decoracao.nome,
+        x: decoracao.x,
+        y: decoracao.y,
+        alturaMarcador: 0.8
+      })),
     { nome: 'Entrada da comunidade', x: 14, y: 12, alturaMarcador: 0.8 }
   ];
   const local = locais
@@ -1293,13 +1301,17 @@ function atualizarCachorro(agora) {
 }
 
 function escalaDoMapa() {
-  const larguraDesejadaEmTiles = 15;
-  const alturaDesejadaEmTiles = 10;
-  return Math.max(1, Math.min(
+  const larguraCanvas = canvas.clientWidth || canvas.width;
+  const alturaCanvas = canvas.clientHeight || canvas.height;
+  const celular = larguraCanvas <= 540;
+  const larguraDesejadaEmTiles = celular ? 11 : 15;
+  const alturaDesejadaEmTiles = celular && alturaCanvas >= larguraCanvas ? 10 : 12;
+  const escalaInteira = Math.floor(Math.min(
     5,
-    canvas.width / (larguraDesejadaEmTiles * 16),
-    canvas.height / (alturaDesejadaEmTiles * 16)
+    larguraCanvas / (larguraDesejadaEmTiles * 16),
+    alturaCanvas / (alturaDesejadaEmTiles * 16)
   ));
+  return Math.max(1, escalaInteira);
 }
 
 function redimensionarCanvas() {
@@ -1313,9 +1325,11 @@ function redimensionarCanvas() {
 
 function posicaoCamera(tile, agora = performance.now()) {
   const jogador = posicaoVisual(estado.jogador, playerMotion, agora);
+  const retrato = canvas.clientHeight > canvas.clientWidth;
+  const margemVertical = retrato ? 0.38 : 0.45;
   return {
     x: Math.max(0, Math.min(MAPA[0].length * tile - canvas.width, jogador.x * tile - canvas.width * 0.45)),
-    y: Math.max(0, Math.min(MAPA.length * tile - canvas.height, jogador.y * tile - canvas.height * 0.45))
+    y: Math.max(0, Math.min(MAPA.length * tile - canvas.height, jogador.y * tile - canvas.height * margemVertical))
   };
 }
 
@@ -1631,6 +1645,7 @@ function criarCamadaEstatica() {
   MAPA.forEach((linha, y) => linha.forEach((tipo, x) => {
     desenharPiso(camadaCtx, tipo, x * 16, y * 16, 16, x * 31 + y, y >= 30);
   }));
+  desenharCantosArredondadosMapa(camadaCtx, MAPA[0].length, MAPA.length, 16);
   return camadaEstatica;
 }
 

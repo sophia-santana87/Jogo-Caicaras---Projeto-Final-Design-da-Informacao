@@ -50,6 +50,9 @@ function retanguloPixel(ctx, x, y, largura, altura, cor) {
 
 function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
   const c = paleta;
+  const cabelo = typeof c.cabelo === 'string' && /^#[0-9a-f]{6}$/i.test(c.cabelo)
+    ? c.cabelo
+    : '#35251D';
   const andando = passo > 0;
   const pernaEsquerda = andando && passo === 1 ? -1 : 0;
   const pernaDireita = andando && passo === 2 ? -1 : 0;
@@ -65,9 +68,9 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
     retanguloPixel(ctx, x + 5 + pernaEsquerda, y + 16, 3, 5, c.calca);
     retanguloPixel(ctx, x + 9 + pernaDireita, y + 16, 3, 5, c.calca);
     retanguloPixel(ctx, x + 4, y + 7, 8, 10, c.blusa);
-    retanguloPixel(ctx, x + 3, y + 2, 10, 7, c.cabelo);
-    retanguloPixel(ctx, x + 2, y + 4, 2, 4, c.cabelo);
-    retanguloPixel(ctx, x + 12, y + 4, 2, 4, c.cabelo);
+    retanguloPixel(ctx, x + 3, y + 2, 10, 7, cabelo);
+    retanguloPixel(ctx, x + 2, y + 4, 2, 4, cabelo);
+    retanguloPixel(ctx, x + 12, y + 4, 2, 4, cabelo);
     retanguloPixel(ctx, x + 5, y + 10, 6, 1, c.detalhe);
   } else {
     retanguloPixel(ctx, x + 4 + pernaEsquerda, y + 16, 3, 5, c.calca);
@@ -84,38 +87,38 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
     if (direcao === 'left' || direcao === 'right') {
       const lado = direcao === 'left' ? -1 : 1;
       retanguloPixel(ctx, x + (lado < 0 ? 4 : 6), y + 3, 7, 7, c.pele);
-      retanguloPixel(ctx, x + (lado < 0 ? 3 : 6), y + 2, 8, 3, c.cabelo);
-      retanguloPixel(ctx, x + (lado < 0 ? 3 : 12), y + 4, 2, 5, c.cabelo);
+      retanguloPixel(ctx, x + (lado < 0 ? 3 : 6), y + 2, 8, 3, cabelo);
+      retanguloPixel(ctx, x + (lado < 0 ? 3 : 12), y + 4, 2, 5, cabelo);
       retanguloPixel(ctx, x + (lado < 0 ? 5 : 10), y + 6, 1, 1, c.olho);
     } else {
       retanguloPixel(ctx, x + 5, y + 3, 6, 7, c.pele);
-      retanguloPixel(ctx, x + 4, y + 2, 8, 3, c.cabelo);
-      retanguloPixel(ctx, x + 3, y + 4, 2, 4, c.cabelo);
-      retanguloPixel(ctx, x + 11, y + 4, 2, 4, c.cabelo);
+      retanguloPixel(ctx, x + 4, y + 2, 8, 3, cabelo);
+      retanguloPixel(ctx, x + 3, y + 4, 2, 4, cabelo);
+      retanguloPixel(ctx, x + 11, y + 4, 2, 4, cabelo);
       retanguloPixel(ctx, x + 6, y + 6, 1, 1, c.olho);
       retanguloPixel(ctx, x + 9, y + 6, 1, 1, c.olho);
       retanguloPixel(ctx, x + 7, y + 8, 2, 1, c.boca);
     }
 
     if (c.cabeloTipo === 'crespo') {
-      retanguloPixel(ctx, x + 3, y + 1, 10, 3, c.cabelo);
-      retanguloPixel(ctx, x + 2, y + 3, 2, 5, c.cabelo);
-      retanguloPixel(ctx, x + 12, y + 3, 2, 5, c.cabelo);
+      retanguloPixel(ctx, x + 3, y + 1, 10, 3, cabelo);
+      retanguloPixel(ctx, x + 2, y + 3, 2, 5, cabelo);
+      retanguloPixel(ctx, x + 12, y + 3, 2, 5, cabelo);
     } else if (c.cabeloTipo === 'cacheado') {
-      retanguloPixel(ctx, x + 3, y + 1, 10, 2, c.cabelo);
-      retanguloPixel(ctx, x + 2, y + 4, 2, 2, c.cabelo);
-      retanguloPixel(ctx, x + 12, y + 3, 2, 3, c.cabelo);
-      retanguloPixel(ctx, x + 3, y + 7, 1, 2, c.cabelo);
-      retanguloPixel(ctx, x + 12, y + 7, 1, 2, c.cabelo);
+      retanguloPixel(ctx, x + 3, y + 1, 10, 2, cabelo);
+      retanguloPixel(ctx, x + 2, y + 4, 2, 2, cabelo);
+      retanguloPixel(ctx, x + 12, y + 3, 2, 3, cabelo);
+      retanguloPixel(ctx, x + 3, y + 7, 1, 2, cabelo);
+      retanguloPixel(ctx, x + 12, y + 7, 1, 2, cabelo);
     } else if (c.cabeloTipo === 'trancas') {
-      retanguloPixel(ctx, x + 3, y + 3, 2, 9, c.cabelo);
-      retanguloPixel(ctx, x + 11, y + 3, 2, 9, c.cabelo);
+      retanguloPixel(ctx, x + 3, y + 3, 2, 9, cabelo);
+      retanguloPixel(ctx, x + 11, y + 3, 2, 9, cabelo);
       retanguloPixel(ctx, x + 3, y + 8, 1, 1, c.detalhe);
       retanguloPixel(ctx, x + 12, y + 10, 1, 1, c.detalhe);
     } else if (c.cabeloTipo === 'liso') {
-      retanguloPixel(ctx, x + 3, y + 2, 10, 3, c.cabelo);
-      retanguloPixel(ctx, x + 3, y + 4, 2, 7, c.cabelo);
-      retanguloPixel(ctx, x + 11, y + 4, 2, 7, c.cabelo);
+      retanguloPixel(ctx, x + 3, y + 2, 10, 3, cabelo);
+      retanguloPixel(ctx, x + 3, y + 4, 2, 7, cabelo);
+      retanguloPixel(ctx, x + 11, y + 4, 2, 7, cabelo);
     }
 
     if (c.chapeu) {
@@ -135,7 +138,10 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
 }
 
 function chavePaleta(paleta) {
-  return Object.values(paleta).join('|');
+  return Object.entries(paleta)
+    .sort(([chaveA], [chaveB]) => chaveA.localeCompare(chaveB))
+    .map(([chave, valor]) => `${chave}:${valor ?? ''}`)
+    .join('|');
 }
 
 function criarFolhaPersonagem(paleta) {
@@ -146,7 +152,10 @@ function criarFolhaPersonagem(paleta) {
   canvas.width = LARGURA_QUADRO * QUADROS_POR_DIRECAO;
   canvas.height = ALTURA_QUADRO * Object.keys(DIRECOES).length;
   const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.imageSmoothingEnabled = false;
+  ctx.globalAlpha = 1;
+  ctx.globalCompositeOperation = 'source-over';
 
   Object.entries(DIRECOES).forEach(([direcao, linha]) => {
     for (let coluna = 0; coluna < QUADROS_POR_DIRECAO; coluna += 1) {
@@ -707,10 +716,33 @@ export function desenharPiso(ctx, tipo, x, y, tile, seed = 0, fundoProfundo = fa
   pisoAtlas.drawFrame(ctx, pisoFrame.coluna, pisoFrame.linha, x, y, tile, tile);
 }
 
+export function desenharCantosArredondadosMapa(ctx, larguraTiles, alturaTiles, tileBase = 16) {
+  const raio = Math.max(3, Math.floor(tileBase * 0.28));
+  ctx.save();
+  ctx.globalCompositeOperation = 'destination-out';
+  ctx.fillStyle = '#000000';
+
+  const cantos = [
+    { x: 0, y: 0, circuloX: raio, circuloY: raio },
+    { x: larguraTiles - 1, y: 0, circuloX: larguraTiles * tileBase - raio - 1, circuloY: raio },
+    { x: 0, y: alturaTiles - 1, circuloX: raio, circuloY: alturaTiles * tileBase - raio - 1 },
+    { x: larguraTiles - 1, y: alturaTiles - 1, circuloX: larguraTiles * tileBase - raio - 1, circuloY: alturaTiles * tileBase - raio - 1 }
+  ];
+
+  cantos.forEach((canto) => {
+    ctx.beginPath();
+    ctx.arc(canto.circuloX, canto.circuloY, raio, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  ctx.restore();
+}
+
 export function desenharObjeto(ctx, tipo, x, y, tile, seed = 0) {
   let objeto = null;
   let variante = Math.abs(seed) % 3;
-  const tipoDesenho = tipo.startsWith('planta-medicinal-') ? 'cataia' : tipo;
+  const tipoDesenho = tipo.startsWith('planta-medicinal-') ? 'cataia'
+    : tipo === 'placa-limite' ? 'placa'
+      : tipo;
   if (tipo === 'mato') {
     if (Math.abs(seed * 13 + 7) % 5 === 0) objeto = 'palmeira';
     else if (Math.abs(seed * 7 + 3) % 7 === 0) objeto = 'mangue';

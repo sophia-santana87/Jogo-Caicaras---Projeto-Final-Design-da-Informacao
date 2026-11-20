@@ -824,10 +824,12 @@ body.pause-overlay #pause-menu {
   .hud {
     padding-left: 8px;
     padding-right: 8px;
+    gap: 6px;
   }
 
   .small-panel {
     min-width: 150px;
+    max-width: calc(50vw - 12px);
   }
 
   .indicator-panel {

@@ -51,8 +51,7 @@ Antes de tornar o repositório público, a equipe deve definir a licença do pro
 - `dados/personagens.js`
 - `docs/NARRATIVA.md`
 - `docs/MISSOES_E_LOCAIS.md`
-- `referencias/`
-
+- `docs/MELHORIAS_TESTES.md`
 ## Observações
 - As imagens da pasta `referencias/` não entram na versão publicada.
 - O conteúdo e textos marcados como "a validar" ficam em dados separados para revisão.

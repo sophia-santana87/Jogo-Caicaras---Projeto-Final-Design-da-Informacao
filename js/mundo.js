@@ -188,6 +188,10 @@ export function getNPCsNoHorario(horario) {
 }
 
 export const MAPA_DECORACOES = [
+  { tipo: 'placa-limite', x: 1, y: 11, nome: 'Limite da Ponta Oeste', validar: true },
+  { tipo: 'placa-limite', x: 46, y: 11, nome: 'Limite da Ponta Oeste', validar: true },
+  { tipo: 'placa-limite', x: 1, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
+  { tipo: 'placa-limite', x: 46, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
   { tipo: 'forno', x: 24, y: 8 },
   { tipo: 'prensa', x: 25, y: 8 },
   { tipo: 'peneira', x: 24, y: 9 },

@@ -173,8 +173,9 @@ export const EDIFICIOS = MAPA.flatMap((linha, y) => linha.flatMap((tipo, x) => {
   if (!TIPOS_DE_EDIFICIO.has(tipo)) return [];
   const id = nomePorPosicao.get(`${x},${y}`);
   if (!id) return [];
-  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho';
-  return [{ id, tipo, x, y, largura: 3, altura: 2, entrada: { x, y: y + 1 }, temInterior }];
+  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho' || id === 'pavilhao-fandango';
+  const enterable = temInterior;
+  return [{ id, tipo, x, y, largura: 3, altura: 2, entrada: { x, y: y + 1 }, temInterior, enterable }];
 }));
 
 export const PONTOS_DE_OBSERVACAO = {
@@ -196,10 +197,6 @@ export function getNPCsNoHorario(horario) {
 }
 
 export const MAPA_DECORACOES = [
-  { tipo: 'placa-limite', x: 1, y: 11, nome: 'Limite da Ponta Oeste', validar: true },
-  { tipo: 'placa-limite', x: 46, y: 11, nome: 'Limite da Ponta Oeste', validar: true },
-  { tipo: 'placa-limite', x: 1, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
-  { tipo: 'placa-limite', x: 46, y: 25, nome: 'Limite da Ponta Oeste', validar: true },
   { tipo: 'forno', x: 23, y: 8 },
   { tipo: 'prensa', x: 22, y: 8 },
   { tipo: 'peneira', x: 22, y: 9 },

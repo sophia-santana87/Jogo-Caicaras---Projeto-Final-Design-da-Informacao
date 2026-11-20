@@ -95,6 +95,7 @@ const ITENS_DESTAQUE = new Set([
   'planta-medicinal-a', 'planta-medicinal-b', 'planta-medicinal-c'
 ]);
 let coletaNotificacaoTimer = null;
+let portaAnimacao = null;
 
 function showScreen(id) {
   Object.entries(telas).forEach(([key, el]) => {
@@ -240,7 +241,7 @@ function atualizarInteracao() {
     texto = 'Fazer carinho';
   } else if (pontoPesca) {
     texto = 'Pescar com cuidado';
-  } else if (edificio?.temInterior) {
+  } else if (edificio?.enterable) {
     texto = acaoNoEdificio(edificio);
   }
   interactButton.classList.toggle('hidden', !texto);
@@ -775,14 +776,6 @@ function desenharIdentificacaoLocal(tile, camera) {
       y: ponto.y,
       alturaMarcador: 0.65
     })),
-    ...MAPA_DECORACOES
-      .filter((decoracao) => decoracao.tipo === 'placa-limite')
-      .map((decoracao) => ({
-        nome: decoracao.nome,
-        x: decoracao.x,
-        y: decoracao.y,
-        alturaMarcador: 0.8
-      })),
     { nome: 'Entrada da comunidade', x: 14, y: 12, alturaMarcador: 0.8 }
   ];
   const local = locais
@@ -976,8 +969,18 @@ function interagir() {
     return;
   }
 
-  if (edificio?.temInterior) {
+  if (edificio?.enterable) {
     abrirInterior(edificio);
+    return;
+  }
+  if (edificio && !edificio.enterable) {
+    portaAnimacao = { inicio: performance.now(), edificio };
+    const frases = ['Esta casa está fechada.', 'Parece que não tem ninguém.', 'A porta está trancada.'];
+    dialogController.open({
+      nome: 'Narrador',
+      texto: frases[Math.floor(Math.random() * frases.length)],
+      typewriter: false
+    });
     return;
   }
 
@@ -1851,16 +1854,6 @@ function desenhoMapa(agora = performance.now()) {
     const tick = estado.reduzirMovimento ? 0 : animationTick;
     if (element.tipo === 'objeto' || element.tipo === 'decoracao') {
       const casa = ['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho'].includes(element.objeto);
-      const destino = destinoDaMissao();
-      const edificio = EDIFICIOS.find((item) => item.x === element.x && item.y === element.y);
-      const casaDoJogador = posicaoOcultaPorEdificio(jogadorVisual);
-      const casaDoDestino = destino ? posicaoOcultaPorEdificio(destino) : null;
-      const alvoOculto = casa && edificio && (
-        casaDoJogador?.id === edificio.id
-        || casaDoDestino?.id === edificio.id
-      );
-      if (casa && alvoOculto) ctx.save();
-      if (casa && alvoOculto) ctx.globalAlpha = estado.reduzirMovimento ? 0.52 : 0.52;
       const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'].includes(element.objeto);
       const destaque = element.tipo === 'decoracao' && ITENS_DESTAQUE.has(element.objeto);
       const salto = destaque && !estado.reduzirMovimento
@@ -1868,7 +1861,21 @@ function desenhoMapa(agora = performance.now()) {
         : 0;
       desenharSombra(centerX, baseY, tile, grande ? 1.7 : 0.8, grande ? 1 : 0);
       desenharObjeto(ctx, element.objeto, centerX, baseY - salto, tile, element.seed);
-      if (casa && alvoOculto) ctx.restore();
+      const edificioDoObjeto = EDIFICIOS.find((item) => item.x === element.x && item.y === element.y);
+      if (edificioDoObjeto?.enterable && distancia(estado.jogador.x, estado.jogador.y, edificioDoObjeto.entrada.x, edificioDoObjeto.entrada.y) <= 3.5) {
+        ctx.save();
+        ctx.fillStyle = estado.altoContraste ? '#FFE066' : '#FFF4C2';
+        ctx.strokeStyle = '#5A3A1E';
+        ctx.lineWidth = Math.max(1, tile * 0.04);
+        ctx.beginPath();
+        ctx.moveTo(centerX, baseY - tile * 2.18);
+        ctx.lineTo(centerX - tile * 0.14, baseY - tile * 2.38);
+        ctx.lineTo(centerX + tile * 0.14, baseY - tile * 2.38);
+        ctx.closePath();
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+      }
       if (destaque) {
         const brilho = estado.reduzirMovimento ? 0.55 : 0.35 + (Math.sin(tick / 8 + element.seed) + 1) * 0.2;
         const pontoY = baseY - tile * 0.48 - salto;
@@ -1922,6 +1929,12 @@ function desenhoMapa(agora = performance.now()) {
         Boolean(playerMotion),
         estado.avatar
       );
+      if (element.tipo === 'player' && portaAnimacao && !estado.reduzirMovimento && performance.now() - portaAnimacao.inicio < 360) {
+        ctx.save();
+        const quadros = Math.floor((performance.now() - portaAnimacao.inicio) / 90);
+        ctx.translate(quadros % 2 ? tile * 0.08 : -tile * 0.08, 0);
+        ctx.restore();
+      }
       if (element.tipo === 'player' && estado.altoContraste && posicaoOcultaPorEdificio(jogadorVisual)) {
         ctx.save();
         ctx.strokeStyle = '#FFE066';

@@ -49,4 +49,6 @@
 - B concluido: cinco edificios no núcleo da vila, trilha lateral para o Terreiro e barracas em pontos separados.
 - C em andamento: lago irregular por tiles, peixes saltantes com reducao por movimento e ficha no Caderno.
 - D/E em andamento: canoas cairçaras com veios e barracas reduzidas.
-- F em andamento: interior comum em mesma escala/pixel/profundidade do exterior.
+- F concluido: interiores agora usam Canvas reutilizável, 16 px de base em escala inteira, parede/porta, personagem, objetos e y-sorting.
+- G concluido: mapa do Caderno usa o layout v2.1 com cinco casas, lago, pavilhao lateral, barracas e Terreiro.
+- H concluido: revisão cultural ampliada para vara, canoas, lago, peixes e ocupacao do terreiro.

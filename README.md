@@ -78,9 +78,9 @@ Antes de tornar o repositório público, a equipe deve definir a licença do pro
 - O armazém permite adicionar cada produto uma vez ao inventário persistido. O caderno mostra quantidades, e uma notificação confirma cada coleta.
 - Caminhos conectam as frentes das casas e novas luminárias iluminam pontos da vila ao entardecer. Identificações de locais aparecem quando o jogador se aproxima.
 - A vila foi reorganizada com mais espaço entre fachadas, fileiras escalonadas e respiros entre núcleo comunitário, praia, lagoa e trilha da mata. NPCs e pontos interativos foram afastados das zonas de oclusão das casas.
-- Edifícios recebem transparência quando o jogador ou o destino da missão fica atrás da fachada; em alto contraste, uma silhueta amarela contorna o personagem coberto.
-- O minimapa lateral usa uma camada estática gerada uma vez, mostra ponto/direção do jogador, área visível e destino da missão, e pode ser recolhido, ampliado por toque ou aberto pela tecla M. A preferência é salva junto ao estado do jogo.
-- Versão dos módulos atualizada para `v=29`; o modo `?dev=1` registra pares de edifícios com distância insuficiente e portas inacessíveis no console, sem custo na execução normal.
+- Casas mantêm opacidade constante; o personagem passa atrás ou na frente das fachadas por y-sorting, sem transparência indiscriminada.
+- O minimapa agora fica no Caderno dos Saberes, na aba Mapa. A tecla M abre essa aba; o mapa ampliado usa a mesma camada estática e mostra posição atual e pontos de interesse.
+- Versão dos módulos atualizada para `v=36`; o modo `?dev=1` registra pares de edifícios com distância insuficiente e portas inacessíveis no console, sem custo na execução normal.
 - Residências decorativas foram reduzidas e espaçadas; a rua central liga portas, área comercial e o caminho da praia. O mercadinho tem fachada, interior demonstrativo e interação sem compras, pois a economia depende de validação comunitária.
 - O pavilhão ganhou bancos, vegetação e iluminação de apoio, e uma placa sinaliza a entrada da comunidade.
 - Versão 2: o minimapa passou para o Caderno, casas fechadas usam balão curto, interiores são navegáveis e a casa de farinha possui cinco etapas jogáveis.

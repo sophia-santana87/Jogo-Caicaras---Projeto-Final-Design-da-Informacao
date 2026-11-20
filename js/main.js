@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=36';
-import { INTERIORES } from '../dados/interiores.js?v=36';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=36';
-import { DialogoController } from './dialogo.js?v=36';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=36';
-import { SomManager } from './som.js?v=36';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=36';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=36';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=36';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=36';
+import { CONTEUDO } from '../dados/conteudo.js?v=37';
+import { INTERIORES } from '../dados/interiores.js?v=37';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=37';
+import { DialogoController } from './dialogo.js?v=37';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=37';
+import { SomManager } from './som.js?v=37';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=37';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=37';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=37';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=37';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -2030,14 +2030,16 @@ function desenharMinimapa(canvas, ampliar = false) {
 
   const pontos = ampliar
     ? [
-      { tipo: 'pavilhao', x: 29, y: 14, nome: 'Pavilhão' },
-      { tipo: 'armazem', x: 23, y: 14, nome: 'Armazém' },
-      { tipo: 'mercadinho', x: 24, y: 22, nome: 'Mercadinho' },
-      { tipo: 'casa-de-farinha', x: 26, y: 7, nome: 'Casa de farinha' },
-      { tipo: 'pier', x: 13, y: 28, nome: 'Píer' },
+      { tipo: 'pavilhao', x: 29, y: 16, nome: 'Casa musical / Terreiro lateral' },
+      { tipo: 'armazem', x: 15, y: 16, nome: 'Armazém' },
+      { tipo: 'mercadinho', x: 21, y: 16, nome: 'Mercadinho' },
+      { tipo: 'casa-de-farinha', x: 25, y: 10, nome: 'Casa de farinha' },
+      { tipo: 'pier', x: 12, y: 27, nome: 'Píer e vara' },
       { tipo: 'praia', x: 13, y: 25, nome: 'Praia' },
-      { tipo: 'trilha', x: 40, y: 6, nome: 'Trilha da mata' },
-      { tipo: 'lagoa', x: 37, y: 22, nome: 'Lagoa' }
+      { tipo: 'trilha', x: 7, y: 18, nome: 'Terreiro dos Fandangos' },
+      { tipo: 'lagoa', x: 37, y: 23, nome: 'Lagoa' },
+      { tipo: 'barraca', x: 42, y: 24, nome: 'Barraca da praia' },
+      { tipo: 'barraca', x: 6, y: 27, nome: 'Barraca da vila' }
     ]
     : [];
   pontos.forEach((ponto) => desenharIconeInteresse(ctxMinimapa, ponto.tipo, px(ponto.x), py(ponto.y)));

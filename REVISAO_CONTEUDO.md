@@ -14,4 +14,8 @@ Os textos abaixo sao rascunhos educativos e precisam de revisao da comunidade ca
 | Lagoa e pesca por ponto costeiro | js/mundo.js, js/main.js | Diegues 1988, 2004 | TODO: confirmar se os pontos representam pesca real sem ultrapassar limites locais |
 | Ponte do Saber como elemento de circulacao | js/mundo.js | Rascunho interno sem fonte especifica | TODO: confirmar nome e local com a equipe da Ponta Oeste |
 
+| Vara no píer, pesca cuidadosa e variedade de peixes regionais | js/main.js, js/mundo.js | Diegues 1988, 2004; BRASIL 2007 | TODO: validar seis especies, épocas e usos locais |
+| Canoa caiçara de tronco único, remo e amarração | js/sprites.js | Diegues 1988, 2004 | TODO: validar forma, proporções e detalhes do local |
+| Lago de margem orgânica, vitória-régia, junco e tronco | js/mundo.js, js/sprites.js | Documentação local a revisar | TODO: confirmar habitats visíveis sem generalizar |
+
 Nenhum texto cultural novo deve ser publicado como fato confirmado sem registro de validação humana. Os conteúdos incertos permanecem marcados por comentários TODO ou nesta lista.

@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=31';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=32';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 32;
@@ -80,20 +80,11 @@ export const MAPA = DESENHO_MAPA.map((linha) => Array.from(linha, (simbolo) => {
 const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho']);
 
 export const POSICOES_EDIFICIOS = {
-  'casa-de-farinha': { x: 26, y: 7, tipo: 'casaFarinha' },
-  'casa-rural': { x: 43, y: 8, tipo: 'casaRural' },
-  escola: { x: 11, y: 12, tipo: 'casa' },
-  capela: { x: 17, y: 14, tipo: 'casa' },
-  armazem: { x: 23, y: 14, tipo: 'casa' },
-  'pavilhao-fandango': { x: 29, y: 14, tipo: 'pavilhao' },
-  'casa-4': { x: 35, y: 14, tipo: 'casa' },
-  'casa-5': { x: 43, y: 14, tipo: 'casa' },
-  'casa-6': { x: 13, y: 18, tipo: 'casa' },
-  'casa-7': { x: 31, y: 20, tipo: 'casa' },
-  'casa-8': { x: 16, y: 24, tipo: 'casa' },
-  mercadinho: { x: 24, y: 24, tipo: 'mercadinho' },
-  'casa-9': { x: 33, y: 26, tipo: 'casa' },
-  barraca: { x: 42, y: 24, tipo: 'barraca' }
+  'casa-de-farinha': { x: 25, y: 10, tipo: 'casaFarinha' },
+  armazem: { x: 15, y: 16, tipo: 'casa' },
+  mercadinho: { x: 21, y: 16, tipo: 'mercadinho' },
+  'pavilhao-fandango': { x: 29, y: 16, tipo: 'pavilhao' },
+  'casa-fechada': { x: 36, y: 16, tipo: 'casa' }
 };
 
 for (let y = 0; y < MAPA_ALTURA; y += 1) {
@@ -107,6 +98,15 @@ Object.values(POSICOES_EDIFICIOS).forEach((posicao) => {
 MAPA[9][43] = 'caminho';
 MAPA[5][39] = 'grama';
 MAPA[6][39] = 'grama';
+for (let x = 15; x <= 36; x += 1) {
+  if (!TIPOS_DE_EDIFICIO.has(MAPA[16][x])) MAPA[16][x] = 'caminho';
+}
+for (let y = 14; y <= 18; y += 1) {
+  MAPA[y][26] = 'caminho';
+}
+for (let x = 7; x <= 17; x += 1) {
+  MAPA[18][x] = 'caminho';
+}
 for (let x = 19; x <= 28; x += 1) MAPA[15][x] = 'caminho';
 for (let y = 21; y <= 25; y += 1) {
   for (let x = 35; x <= 39; x += 1) MAPA[y][x] = 'grama';
@@ -202,6 +202,8 @@ export function getNPCsNoHorario(horario) {
 }
 
 export const MAPA_DECORACOES = [
+  { tipo: 'barraca', x: 42, y: 24, nome: 'Barraca da praia' },
+  { tipo: 'barraca', x: 6, y: 27, nome: 'Barraca da vila' },
   { tipo: 'vara-pesca', x: 12, y: 27, nome: 'Vara de pesca' },
   { tipo: 'forno', x: 23, y: 8 },
   { tipo: 'prensa', x: 22, y: 8 },
@@ -274,21 +276,21 @@ export const MAPA_DECORACOES = [
   { tipo: 'flor', x: 40, y: 24 }
 ];
 
-export const CENA_FANDANGO = { x: 23, y: 16 };
+export const CENA_FANDANGO = { x: 7, y: 18 };
 
 export const DANCARINOS_FANDANGO = [
-  { x: 21, y: 16, estilo: 'homem' },
-  { x: 22, y: 14.5, estilo: 'mulher' },
-  { x: 24, y: 14.5, estilo: 'homem' },
-  { x: 25, y: 16, estilo: 'mulher' },
-  { x: 24, y: 17.5, estilo: 'homem' },
-  { x: 22, y: 17.5, estilo: 'mulher' }
+  { x: 5, y: 18, estilo: 'homem' },
+  { x: 6, y: 16.5, estilo: 'mulher' },
+  { x: 8, y: 16.5, estilo: 'homem' },
+  { x: 9, y: 18, estilo: 'mulher' },
+  { x: 8, y: 19.5, estilo: 'homem' },
+  { x: 6, y: 19.5, estilo: 'mulher' }
 ];
 
 export const MUSICOS_FANDANGO = [
-  { x: 27, y: 15, instrumento: 'viola' },
-  { x: 27, y: 16.5, instrumento: 'rabeca' },
-  { x: 27, y: 18, instrumento: 'adufo' }
+  { x: 10, y: 17, instrumento: 'viola' },
+  { x: 10, y: 18.5, instrumento: 'rabeca' },
+  { x: 10, y: 20, instrumento: 'adufo' }
 ];
 
 export const PESSOAS_CENARIO = [

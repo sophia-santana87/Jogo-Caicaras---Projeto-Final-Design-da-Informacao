@@ -34,7 +34,13 @@ export const ESTADO_PADRAO = {
   altoContraste: false,
   reduzirMovimento: false,
   mostrarSetas: true,
-  minimapaRecolhido: false,
+  locaisVisitados: [],
+  colecaoPeixes: [],
+  cenaAtual: 'exterior',
+  posicaoInterior: null,
+  progressoFarinha: 0,
+  farinhaColetada: false,
+  ritmoMusicalConcluido: false,
   somLigado: false,
   pausa: false,
   tutorialIndex: 0,
@@ -75,7 +81,9 @@ export function carregarEstado() {
       itensArmazemColetados: Array.isArray(parsed.itensArmazemColetados)
         ? parsed.itensArmazemColetados.filter((item) => typeof item === 'string')
         : [],
-      horariosDePesca: Array.isArray(parsed.horariosDePesca) ? parsed.horariosDePesca : []
+      horariosDePesca: Array.isArray(parsed.horariosDePesca) ? parsed.horariosDePesca : [],
+      locaisVisitados: Array.isArray(parsed.locaisVisitados) ? parsed.locaisVisitados.filter((id) => typeof id === 'string') : [],
+      colecaoPeixes: Array.isArray(parsed.colecaoPeixes) ? parsed.colecaoPeixes.filter((id) => typeof id === 'string') : []
     };
   } catch (error) {
     console.error('Não foi possível carregar o estado salvo do jogo.', error);

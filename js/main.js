@@ -304,7 +304,7 @@ function fecharResumo() {
   showScreen('screen-opening');
 }
 
-function abrirCaderno() {
+function abrirCaderno(abrirMapa = false) {
   dialogController.open({
     nome: `${nomeJogadorAtivo()} · Caderno de Saberes`,
     texto: '',
@@ -317,13 +317,13 @@ function abrirCaderno() {
   tabs.className = 'notebook-tabs';
   tabs.setAttribute('role', 'tablist');
   tabs.setAttribute('aria-label', 'Seções do caderno');
-  const sections = ['Missões ativas e objetivos', 'Cartas de saberes coletadas', 'Inventário'].map((titulo, indice) => {
+  const sections = ['Saberes', 'Mapa'].map((titulo, indice) => {
     const tab = document.createElement('button');
     tab.type = 'button';
     tab.className = 'notebook-tab';
     tab.id = `notebook-tab-${indice}`;
     tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-selected', String(indice === 0));
+    tab.setAttribute('aria-selected', String(indice === (abrirMapa ? 1 : 0)));
     tab.setAttribute('aria-controls', `notebook-section-${indice}`);
     tab.textContent = titulo;
     tabs.appendChild(tab);
@@ -333,7 +333,7 @@ function abrirCaderno() {
     section.id = `notebook-section-${indice}`;
     section.setAttribute('role', 'tabpanel');
     section.setAttribute('aria-labelledby', tab.id);
-    section.hidden = indice !== 0;
+    section.hidden = indice !== (abrirMapa ? 1 : 0);
     const heading = document.createElement('h3');
     heading.textContent = titulo;
     section.appendChild(heading);
@@ -345,7 +345,9 @@ function abrirCaderno() {
       sections.forEach((item) => {
         item.hidden = item !== section;
       });
+      if (indice === 1) atualizarMapaDoCaderno(section);
     });
+    if (indice === 1) atualizarMapaDoCaderno(section);
     return section;
   });
 
@@ -368,15 +370,9 @@ function abrirCaderno() {
     sections[0].appendChild(item);
   });
 
-  const cartas = [
-    ...CONTEUDO.missoes.map((missao) => missao.carta),
-    ...CONTEUDO.cartas
-  ].filter((carta) => estado.cartasColetadas.includes(carta.texto));
-  const categorias = new Map([
-    ['Receitas e Causos', []],
-    ['Natureza e Mar', []],
-    ['Festas e Música', []]
-  ]);
+  const cartas = [...CONTEUDO.missoes.map((missao) => missao.carta), ...CONTEUDO.cartas]
+    .filter((carta) => estado.cartasColetadas.includes(carta.texto));
+  const categorias = new Map([['Receitas e Causos', []], ['Natureza e Mar', []], ['Festas e Música', []]]);
   cartas.forEach((carta) => {
     if (categorias.has(carta.categoria)) categorias.get(carta.categoria).push(carta);
   });
@@ -384,7 +380,7 @@ function abrirCaderno() {
     if (!cartasDaCategoria.length) return;
     const heading = document.createElement('h4');
     heading.textContent = categoria;
-    sections[1].appendChild(heading);
+    sections[0].appendChild(heading);
     cartasDaCategoria.forEach((carta) => {
       const article = document.createElement('article');
       article.className = 'notebook-card';
@@ -393,15 +389,9 @@ function abrirCaderno() {
       const description = document.createElement('p');
       description.textContent = carta.texto;
       article.append(title, description);
-      sections[1].appendChild(article);
+      sections[0].appendChild(article);
     });
   });
-  if (!cartas.length) {
-    const empty = document.createElement('p');
-    empty.className = 'notebook-empty';
-    empty.textContent = 'Ainda não há cartas coletadas. Converse com a comunidade e complete missões para registrar saberes.';
-    sections[1].appendChild(empty);
-  }
 
   const itensInventario = ITENS_ARMAZEM
     .map((item) => ({ ...item, quantidade: Number(estado.inventario[item.id]) || 0 }))
@@ -410,21 +400,34 @@ function abrirCaderno() {
     itensInventario.forEach((item) => {
       const article = document.createElement('article');
       article.className = 'notebook-card';
-      const title = document.createElement('h4');
-      title.textContent = item.nome;
-      const quantity = document.createElement('p');
-      quantity.textContent = `Quantidade: ${item.quantidade}`;
-      article.append(title, quantity);
-      sections[2].appendChild(article);
+      article.innerHTML = `<h4>${item.nome}</h4><p>Quantidade: ${item.quantidade}</p>`;
+      sections[0].appendChild(article);
     });
-  } else {
-    const empty = document.createElement('p');
-    empty.className = 'notebook-empty';
-    empty.textContent = 'Ainda não há itens no inventário. Visite o armazém para conhecer os produtos disponíveis.';
-    sections[2].appendChild(empty);
   }
 
   content.append(tabs, ...sections);
+}
+
+function atualizarMapaDoCaderno(section) {
+  section.querySelector('.mapa-caderno')?.remove();
+  const wrapper = document.createElement('div');
+  wrapper.className = 'mapa-caderno';
+  const canvasMapa = document.createElement('canvas');
+  canvasMapa.width = 384;
+  canvasMapa.height = 256;
+  canvasMapa.setAttribute('role', 'img');
+  canvasMapa.setAttribute('aria-label', 'Mapa da Ponta Oeste mostrando sua posição atual');
+  canvasMapa.className = 'notebook-map';
+  wrapper.appendChild(canvasMapa);
+
+  const legenda = document.createElement('p');
+  legenda.className = 'mapa-legenda-caderno';
+  legenda.textContent = 'Posição atual: ' + (estado.interiorAtivo
+    ? `porta da ${nomeEdificio(EDIFICIOS.find((item) => item.id === estado.interiorAtivo) || { id: estado.interiorAtivo })}`
+    : 'fora das casas');
+  wrapper.appendChild(legenda);
+  section.appendChild(wrapper);
+  desenharMinimapa(canvasMapa, true);
 }
 
 function iniciarTutorial() {
@@ -1955,7 +1958,6 @@ function desenhoMapa(agora = performance.now()) {
   });
 
   desenharIluminacao();
-  desenharMinimapa(document.getElementById('minimapa-canvas'), false);
   desenharLuzes(tile, camera);
   desenharIndicadorMissao(tile, camera);
   desenharIdentificacaoLocal(tile, camera);
@@ -2066,46 +2068,6 @@ function setupEventos() {
 
   document.getElementById('btn-caderno').addEventListener('click', abrirCaderno);
 
-  const containerMinimapa = document.getElementById('minimapa-container');
-  const botaoMinimapa = document.getElementById('btn-minimapa');
-  const modalMinimapa = document.getElementById('minimapa-modal');
-  function atualizarMinimapa() {
-    containerMinimapa.classList.toggle('recolhido', estado.minimapaRecolhido);
-    botaoMinimapa.setAttribute('aria-expanded', String(!estado.minimapaRecolhido));
-    botaoMinimapa.textContent = estado.minimapaRecolhido ? '+' : '−';
-    botaoMinimapa.setAttribute('aria-label', estado.minimapaRecolhido ? 'Expandir minimapa' : 'Recolher minimapa');
-  }
-  function alternarMinimapa() {
-    estado.minimapaRecolhido = !estado.minimapaRecolhido;
-    atualizarMinimapa();
-    salvar();
-  }
-  function fecharModalMinimapa() {
-    modalMinimapa.classList.add('hidden');
-  }
-  botaoMinimapa.addEventListener('click', alternarMinimapa);
-  document.getElementById('minimapa-canvas').addEventListener('click', () => {
-    if (estado.minimapaRecolhido) return;
-    modalMinimapa.classList.remove('hidden');
-    desenharMinimapa(document.getElementById('minimapa-ampliado'), true);
-  });
-  document.getElementById('btn-minimapa-fechar').addEventListener('click', fecharModalMinimapa);
-  const legenda = document.getElementById('minimapa-legenda');
-  legenda.replaceChildren();
-  const itensLegenda = [
-    ['■', 'Pavilhão'], ['▲', 'Armazém'], ['◆', 'Mercadinho'],
-    ['▰', 'Casa de farinha'], ['Ⅱ', 'Píer'], ['◯', 'Praia'],
-    ['⌁', 'Trilha da mata'], ['●', 'Lagoa']
-  ];
-  itensLegenda.forEach(([icone, nome]) => {
-    const item = document.createElement('span');
-    const simbolo = document.createElement('strong');
-    simbolo.textContent = icone;
-    simbolo.setAttribute('aria-hidden', 'true');
-    item.append(simbolo, document.createTextNode(nome));
-    legenda.appendChild(item);
-  });
-  atualizarMinimapa();
   document.getElementById('btn-interagir').addEventListener('click', interagir);
   document.addEventListener('keydown', (event) => {
     const ativo = document.activeElement;
@@ -2126,20 +2088,11 @@ function setupEventos() {
       event.preventDefault();
       interagir();
     }
-    if (event.key === 'Escape' && !document.getElementById('minimapa-modal').classList.contains('hidden')) {
-      document.getElementById('minimapa-modal').classList.add('hidden');
-    } else if (event.key === 'Escape' && estado.fase === 'jogo') {
+    if (event.key === 'Escape' && estado.fase === 'jogo') {
       alternarPausa();
     }
     if (key === 'm') {
-      const container = document.getElementById('minimapa-container');
-      if (container.classList.contains('recolhido')) alternarMinimapa();
-      else {
-        document.getElementById('minimapa-modal').classList.toggle('hidden');
-        if (!document.getElementById('minimapa-modal').classList.contains('hidden')) {
-          desenharMinimapa(document.getElementById('minimapa-ampliado'), true);
-        }
-      }
+      abrirCaderno(true);
     }
     if (key === 'c') {
       abrirCaderno();

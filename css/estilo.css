@@ -842,6 +842,21 @@ body.high-contrast .minimapa-modal {
   border-color: #FFE066;
 }
 
+.notebook-map {
+  display: block;
+  width: min(384px, 100%);
+  aspect-ratio: 3 / 2;
+  height: auto;
+  image-rendering: pixelated;
+  border: 3px solid var(--borda);
+  background: var(--mata);
+}
+
+.mapa-legenda-caderno {
+  margin: 0.65rem 0 0;
+  font-weight: 700;
+}
+
 .focus-visible, button:focus-visible, input:focus-visible {
   outline: 3px solid var(--destaque-missao);
   outline-offset: 2px;
@@ -918,26 +933,6 @@ body.pause-overlay #pause-menu {
 }
 
 @media (max-width: 540px) {
-  .minimapa-container {
-    top: 196px;
-    right: 8px;
-    width: 96px;
-    height: 64px;
-  }
-
-  #minimapa-canvas {
-    width: 96px;
-    height: 64px;
-  }
-
-  #btn-minimapa {
-    left: -46px;
-  }
-
-  .minimapa-container.recolhido {
-    width: 44px;
-    height: 44px;
-  }
   .opening-card, .large-panel {
     width: calc(100% - 20px);
   }

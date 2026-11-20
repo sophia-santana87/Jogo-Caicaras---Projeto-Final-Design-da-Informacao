@@ -2,18 +2,18 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=55';
-import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=55';
-import { INTERIORES } from '../dados/interiores.js?v=55';
-import { CONCEITOS_ESCOLA, PRODUTOS_PEIXARIA } from '../dados/locais.js?v=55';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=55';
-import { DialogoController } from './dialogo.js?v=55';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=55';
-import { SomManager } from './som.js?v=55';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=55';
-import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=55';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=55';
-import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=55';
+import { CONTEUDO } from '../dados/conteudo.js?v=56';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=56';
+import { INTERIORES } from '../dados/interiores.js?v=56';
+import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=56';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=56';
+import { DialogoController } from './dialogo.js?v=56';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=56';
+import { SomManager } from './som.js?v=56';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=56';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=56';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=56';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=56';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -102,7 +102,7 @@ const ITENS_ARMAZEM = [
 const PRODUTOS_MERCADINHO = ['Farinha', 'Peixe', 'Produtos da comunidade'];
 const ITENS_DESTAQUE = new Set([
   'viola', 'rabeca', 'adufo', 'cataia',
-  'planta-medicinal-a', 'planta-medicinal-b', 'planta-medicinal-c'
+  'planta-medicinal-a', 'planta-medicinal-b', 'planta-medicinal-c', 'canteiro'
 ]);
 let coletaNotificacaoTimer = null;
 let portaAnimacao = null;
@@ -251,6 +251,7 @@ function atualizarInteracao() {
   const atracacao = atracacaoProxima();
   const embarque = embarqueCanoaProximo();
   const animal = pontoPesca ? null : faunaProxima();
+  const elementoLagoa = pontoPesca || animal ? null : elementoLagoaProximo();
   let texto = '';
 
   if (pertoNpc && !estado.tutorialInteracaoVisto) {
@@ -281,6 +282,8 @@ function atualizarInteracao() {
     texto = 'Pescar com cuidado';
   } else if (animal) {
     texto = `Observar ${ESPECIES_FAUNA[animal.especieId].nome.toLowerCase()}`;
+  } else if (elementoLagoa) {
+    texto = `Conhecer ${elementoLagoa.nome.toLowerCase()}`;
   } else if (edificio?.enterable || edificio?.id === 'peixaria' || edificio?.id === 'capela') {
     texto = acaoNoEdificio(edificio);
   }
@@ -443,6 +446,38 @@ function abrirCaderno(abrirMapa = false) {
     article.append(title, description);
     sections[0].appendChild(article);
   }
+  const elementosLagoaObservados = ELEMENTOS_LAGOA.filter((elemento) => estado.locaisVisitados.includes(`lagoa-${elemento.id}`));
+  if (elementosLagoaObservados.length) {
+    const heading = document.createElement('h4');
+    heading.textContent = 'Elementos da lagoa';
+    sections[0].appendChild(heading);
+    elementosLagoaObservados.forEach((elemento) => {
+      const article = document.createElement('article');
+      article.className = 'notebook-card';
+      const title = document.createElement('h4');
+      title.textContent = elemento.nome;
+      const description = document.createElement('p');
+      description.textContent = `${elemento.texto} (a validar)`;
+      article.append(title, description);
+      sections[0].appendChild(article);
+    });
+  }
+  const instrumentosObservados = FICHAS_INSTRUMENTOS.filter((instrumento) => estado.locaisVisitados.includes(`instrumento-${instrumento.id}`));
+  if (instrumentosObservados.length) {
+    const heading = document.createElement('h4');
+    heading.textContent = 'Instrumentos do fandango';
+    sections[0].appendChild(heading);
+    instrumentosObservados.forEach((instrumento) => {
+      const article = document.createElement('article');
+      article.className = 'notebook-card';
+      const title = document.createElement('h4');
+      title.textContent = instrumento.nome;
+      const description = document.createElement('p');
+      description.textContent = `${instrumento.texto} (a validar)`;
+      article.append(title, description);
+      sections[0].appendChild(article);
+    });
+  }
   categorias.forEach((cartasDaCategoria, categoria) => {
     if (!cartasDaCategoria.length) return;
     const heading = document.createElement('h4');
@@ -539,16 +574,24 @@ function atualizarMapaDoCaderno(section) {
 
 function iniciarTutorial() {
   tutorialIndex = 0;
+  atualizarCartaoTutorial();
+}
+
+function atualizarCartaoTutorial() {
   const card = document.getElementById('tutorial-card');
-  card.textContent = CONTEUDO.tutorial[tutorialIndex];
+  const titulo = document.createElement('h3');
+  titulo.textContent = `Passo ${tutorialIndex + 1} de ${CONTEUDO.tutorial.length}`;
+  const texto = document.createElement('p');
+  texto.textContent = CONTEUDO.tutorial[tutorialIndex];
+  card.replaceChildren(titulo, texto);
+  document.getElementById('btn-tutorial-prev').disabled = tutorialIndex === 0;
   document.getElementById('btn-tutorial-next').textContent = tutorialIndex < CONTEUDO.tutorial.length - 1 ? 'Próximo' : 'Começar';
 }
 
 function proximoTutorial() {
   if (tutorialIndex < CONTEUDO.tutorial.length - 1) {
     tutorialIndex += 1;
-    document.getElementById('tutorial-card').textContent = CONTEUDO.tutorial[tutorialIndex];
-    document.getElementById('btn-tutorial-next').textContent = tutorialIndex === CONTEUDO.tutorial.length - 1 ? 'Começar' : 'Próximo';
+    atualizarCartaoTutorial();
   } else {
     mostrarJogo();
   }
@@ -557,8 +600,7 @@ function proximoTutorial() {
 function anteriorTutorial() {
   if (tutorialIndex > 0) {
     tutorialIndex -= 1;
-    document.getElementById('tutorial-card').textContent = CONTEUDO.tutorial[tutorialIndex];
-    document.getElementById('btn-tutorial-next').textContent = tutorialIndex === CONTEUDO.tutorial.length - 1 ? 'Começar' : 'Próximo';
+    atualizarCartaoTutorial();
   }
 }
 
@@ -585,6 +627,7 @@ function mostrarJogo() {
     pescaResultadoAnimacao = null;
     novaJornada = false;
   }
+  prepararPeixesSaltantes();
   estado.fase = 'jogo';
   if (!estado.progressoSalvo) {
     estado.horario = '08:00';
@@ -626,6 +669,7 @@ function continuarJogo() {
     }
   }
   estado.interiorAtivo = null;
+  prepararPeixesSaltantes();
   estado.cenaAtual = 'exterior';
   if (!isPassable(estado.jogador.x, estado.jogador.y, estado.emCanoa ? 'canoa' : 'pe')) {
     estado.emCanoa = false;
@@ -786,6 +830,14 @@ function faunaProxima(agora = performance.now()) {
   });
 }
 
+function elementoLagoaProximo() {
+  return ELEMENTOS_LAGOA.map((elemento) => ({
+    ...elemento,
+    ponto: MAPA_DECORACOES.find((decoracao) => decoracao.tipo === elemento.id)
+  })).find((elemento) => elemento.ponto
+    && distancia(estado.jogador.x, estado.jogador.y, elemento.ponto.x, elemento.ponto.y) <= 1.35) || null;
+}
+
 function pontosDaEtapa(contexto) {
   if (!contexto) return [];
   const { etapa, progresso } = contexto;
@@ -793,9 +845,16 @@ function pontosDaEtapa(contexto) {
   if (etapa.tipo === 'observar') {
     pontos = etapa.alvos.map((id) => ({ id, nome: nomeObjeto(id), ...PONTOS_DE_OBSERVACAO[id] }));
   } else if (['encontrar', 'separar'].includes(etapa.tipo)) {
-    pontos = etapa.alvos.flatMap((tipo) => MAPA_DECORACOES
-      .filter((decoracao) => decoracao.tipo === tipo)
-      .map((decoracao) => ({ id: tipo, nome: nomeObjeto(tipo), x: decoracao.x, y: decoracao.y })));
+    if (etapa.tipo === 'encontrar' && contexto.id === 'fandango') {
+      if (estado.interiorAtivo !== 'casa-musical') return [];
+      pontos = INTERIORES['casa-musical'].objetos
+        .filter((objeto) => objeto.tipo === 'musica' && etapa.alvos.includes(objeto.id))
+        .map((objeto) => ({ id: objeto.id, nome: objeto.nome, x: objeto.x, y: objeto.y }));
+    } else {
+      pontos = etapa.alvos.flatMap((tipo) => MAPA_DECORACOES
+        .filter((decoracao) => decoracao.tipo === tipo)
+        .map((decoracao) => ({ id: tipo, nome: nomeObjeto(tipo), x: decoracao.x, y: decoracao.y })));
+    }
   }
   return pontos.filter((ponto) => (
     Number.isFinite(ponto.x)
@@ -843,6 +902,9 @@ function destinoDaMissao() {
     const id = etapa.tipo === 'ordenar' ? 'casa-de-farinha' : etapa.alvo;
     const edificio = EDIFICIOS.find((item) => item.id === id);
     return edificio?.entrada || null;
+  }
+  if (etapa.tipo === 'encontrar' && contexto.id === 'fandango' && estado.interiorAtivo !== 'casa-musical') {
+    return EDIFICIOS.find((item) => item.id === 'casa-musical')?.entrada || null;
   }
   return pontosDaEtapa(contexto)[0] || null;
 }
@@ -943,7 +1005,7 @@ function desenharIdentificacaoLocal(tile, camera) {
       y: ponto.y,
       alturaMarcador: 0.65
     })),
-    { nome: 'Entrada da comunidade', x: 14, y: 12, alturaMarcador: 0.8 }
+    { nome: ENTRADA_COMUNIDADE.nome, x: ENTRADA_COMUNIDADE.x, y: ENTRADA_COMUNIDADE.y, alturaMarcador: 0.8 }
   ];
   const local = locais
     .map((item) => ({ ...item, distancia: distancia(estado.jogador.x, estado.jogador.y, item.x, item.y) }))
@@ -1061,6 +1123,9 @@ function orientarEtapa(contexto) {
     conversar: 'Aproxime-se da pessoa indicada e use o botão de interação para conversar.',
     ordenar: 'Entre na casa de farinha e organize as etapas no espaço de atividade.'
   };
+  if (id === 'fandango' && etapa.tipo === 'encontrar') {
+    orientacoes.encontrar = 'Os instrumentos estão nas bancadas da sala. Toque em cada um para ler uma ficha curta e registrar o que observou.';
+  }
   dialogController.open({
     nome: nomePersonagem(MISSOES_INFO[id]?.npcId),
     personagemId: MISSOES_INFO[id]?.npcId,
@@ -1295,6 +1360,19 @@ function interagir() {
     return;
   }
 
+  const elementoLagoa = elementoLagoaProximo();
+  if (elementoLagoa) {
+    const idRegistro = `lagoa-${elementoLagoa.id}`;
+    if (!estado.locaisVisitados.includes(idRegistro)) estado.locaisVisitados.push(idRegistro);
+    salvar();
+    dialogController.open({
+      nome: elementoLagoa.nome,
+      texto: `${elementoLagoa.texto} Esta informação precisa de validação local.`,
+      typewriter: false
+    });
+    return;
+  }
+
   if (distancia(estado.jogador.x, estado.jogador.y, estado.cachorro.x, estado.cachorro.y) <= 1.5) {
     dogPetUntil = animationTick + 75;
     if (som.enabled) som.tocar(660, 0.08, 0.025);
@@ -1322,7 +1400,18 @@ function abrirInterior(edificio) {
   if (contexto?.etapa.tipo === 'ir-ate' && contexto.etapa.alvo === edificio.id) {
     completarEtapaMissao(contexto.id, false);
   }
+  const etapaAtivaNoInterior = obterEtapaAtiva();
+  if (edificio.id === 'casa-de-farinha'
+    && etapaAtivaNoInterior?.id === 'roca'
+    && etapaAtivaNoInterior.etapa.tipo === 'ordenar'
+    && estado.progressoFarinha >= ETAPAS_FARINHA.length) {
+    completarEtapaMissao('roca', false);
+  }
   renderizarInterior(edificio);
+  const etapaInterior = obterEtapaAtiva();
+  if (edificio.id === 'casa-musical' && etapaInterior?.id === 'fandango' && etapaInterior.etapa.tipo === 'encontrar') {
+    document.getElementById('interior-feedback').textContent = 'Toque nos três instrumentos para observá-los e registrá-los no Caderno.';
+  }
   salvar();
 }
 
@@ -1366,23 +1455,40 @@ function renderizarInterior(edificio) {
   sala.style.gap = '0';
   ctxInterior.fillStyle = '#D9BE82';
   ctxInterior.fillRect(0, 0, canvasInterior.width, canvasInterior.height);
-  for (let y = 1; y < interior.altura; y += 1) {
+  for (let y = 0; y < interior.altura; y += 1) {
     for (let x = 0; x < interior.largura; x += 1) {
       desenharPiso(ctxInterior, 'madeira', x * tile, y * tile, tile, x * 23 + y);
     }
   }
 
-  ctxInterior.fillStyle = '#68452B';
+  // Paredes de tábuas com vigas e rodapé, na mesma madeira das fachadas.
+  ctxInterior.fillStyle = '#8A5A33';
   ctxInterior.fillRect(0, 0, canvasInterior.width, tile);
-  ctxInterior.fillRect(0, tile, tile, canvasInterior.height - tile);
-  ctxInterior.fillRect(canvasInterior.width - tile, tile, tile, canvasInterior.height - tile);
+  ctxInterior.fillStyle = '#68452B';
+  ctxInterior.fillRect(0, tile * 0.82, canvasInterior.width, tile * 0.18);
+  for (let x = 0; x < interior.largura; x += 1) {
+    if (x % 3 === 0) ctxInterior.fillRect(x * tile, 0, Math.max(2, tile * 0.07), tile * 0.82);
+    ctxInterior.fillStyle = '#A78354';
+    ctxInterior.fillRect(x * tile + tile * 0.22, tile * 0.32, tile * 0.14, tile * 0.035);
+    ctxInterior.fillRect(x * tile + tile * 0.64, tile * 0.58, tile * 0.17, tile * 0.035);
+    ctxInterior.fillStyle = '#8A5A33';
+  }
+  ctxInterior.fillStyle = '#8A5A33';
+  ctxInterior.fillRect(0, tile, tile * 0.42, canvasInterior.height - tile * 2);
+  ctxInterior.fillRect(canvasInterior.width - tile * 0.42, tile, tile * 0.42, canvasInterior.height - tile * 2);
+  ctxInterior.fillStyle = '#68452B';
+  ctxInterior.fillRect(tile * 0.38, tile, tile * 0.08, canvasInterior.height - tile * 2);
+  ctxInterior.fillRect(canvasInterior.width - tile * 0.46, tile, tile * 0.08, canvasInterior.height - tile * 2);
 
   const portaX = (interior.saida.x + 0.5) * tile;
-  const portaY = (interior.saida.y + 0.5) * tile;
+  const portaY = (interior.saida.y + 1) * tile;
+  ctxInterior.fillStyle = '#68452B';
+  ctxInterior.fillRect(0, canvasInterior.height - tile * 0.18, portaX - tile * 0.43, tile * 0.18);
+  ctxInterior.fillRect(portaX + tile * 0.43, canvasInterior.height - tile * 0.18, canvasInterior.width - portaX - tile * 0.43, tile * 0.18);
   ctxInterior.fillStyle = '#5A3A1E';
-  ctxInterior.fillRect(portaX - tile * 0.42, portaY - tile * 0.28, tile * 0.84, tile);
+  ctxInterior.fillRect(portaX - tile * 0.42, portaY - tile * 0.92, tile * 0.84, tile);
   ctxInterior.fillStyle = '#A78354';
-  ctxInterior.fillRect(portaX - tile * 0.28, portaY - tile * 0.18, tile * 0.56, tile * 0.82);
+  ctxInterior.fillRect(portaX - tile * 0.28, portaY - tile * 0.82, tile * 0.56, tile * 0.82);
   ctxInterior.fillStyle = '#D9A441';
   ctxInterior.fillRect(portaX + tile * 0.18, portaY + tile * 0.1, tile * 0.05, tile * 0.05);
 
@@ -1392,6 +1498,7 @@ function renderizarInterior(edificio) {
   ctxInterior.translate(-camX, -camY);
   const elementos = interior.objetos.map((objeto, indice) => ({ tipo: 'objeto', objeto, indice, y: objeto.y }));
   if (interior.professora) elementos.push({ tipo: 'professora', x: interior.professora.x, y: interior.professora.y, id: interior.professora.id });
+  if (interior.instrutor) elementos.push({ tipo: 'instrutor', x: interior.instrutor.x, y: interior.instrutor.y, id: interior.instrutor.id });
   (interior.alunos || []).forEach((aluno, indice) => elementos.push({ tipo: 'aluno', x: aluno.x, y: aluno.y, indice }));
   elementos.push({ tipo: 'player', y: estado.posicaoInterior.y, x: estado.posicaoInterior.x });
   elementos.sort((a, b) => a.y - b.y);
@@ -1405,11 +1512,11 @@ function renderizarInterior(edificio) {
       return;
     }
 
-    if (elemento.tipo === 'professora' || elemento.tipo === 'aluno') {
+    if (elemento.tipo === 'professora' || elemento.tipo === 'instrutor' || elemento.tipo === 'aluno') {
       const centerX = (elemento.x + 0.5) * tile;
       const baseY = (elemento.y + 1) * tile;
       desenharSombraInterno(ctxInterior, centerX, baseY, tile);
-      if (elemento.tipo === 'professora') {
+      if (elemento.tipo === 'professora' || elemento.tipo === 'instrutor') {
         desenharNpc(ctxInterior, centerX, baseY, tile, 0, elemento.id);
         if (conceitoEscolaAtivo) desenharPensamentoEscola(ctxInterior, centerX, baseY - tile * 1.35, tile, conceitoEscolaAtivo);
       } else {
@@ -1422,10 +1529,14 @@ function renderizarInterior(edificio) {
     const centerX = (objeto.x + 0.5) * tile;
     const baseY = (objeto.y + 1) * tile;
     desenharSombraInterno(ctxInterior, centerX, baseY, tile);
+    if (objeto.tipo === 'ritmo') {
+      desenharNpc(ctxInterior, centerX, baseY, tile, 0, objeto.id);
+      return;
+    }
     const tipoSprite = objeto.tipo === 'farinha' && objeto.etapa === 0
-      ? 'saco'
+      ? 'mandioca'
       : objeto.tipo === 'farinha' && objeto.etapa === 1
-        ? 'saco'
+        ? 'ralador'
         : objeto.tipo === 'farinha' && objeto.etapa === 2
       ? 'prensa'
       : objeto.tipo === 'farinha' && objeto.etapa === 3
@@ -1435,9 +1546,9 @@ function renderizarInterior(edificio) {
           : objeto.tipo === 'musica'
             ? objeto.id
             : objeto.tipo === 'produto'
-              ? (objeto.id === 'peixe-seco' || objeto.id === 'peixe' ? 'peixe' : objeto.id === 'farinha' ? 'saco' : 'biju')
+              ? (objeto.id === 'peixe-seco' || objeto.id === 'peixe' ? 'peixe' : objeto.id === 'farinha' ? 'saco' : objeto.id === 'frutas' ? 'frutas' : objeto.id === 'artesanato' ? 'artesanato' : 'biju')
               : 'prensa';
-    if (['prensa', 'peneira', 'forno', 'saco', 'biju', 'viola', 'rabeca', 'adufo', 'peixe', 'placa'].includes(tipoSprite)) {
+    if (['prensa', 'peneira', 'forno', 'saco', 'mandioca', 'ralador', 'biju', 'frutas', 'artesanato', 'viola', 'rabeca', 'adufo', 'peixe', 'placa'].includes(tipoSprite)) {
       desenharObjeto(ctxInterior, tipoSprite, centerX, baseY, tile, elemento.indice);
     }
   });
@@ -1467,6 +1578,17 @@ function renderizarInterior(edificio) {
     });
     controles.appendChild(conversar);
   }
+  if (interior.instrutor) {
+    const conversar = document.createElement('button');
+    conversar.type = 'button';
+    conversar.textContent = 'Conversar com Dona Cida';
+    conversar.addEventListener('click', () => {
+      estado.posicaoInterior = { x: interior.instrutor.x - 1, y: interior.instrutor.y };
+      renderizarInterior(edificio);
+      interagirNoInterior();
+    });
+    controles.appendChild(conversar);
+  }
   const sair = document.createElement('button');
   sair.type = 'button';
   sair.textContent = 'Sair pela porta';
@@ -1478,11 +1600,11 @@ function renderizarInterior(edificio) {
   sala.after(controles);
 
   if (edificio.id === 'casa-de-farinha') {
-    descricao.textContent = 'Siga as estações da mandioca. Os passos podem ser feitos com um toque simples.';
+    descricao.textContent = 'Dona Cida acompanha cinco estações. Toque em cada etapa na ordem para ouvir uma explicação curta.';
   } else if (edificio.id === 'casa-musical') {
-    descricao.textContent = 'A casa musical guarda instrumentos e ensina um padrão ritmico curto.';
+    descricao.textContent = 'Observe os instrumentos e converse com Mestre Tião sobre a roda do fandango.';
   } else if (edificio.id === 'mercadinho') {
-    descricao.textContent = 'Observe os produtos locais e seus saberes. Não há troca monetária neste prototipo.';
+    descricao.textContent = 'Toque em cada produto para observar sua ilustração e descrição. Não há compra ou venda.';
   } else if (edificio.id === 'escola') {
     descricao.textContent = 'Converse com a professora para conhecer dois conceitos. Os registros culturais estão marcados para validação comunitária.';
   } else {
@@ -1547,6 +1669,9 @@ function objetoInteriorProximo() {
   if (interior.professora && Math.abs(interior.professora.x - posicao.x) + Math.abs(interior.professora.y - posicao.y) <= 1) {
     return { ...interior.professora, tipo: 'professora', nome: 'Professora Marina' };
   }
+  if (interior.instrutor && Math.abs(interior.instrutor.x - posicao.x) + Math.abs(interior.instrutor.y - posicao.y) <= 1) {
+    return { ...interior.instrutor, tipo: 'instrutor', nome: 'Dona Cida' };
+  }
   return null;
 }
 
@@ -1562,6 +1687,30 @@ function interagirNoInterior() {
   const feedback = document.getElementById('interior-feedback');
   if (!objeto) {
     feedback.textContent = 'Aproxime-se de uma estação e use Interagir.';
+    return;
+  }
+
+  if (objeto.tipo === 'instrutor') {
+    const contextoInstrutor = obterEtapaAtiva();
+    if (contextoInstrutor?.etapa.tipo === 'conversar' && contextoInstrutor.etapa.alvo === objeto.id) {
+      dialogController.open({
+        nome: 'Dona Cida',
+        personagemId: 'dona-cida',
+        texto: `${TEXTO_CIDA_FINALIZACAO.texto} Este rascunho precisa de validação local.`,
+        typewriter: false,
+        onContinue: () => {
+          dialogController.close();
+          completarEtapaMissao(contextoInstrutor.id);
+        }
+      });
+      return;
+    }
+    dialogController.open({
+      nome: 'Dona Cida',
+      personagemId: 'dona-cida',
+      texto: 'Posso acompanhar cada estação. Observe os objetos e faça uma etapa por vez; alguns detalhes precisam ser confirmados com a comunidade.',
+      typewriter: false
+    });
     return;
   }
 
@@ -1586,23 +1735,26 @@ function interagirNoInterior() {
 
   if (objeto.tipo === 'farinha') {
     if (estado.progressoFarinha !== objeto.etapa) {
-      feedback.textContent = `Faça primeiro a etapa ${estado.progressoFarinha + 1}: ${interior.objetos[estado.progressoFarinha].nome}.`;
+      const proximaEtapa = Math.min(estado.progressoFarinha, ETAPAS_FARINHA.length - 1);
+      dialogController.open({
+        nome: 'Dona Cida',
+        personagemId: 'dona-cida',
+        texto: estado.progressoFarinha >= ETAPAS_FARINHA.length
+          ? 'As cinco estações já foram registradas. Você pode observar os objetos de novo.'
+          : `Vamos seguir uma etapa por vez. Primeiro, ${interior.objetos[proximaEtapa].nome.toLowerCase()}. ${ETAPAS_FARINHA[proximaEtapa].explicacao}`,
+        typewriter: false
+      });
       return;
     }
-    const explicacoes = [
-      'A casca sai antes do processamento da mandioca.',
-      'Ralar transforma a raiz em massa para a próxima etapa.',
-      'O tipiti ou prensa ajuda a retirar o excesso de líquido. TODO: revisar detalhes com a comunidade.',
-      'Peneirar separa partes maiores e deixa a massa mais fina.',
-      'Torrar no forno transforma a massa em farinha e exige atenção ao calor.'
-    ];
+    const etapaFarinha = ETAPAS_FARINHA[objeto.etapa];
     estado.progressoFarinha += 1;
-    feedback.textContent = explicacoes[objeto.etapa];
+    feedback.textContent = etapaFarinha.explicacao;
     ajustarIndicadores(estado, objeto.etapa === 4 ? { Cultura: 1, Renda: 1 } : { Cultura: 1 });
     if (!estado.cartasColetadas.includes('A farinha guarda memória de trabalho coletivo.')) {
       estado.cartasColetadas.push('A farinha guarda memória de trabalho coletivo.');
     }
-    if (estado.progressoFarinha >= 5) {
+    const ultimaEtapa = estado.progressoFarinha >= ETAPAS_FARINHA.length;
+    if (ultimaEtapa) {
       estado.farinhaColetada = true;
       estado.inventario.farinha = (Number(estado.inventario.farinha) || 0) + 1;
       feedback.textContent = 'Processo concluído. A farinha foi registrada na mochila.';
@@ -1610,12 +1762,52 @@ function interagirNoInterior() {
     }
     atualizarHud();
     salvar();
+    const contextoFarinha = obterEtapaAtiva();
+    if (ultimaEtapa && contextoFarinha?.id === 'roca' && contextoFarinha.etapa.tipo === 'ordenar') {
+      completarEtapaMissao('roca');
+      return;
+    }
+    dialogController.open({
+      nome: 'Dona Cida',
+      personagemId: 'dona-cida',
+      texto: ultimaEtapa
+        ? `${etapaFarinha.explicacao} A farinha foi registrada na mochila.`
+        : `${etapaFarinha.explicacao} Próxima estação: ${interior.objetos[estado.progressoFarinha].nome}.`,
+      typewriter: false
+    });
     return;
   }
 
   if (objeto.tipo === 'musica') {
-    const nomes = { viola: 'Viola de fandango', rabeca: 'Rabeca', adufo: 'Adufe ou pandeiro' };
-    feedback.textContent = `${nomes[objeto.id]}: ${objeto.descricao}`;
+    const ficha = FICHAS_INSTRUMENTOS.find((item) => item.id === objeto.id);
+    const textoFicha = ficha?.texto || objeto.descricao;
+    const contextoFandango = obterEtapaAtiva();
+    const registrarInstrumento = () => {
+      const idRegistro = `instrumento-${objeto.id}`;
+      if (!estado.locaisVisitados.includes(idRegistro)) estado.locaisVisitados.push(idRegistro);
+      atualizarHud();
+      salvar();
+      feedback.textContent = `${ficha?.nome || objeto.nome}: ${textoFicha}`;
+    };
+    if (contextoFandango?.id === 'fandango' && contextoFandango.etapa.tipo === 'encontrar') {
+      dialogController.open({
+        nome: ficha?.nome || objeto.nome,
+        texto: `${textoFicha} Esta ficha está marcada para validação.`,
+        typewriter: false,
+        onContinue: () => {
+          dialogController.close();
+          registrarInstrumento();
+          registrarAlvoEtapa(contextoFandango, { id: objeto.id, nome: ficha?.nome || objeto.nome });
+        }
+      });
+      return;
+    }
+    registrarInstrumento();
+    dialogController.open({
+      nome: ficha?.nome || objeto.nome,
+      texto: `${textoFicha} Esta ficha está marcada para validação com a comunidade.`,
+      typewriter: false
+    });
     if (som.enabled) {
       const frequencia = { viola: 220, rabeca: 330, adufo: 150 }[objeto.id] || 220;
       som.tocar(frequencia, 0.18, 0.035);
@@ -1626,6 +1818,20 @@ function interagirNoInterior() {
   }
 
   if (objeto.tipo === 'ritmo') {
+    const contextoFandango = obterEtapaAtiva();
+    if (contextoFandango?.id === 'fandango' && contextoFandango.etapa.tipo === 'conversar' && contextoFandango.etapa.alvo === 'tiao') {
+      dialogController.open({
+        nome: 'Mestre Tião',
+        personagemId: 'tiao',
+        texto: `${EXPLICACAO_FANDANGO.texto} Este texto está marcado para validação com a comunidade.`,
+        typewriter: false,
+        onContinue: () => {
+          dialogController.close();
+          completarEtapaMissao('fandango');
+        }
+      });
+      return;
+    }
     ritmoTentativa = [];
     function abrirRitmo() {
       dialogController.open({
@@ -1657,7 +1863,17 @@ function interagirNoInterior() {
         }
       });
     }
-    abrirRitmo();
+    dialogController.open({
+      nome: 'Mestre Tião',
+      personagemId: 'tiao',
+      texto: `${EXPLICACAO_FANDANGO.texto} Quer experimentar uma sequência curta?`,
+      choices: [{ text: 'Experimentar ritmo' }, { text: 'Ouvir os instrumentos primeiro' }],
+      typewriter: false,
+      onChoice: (indice) => {
+        if (indice === 0) abrirRitmo();
+        else feedback.textContent = EXPLICACAO_FANDANGO.texto;
+      }
+    });
     return;
   }
 
@@ -1972,6 +2188,14 @@ function atualizarPeixesSaltantes(agora) {
       peixe.inicio = agora;
       peixe.proximo = agora + 3000 + Math.random() * 5000;
     }
+  });
+}
+
+function prepararPeixesSaltantes() {
+  const agora = performance.now();
+  peixesSaltantes.forEach((peixe, indice) => {
+    peixe.inicio = 0;
+    peixe.proximo = agora + 850 + indice * 1450;
   });
 }
 
@@ -2646,7 +2870,7 @@ function desenhoMapa(agora = performance.now()) {
   for (let y = Math.max(0, inicioY - 2); y < Math.min(MAPA.length, fimY + 1); y += 1) {
     for (let x = Math.max(0, inicioX - 2); x < Math.min(MAPA[0].length, fimX + 2); x += 1) {
       const tipo = MAPA[y][x];
-      if (tipo !== 'mato' && !['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa', 'saco'].includes(tipo)) continue;
+      if (tipo !== 'mato' && !['casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa', 'saco'].includes(tipo)) continue;
       elements.push({ tipo: 'objeto', objeto: tipo, x, y, seed: x * 17 + y * 31 });
     }
   }
@@ -2676,8 +2900,8 @@ function desenhoMapa(agora = performance.now()) {
     const baseY = (element.y + 1) * tile - camera.y;
     const tick = estado.reduzirMovimento ? 0 : animationTick;
     if (element.tipo === 'objeto' || element.tipo === 'decoracao') {
-      const casa = ['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(element.objeto);
-      const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa'].includes(element.objeto);
+      const casa = ['casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(element.objeto);
+      const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa'].includes(element.objeto);
       const destaque = element.tipo === 'decoracao' && ITENS_DESTAQUE.has(element.objeto);
       const salto = destaque && !estado.reduzirMovimento
         ? Math.sin(tick / 13 + element.seed) * tile * 0.035

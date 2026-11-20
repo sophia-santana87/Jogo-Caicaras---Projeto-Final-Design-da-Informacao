@@ -213,13 +213,13 @@ const NPC_PALETAS = {
 
 const TIPOS_DE_PISO = ['vila', 'grama', 'mato', 'roca', 'plantacao', 'praia', 'mar', 'mar-fundo', 'caminho', 'madeira', 'ceu', 'lagoa'];
 const TIPOS_DE_OBJETO = [
-  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canteiro', 'banco', 'canoa', 'saco',
+  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canteiro', 'porteira', 'mandioca', 'ralador', 'artesanato', 'frutas', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
   'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'vara-pesca', 'lixeiraOrganica', 'lixeiraReciclavel',
   'arbusto', 'flor', 'pedra', 'capim', 'cerca', 'vitoria-regia', 'junco', 'tronco', 'tronco-caido'
 ];
 const OBJETOS_GRANDES = new Set([
-  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canoa'
+  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canoa'
 ]);
 const COLUNAS_ATLAS = 8;
 const VARIANTES_PISO = 4;
@@ -403,6 +403,16 @@ function pintarObjeto(ctx, tipo, variante) {
       ctx.fillStyle = '#8A5A33';
       ctx.fillRect(4, 8, 24, 1);
     }
+  } else if (tipo === 'casaMusical') {
+    pintarObjeto(ctx, 'casaRural', variante);
+    ctx.fillStyle = '#3D7180';
+    ctx.fillRect(8, 3, 16, 6);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(10, 4, 12, 3);
+    ctx.fillStyle = '#5A3A1E';
+    ctx.fillRect(12, 5, 2, 1);
+    ctx.fillRect(17, 4, 1, 3);
+    ctx.fillRect(20, 5, 2, 1);
   } else if (tipo === 'escola' || tipo === 'capela' || tipo === 'peixaria') {
     pintarObjeto(ctx, tipo === 'escola' ? 'casaRural' : 'casa', variante);
     if (tipo === 'escola') {
@@ -467,6 +477,68 @@ function pintarObjeto(ctx, tipo, variante) {
       ctx.fillRect(7, 7, 3, 10); ctx.fillRect(14, 9, 3, 8); ctx.fillRect(21, 6, 3, 11);
       ctx.fillStyle = '#D9BE82'; ctx.fillRect(8, 14, 2, 3); ctx.fillRect(22, 13, 2, 4);
     }
+  } else if (tipo === 'porteira') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(3, 7, 4, 22);
+    ctx.fillRect(25, 7, 4, 22);
+    ctx.fillRect(6, 13, 19, 3);
+    ctx.fillRect(8, 21, 17, 3);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(8, 14, 2, 2);
+    ctx.fillRect(21, 22, 2, 2);
+  } else if (tipo === 'mandioca') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 23, 22, 3);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(8, 11, 16, 6);
+    ctx.fillRect(5, 15, 22, 6);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(7, 14, 18, 7);
+    ctx.fillStyle = '#8A5A33';
+    ctx.fillRect(4, 15, 4, 3);
+    ctx.fillRect(24, 16, 4, 3);
+    ctx.fillStyle = '#3F813D';
+    ctx.fillRect(14, 6, 3, 7);
+    ctx.fillRect(11, 8, 4, 2);
+    ctx.fillRect(16, 7, 5, 2);
+  } else if (tipo === 'ralador') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 22, 22, 4);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(7, 11, 18, 10);
+    ctx.fillStyle = '#D9BE82';
+    ctx.fillRect(9, 13, 14, 6);
+    ctx.fillStyle = '#5A3A1E';
+    for (let px = 10; px < 22; px += 3) ctx.fillRect(px, 14, 1, 1);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(11, 7, 10, 3);
+    ctx.fillRect(14, 5, 5, 2);
+  } else if (tipo === 'artesanato') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(6, 23, 20, 3);
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(8, 12, 16, 11);
+    ctx.fillRect(11, 8, 10, 4);
+    ctx.fillStyle = '#D9A441';
+    ctx.fillRect(10, 13, 12, 2);
+    ctx.fillRect(9, 17, 14, 2);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(12, 15, 2, 2);
+    ctx.fillRect(18, 15, 2, 2);
+  } else if (tipo === 'frutas') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 22, 22, 4);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(7, 17, 18, 5);
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(8, 10, 6, 7);
+    ctx.fillStyle = '#D9A441';
+    ctx.fillRect(15, 8, 7, 9);
+    ctx.fillStyle = '#5FA844';
+    ctx.fillRect(11, 8, 3, 2);
+    ctx.fillRect(17, 6, 3, 2);
+    ctx.fillStyle = '#8CCB5E';
+    ctx.fillRect(22, 13, 4, 4);
   } else if (tipo === 'pavilhao') {
     ctx.fillStyle = 'rgba(43,26,14,0.27)';
     ctx.fillRect(2, 25, 28, 4);
@@ -920,6 +992,11 @@ export function desenharJogadorSentado(ctx, centroX, baseY, tile, tick, direcao,
 
 export function desenharNpc(ctx, centroX, baseY, tile, tick, id) {
   desenharPersonagem(ctx, centroX, baseY, tile, NPC_PALETAS[id] || PALETAS.jogador, tick, 'down');
+  if (id === 'erveiro') {
+    const px = tile / 16;
+    retanguloPixel(ctx, centroX + 5 * px, baseY - 9 * px, 1.5 * px, 8 * px, '#68452B');
+    retanguloPixel(ctx, centroX + 4 * px, baseY - 10 * px, 3 * px, 1.5 * px, '#8A5A33');
+  }
 }
 
 export function desenharMorador(ctx, centroX, baseY, tile, tick, direcao = 'down', andando = false, variante = 0) {

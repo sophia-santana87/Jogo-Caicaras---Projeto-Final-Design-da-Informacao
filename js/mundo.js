@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=55';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=56';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 38;
@@ -86,7 +86,7 @@ export const MAPA = DESENHO_MAPA.map((linha) => Array.from(linha, (simbolo) => {
   return terreno;
 }));
 
-const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria']);
+const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'casaMusical', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria']);
 
 export const POSICOES_EDIFICIOS = {
   escola: { x: 11, y: 10, tipo: 'escola' },
@@ -94,7 +94,7 @@ export const POSICOES_EDIFICIOS = {
   'casa-de-farinha': { x: 25, y: 10, tipo: 'casaFarinha' },
   armazem: { x: 15, y: 16, tipo: 'casa' },
   mercadinho: { x: 21, y: 16, tipo: 'mercadinho' },
-  'casa-musical': { x: 29, y: 16, tipo: 'pavilhao' },
+  'casa-musical': { x: 29, y: 16, tipo: 'casaMusical' },
   'casa-fechada': { x: 36, y: 16, tipo: 'casa' },
   peixaria: { x: 9, y: 26, tipo: 'peixaria' }
 };
@@ -107,6 +107,7 @@ export const HORTA_CENTRAL = {
     { x: 15, y: 13, variante: 2 }
   ]
 };
+export const ENTRADA_COMUNIDADE = { x: 10, y: 18, nome: 'Entrada da comunidade' };
 
 for (let y = 0; y < MAPA_ALTURA; y += 1) {
   for (let x = 0; x < MAPA_LARGURA; x += 1) {
@@ -191,11 +192,15 @@ function gerarCercaHorta() {
   const { x, y, largura, altura } = HORTA_CENTRAL;
   const cerca = [];
   for (let dx = 0; dx < largura; dx += 1) {
-    cerca.push({ tipo: 'cerca', x: x + dx, y }, { tipo: 'cerca', x: x + dx, y: y + altura - 1 });
+    if (dx < Math.floor(largura / 2) || dx > Math.floor(largura / 2)) {
+      cerca.push({ tipo: 'cerca', x: x + dx, y: y + altura - 1 });
+    }
+    cerca.push({ tipo: 'cerca', x: x + dx, y });
   }
   for (let dy = 1; dy < altura - 1; dy += 1) {
     cerca.push({ tipo: 'cerca', x, y: y + dy }, { tipo: 'cerca', x: x + largura - 1, y: y + dy });
   }
+  cerca.push({ tipo: 'porteira', x: x + Math.floor(largura / 2), y: y + altura - 1 });
   return cerca;
 }
 
@@ -283,22 +288,18 @@ export const MAPA_DECORACOES = [
   { tipo: 'luminaria', x: 35, y: 18 },
   ...gerarCercaHorta(),
   ...HORTA_CENTRAL.canteiros.map((canteiro) => ({ tipo: 'canteiro', ...canteiro })),
-  { tipo: 'placa', x: 18, y: 13 },
   { tipo: 'planta-medicinal-a', x: 38, y: 4 },
   { tipo: 'planta-medicinal-b', x: 45, y: 4 },
   { tipo: 'planta-medicinal-c', x: 46, y: 6 },
   { tipo: 'arvore', x: 40, y: 3 },
   { tipo: 'arbusto', x: 47, y: 5 },
   { tipo: 'arbusto', x: 47, y: 4 },
-  { tipo: 'viola', x: 26, y: 17 },
-  { tipo: 'rabeca', x: 28, y: 17 },
-  { tipo: 'adufo', x: 30, y: 17 },
-  { tipo: 'placa', x: 40, y: 25, nome: 'Pescar com cuidado' },
-  { tipo: 'ponte-saber', x: 20, y: 16, nome: 'Ponte do Saber' },
-  { tipo: 'lixeiraOrganica', x: 41, y: 24 },
-  { tipo: 'lixeiraReciclavel', x: 43, y: 25 },
-  { tipo: 'bandeira', x: 30, y: 7 },
-  { tipo: 'bandeira', x: 38, y: 7 },
+  { tipo: 'placa', x: 14, y: 27, nome: 'Pescar com cuidado' },
+  { tipo: 'lixeiraOrganica', x: 8, y: 25 },
+  { tipo: 'lixeiraReciclavel', x: 10, y: 25 },
+  { tipo: 'vitoria-regia', x: 35, y: 22 },
+  { tipo: 'junco', x: 40, y: 24 },
+  { tipo: 'tronco', x: 35, y: 24 },
   { tipo: 'flor', x: 30, y: 11 },
   { tipo: 'flor', x: 38, y: 11 },
   { tipo: 'arbusto', x: 29, y: 9 },
@@ -314,9 +315,6 @@ export const MAPA_DECORACOES = [
   { tipo: 'capim', x: 37, y: 17 },
   { tipo: 'flor', x: 30, y: 20 },
   { tipo: 'arbusto', x: 30, y: 23 },
-  { tipo: 'vitoria-regia', x: 38, y: 22 },
-  { tipo: 'junco', x: 40, y: 24 },
-  { tipo: 'tronco', x: 36, y: 24 },
   { tipo: 'flor', x: 39, y: 20 },
   { tipo: 'cerca', x: 44, y: 24 },
   { tipo: 'capim', x: 45, y: 23 },
@@ -353,6 +351,7 @@ function gerarVegetacaoDeterministica() {
     const chave = `${x},${y}`;
     const terreno = tileAt(x, y);
     if (ocupados.has(chave) || proibidos.has(chave)) continue;
+    if (Math.abs(x - CENA_FANDANGO.x) <= 4 && Math.abs(y - CENA_FANDANGO.y) <= 4) continue;
     if (terreno === 'lagoa' || terreno === 'mar' || terreno === 'mato' && y > 12) continue;
     if (MAPA_DECORACOES.some((item) => Math.abs(item.x - x) + Math.abs(item.y - y) < 2)) continue;
 

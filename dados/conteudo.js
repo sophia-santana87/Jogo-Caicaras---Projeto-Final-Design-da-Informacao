@@ -40,8 +40,10 @@ export const CONTEUDO = {
   },
   tutorial: [
     'Use as setas ou WASD para caminhar. No celular, toque em um ponto acessível do mapa.',
-    'Aproxime-se de uma pessoa e pressione E, Enter ou o botão de interação para conversar.',
-    'Os brilhos amarelos mostram pontos importantes. Abra o caderno para ver objetivos e cartas.'
+    'Chegue perto de uma pessoa ou objeto. Use E, Enter ou o botão Interagir para conversar e observar.',
+    'Os marcadores amarelos apontam pessoas e lugares importantes. Siga as missões para saber onde ir.',
+    'Entre nos edifícios visitáveis e experimente as atividades. Algumas ações aparecem como botões abaixo da cena.',
+    'Abra o Caderno para rever o mapa, os saberes registrados e os objetivos. No menu de pausa, ajuste som, contraste e movimento.'
   ],
   avatares: [
     { id: 'a1', nome: 'Viajante', descricao: 'Pele morena · cabelo cacheado · roupa verde' },
@@ -133,11 +135,12 @@ export const CONTEUDO = {
     },
     {
       id: 'fandango',
-      abertura: 'Na casa musical, a música pede que os instrumentos voltem a circular pela comunidade.',
+      abertura: 'Na casa musical, você pode conhecer os instrumentos e conversar sobre a roda do fandango. Os textos são rascunhos para validação.',
       validar: true,
       etapas: [
-        { tipo: 'encontrar', texto: 'Encontre a viola, a rabeca e o adufo pela vila.', alvos: ['viola', 'rabeca', 'adufo'], validar: true },
-        { tipo: 'ir-ate', alvo: 'casa-musical', texto: 'Leve os instrumentos à casa musical.' }
+        { tipo: 'ir-ate', alvo: 'casa-musical', texto: 'Entre na casa musical para conhecer os instrumentos e Mestre Tião.' },
+        { tipo: 'encontrar', texto: 'Observe a viola, a rabeca e o adufo dentro da casa musical.', alvos: ['viola', 'rabeca', 'adufo'], validar: true },
+        { tipo: 'conversar', alvo: 'tiao', texto: 'Converse com Mestre Tião sobre por que o fandango é importante.', validar: true }
       ],
       escolhas: [
         {

@@ -90,7 +90,7 @@
 
 ## Fase B - Interiores na escala do mapa
 - B1 - Diagnostico: antes do ajuste, o exterior usava escala inteira de `escalaDoMapa()` (16 px por tile base) e os sprites do atlas; o interior desenhava madeira, paredes e porta em cores locais, sem uma câmera equivalente. Na implementação anterior, mobile fixava a escala em 1 (tiles de 16 px), enquanto desktop limitava a escala a 2-3. Isso deixava personagem/objetos menores no celular, escala diferente no desktop e não mostrava o exterior atrás de uma janela de câmera. O personagem interno já usava o sprite normal, mas a sala não tinha o mesmo enquadramento.
-- B2 - Interior redesenhado em Canvas de 14x9 tiles base, tile de 16 px multiplicado pela escala inteira do mapa, personagem do atlas e profundidade por y. A janela acompanha o jogador; piso usa o atlas de madeira e fora da sala aparece a cor do mar da paleta, sem barras pretas. Prensa, peneira, forno, sacos e produtos usam o atlas de objetos.
+- B2 - Interior redesenhado em Canvas de 14x9 tiles base, tile de 16 px multiplicado pela escala inteira do mapa, personagem do atlas e profundidade por y. A janela acompanha o jogador; piso usa o atlas de madeira e fora da sala aparece a cor de areia da paleta, sem barras pretas. Prensa, peneira, forno, sacos e produtos usam o atlas de objetos.
 - B3 - Mercadinho segue apenas observacional; armazém mantém ações para guardar e retirar itens do inventário; casa de farinha mantém as cinco etapas, falas e animação já existentes.
 - B4 - Medição prevista pela geometria da janela em retrato: com tiles de 32 px, larguras úteis de 341, 371 e 411 px mostram aproximadamente 10,7, 11,6 e 12,8 tiles em viewports de 360, 390 e 430 px. Botões mantêm mínimo de 44 px e ficam abaixo da cena, sem cobrir o personagem.
 - Verificação pendente: comparação visual e console em navegador desktop e 360/390/430 px. O ambiente desta execução não oferece navegador integrado; as medidas acima são cálculo do layout, não medição visual.
@@ -115,3 +115,12 @@
 - D7 - Minimapa ampliado atualizado com escola, capela, pra?a e peixaria, preservando somente ?cones de locais principais.
 - Edif?cios: sete locais funcionais e uma casa comum fechada; n?o foi adicionada casa decorativa. Acessos s?o tiles transit?veis e `verificarEdificios()` n?o deve emitir avisos de espa?o ou rota.
 - Verifica??o est?tica: coordenadas e ?reas dos oito edif?cios conferidas contra a regra de espa?amento; todas as portas ficam fora das ?reas bloqueadas, com acesso ? rede de caminhos. Verifica??o visual e console pendentes: n?o h? navegador nem runtime JavaScript dispon?vel nesta execu??o.
+
+## Revisao aplicada a partir do feedback
+- A casa de farinha ganhou sala de 14x9 tiles, piso de madeira, parede e porta na linguagem das fachadas, cinco estacoes visuais e Dona Cida como instrutora. As explicacoes ficam em `dados/locais.js`, com `validar: true`.
+- Mercadinho ganhou produtos separados para observacao; armazem conserva as acoes de guardar e retirar. Instrumentos foram levados para dentro da casa musical, e a missao do fandango agora pede que se conhecam os instrumentos e se converse sobre a importancia da roda.
+- Retirados objetos musicais espalhados do exterior, placa e lixeiras perto da lagoa e bandeiras sem funcao clara. A vegetacao deixa livre o terreiro; elementos da lagoa podem ser identificados e registrados no Caderno.
+- A horta recebeu porteira, canteiros destacados e identificacao corrigida da entrada da comunidade. Seu Ari recebeu bengala no sprite.
+- O tutorial "Como jogar" apresenta cinco passos com progresso e navegacao anterior/proximo: movimento, interacao, missao, interiores e Caderno.
+- O fundo fora da sala usa areia da paleta, sem barras pretas; foram mantidos escala inteira, tiles de 16px, suavizacao desligada e y-sorting.
+- Verificacao estatica: `git diff --check` sem erros e sufixos dos imports alinhados em v56. Verificacao visual, console e interacoes em 360/390/430px permanecem pendentes; este ambiente nao disponibiliza navegador nem runtime JavaScript.

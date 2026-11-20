@@ -52,6 +52,13 @@ Antes de tornar o repositório público, a equipe deve definir a licença do pro
 - `docs/NARRATIVA.md`
 - `docs/MISSOES_E_LOCAIS.md`
 - `docs/MELHORIAS_TESTES.md`
+
+## Melhorias desta revisão
+- Interiores de 14x9 tiles com piso e personagens na escala do mapa; casa de farinha com cinco estações instruídas, mercadinho demonstrativo e instrumentos dentro da casa musical.
+- Praça, capela, escola, peixaria, horta e postes integrados ao mapa; caminho e identificação da entrada revistos.
+- Pesca ampliada para o mar, canoa controlável, fauna observável e fichas de lagoa/fandango registradas no Caderno.
+- Tutorial “Como jogar” dividido em cinco passos curtos, com progresso e navegação anterior/próximo.
+- Textos culturais novos permanecem sinalizados para validação comunitária. A revisão visual em navegador segue pendente neste ambiente.
 ## Observações
 - As imagens da pasta `referencias/` não entram na versão publicada.
 - O conteúdo e textos marcados como "a validar" ficam em dados separados para revisão.

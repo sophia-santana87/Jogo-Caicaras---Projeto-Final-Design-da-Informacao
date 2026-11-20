@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { desenharCachorro, desenharNpc } from './sprites.js?v=43';
+import { desenharCachorro, desenharNpc } from './sprites.js?v=55';
 
 export class DialogoController {
   constructor(documentRef = document) {

@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=43';
+import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=55';
 
 export const ESTADO_PADRAO = {
   nomeJogador: 'Visitante',
@@ -37,6 +37,9 @@ export const ESTADO_PADRAO = {
   locaisVisitados: [],
   colecaoPeixes: [],
   temVara: true,
+  emCanoa: false,
+  colecaoFauna: [],
+  conceitosEscola: [],
   cenaAtual: 'exterior',
   posicaoInterior: null,
   progressoFarinha: 0,
@@ -85,7 +88,10 @@ export function carregarEstado() {
         : [],
       horariosDePesca: Array.isArray(parsed.horariosDePesca) ? parsed.horariosDePesca : [],
       locaisVisitados: Array.isArray(parsed.locaisVisitados) ? parsed.locaisVisitados.filter((id) => typeof id === 'string') : [],
-      colecaoPeixes: Array.isArray(parsed.colecaoPeixes) ? parsed.colecaoPeixes.filter((id) => typeof id === 'string') : []
+      colecaoPeixes: Array.isArray(parsed.colecaoPeixes) ? parsed.colecaoPeixes.filter((id) => typeof id === 'string') : [],
+      colecaoFauna: Array.isArray(parsed.colecaoFauna) ? parsed.colecaoFauna.filter((id) => typeof id === 'string') : [],
+      conceitosEscola: Array.isArray(parsed.conceitosEscola) ? parsed.conceitosEscola.filter((id) => typeof id === 'string') : [],
+      emCanoa: parsed.emCanoa === true
     };
   } catch (error) {
     console.error('Não foi possível carregar o estado salvo do jogo.', error);

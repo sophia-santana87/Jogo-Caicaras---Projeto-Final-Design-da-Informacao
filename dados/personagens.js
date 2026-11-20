@@ -12,6 +12,22 @@ export const PERSONAGENS = {
     emoji: '🧓',
     ficticio: true,
     validar: true
+  },
+  'professora-marina': {
+    id: 'professora-marina',
+    nome: 'Professora Marina',
+    fala: 'Vamos conhecer alguns saberes com respeito e lembrar que a comunidade pode completar ou corrigir estas informações.',
+    emoji: '👩‍🏫',
+    ficticio: true,
+    validar: true
+  },
+  'hortela-da-vila': {
+    id: 'hortela-da-vila',
+    nome: 'Nina, cuidadora da horta',
+    fala: 'Estou cuidando dos canteiros de couve, alface e mandioca. Cada plantio tem seu tempo; os detalhes locais devem ser confirmados com a comunidade.',
+    emoji: '🧑‍🌾',
+    ficticio: true,
+    validar: true
   }
 };
 

@@ -90,3 +90,10 @@ Antes de tornar o repositório público, a equipe deve definir a licença do pro
 
 ## Validação cultural
 As etapas da farinha, o fandango, os sinais do tempo, a pesca, a missão da mata e o evento do Barco de Fora são rascunhos educativos marcados para revisão. Antes de publicar, validá-los com a comunidade caiçara da Ponta Oeste e o Instituto Raízes Caiçaras.
+
+- Fase B: interiores usam a escala inteira do mapa, câmera acompanhando o jogador, piso de madeira e objetos do atlas. O armazém mantém guardar/retirar, o mercadinho é observacional e a casa de farinha mantém as cinco etapas. O diagnóstico e as medidas calculadas para 360, 390 e 430 px estão no `CHANGELOG.md`; falta validar visualmente em navegador.
+
+- Fase C: mar ampliado em seis linhas; canoa navegável salva no estado; pesca no mar e cesto/soltura animados; fauna observável com fichas `validar: true` no Caderno. Veja `CHANGELOG.md` para as checagens estáticas e os passos de verificação visual ainda necessários.
+
+
+- Fase D: pra?a central 7x5 com coreto, bancos e ?rvores; capela e escola pr?ximas; peixaria observacional junto ao p?er; horta interativa cercada. A escola registra conceitos culturais ilustrados no Caderno, com conte?do marcado para valida??o. Postes iluminam suavemente ao entardecer e respeitam reduzir movimento. Checagens e valida??o visual pendente est?o documentadas no `CHANGELOG.md`.

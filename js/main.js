@@ -2,16 +2,18 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=43';
-import { INTERIORES } from '../dados/interiores.js?v=43';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=43';
-import { DialogoController } from './dialogo.js?v=43';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=43';
-import { SomManager } from './som.js?v=43';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=43';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=43';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=43';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=43';
+import { CONTEUDO } from '../dados/conteudo.js?v=55';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=55';
+import { INTERIORES } from '../dados/interiores.js?v=55';
+import { CONCEITOS_ESCOLA, PRODUTOS_PEIXARIA } from '../dados/locais.js?v=55';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=55';
+import { DialogoController } from './dialogo.js?v=55';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=55';
+import { SomManager } from './som.js?v=55';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=55';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=55';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=55';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=55';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -70,6 +72,12 @@ let eventStep = 0;
 let currentSelection = null;
 let novaJornada = false;
 let pescaAnimacao = null;
+let pescaResultadoAnimacao = null;
+let conceitoEscolaAtivo = null;
+let pontoDaPescaAtual = null;
+let faunaVoo = new Map();
+let tempoFaunaAnterior = 0;
+let tempoMovimentoFauna = 0;
 let playerDirection = 'down';
 let playerMotion = null;
 let playerNextStepAt = 0;
@@ -102,7 +110,14 @@ let ritmoTentativa = [];
 let peixesSaltantes = [
   { x: 36, y: 22, especieId: 'tainha', inicio: 0, proximo: 4200 },
   { x: 38, y: 24, especieId: 'robalo', inicio: 0, proximo: 6700 },
-  { x: 35, y: 23, especieId: 'parati', inicio: 0, proximo: 5300 }
+  { x: 35, y: 23, especieId: 'parati', inicio: 0, proximo: 5300 },
+  ...PONTOS_PESCA.filter((ponto) => ponto.tipo === 'mar' && tileAt(ponto.x, ponto.y) === 'mar')
+    .map((ponto, indice) => ({
+      ...ponto,
+      especieId: ['tainha', 'robalo', 'parati'][indice % 3],
+      inicio: 0,
+      proximo: [3900, 6100, 4700][indice % 3]
+    }))
 ];
 const ESPECIES_PEIXES = [
   { id: 'tainha', nome: 'Tainha', raridade: 4, ficha: 'Peixe ligado ao mar; redes de cerco fazem parte do saber artesanal. Época relevante depende da comunidade e do tempo local.' },
@@ -214,7 +229,7 @@ function atualizarHud() {
   renderMissoes(estado, missionRoot);
   const itensNoInventario = Object.values(estado.inventario || {})
     .reduce((total, quantidade) => total + (Number.isFinite(quantidade) ? quantidade : 0), 0);
-  document.getElementById('caderno-contador').textContent = String(estado.cartasColetadas.length + itensNoInventario);
+  document.getElementById('caderno-contador').textContent = String(estado.cartasColetadas.length + itensNoInventario + (estado.colecaoFauna?.length || 0));
 }
 
 function atualizarInteracao() {
@@ -233,6 +248,9 @@ function atualizarInteracao() {
   const edificio = edificioProximo();
   const alvo = alvoDaEtapaProximo(etapaAtiva);
   const pontoPesca = pontoPescaProximo();
+  const atracacao = atracacaoProxima();
+  const embarque = embarqueCanoaProximo();
+  const animal = pontoPesca ? null : faunaProxima();
   let texto = '';
 
   if (pertoNpc && !estado.tutorialInteracaoVisto) {
@@ -255,9 +273,15 @@ function atualizarInteracao() {
     texto = `Conversar com ${pertoNpc.nome}`;
   } else if (pertoDoCachorro) {
     texto = 'Fazer carinho';
+  } else if (estado.emCanoa && atracacao) {
+    texto = 'Sair da canoa';
+  } else if (!estado.emCanoa && embarque) {
+    texto = 'Entrar na canoa';
   } else if (pontoPesca) {
     texto = 'Pescar com cuidado';
-  } else if (edificio?.enterable) {
+  } else if (animal) {
+    texto = `Observar ${ESPECIES_FAUNA[animal.especieId].nome.toLowerCase()}`;
+  } else if (edificio?.enterable || edificio?.id === 'peixaria' || edificio?.id === 'capela') {
     texto = acaoNoEdificio(edificio);
   }
   interactButton.classList.toggle('hidden', !texto);
@@ -393,6 +417,32 @@ function abrirCaderno(abrirMapa = false) {
   cartas.forEach((carta) => {
     if (categorias.has(carta.categoria)) categorias.get(carta.categoria).push(carta);
   });
+  const conceitosAprendidos = CONCEITOS_ESCOLA.filter((conceito) => estado.conceitosEscola.includes(conceito.id));
+  if (conceitosAprendidos.length) {
+    const heading = document.createElement('h4');
+    heading.textContent = 'Aprendizados da escola';
+    sections[0].appendChild(heading);
+    conceitosAprendidos.forEach((conceito) => {
+      const article = document.createElement('article');
+      article.className = 'notebook-card';
+      const title = document.createElement('h4');
+      title.textContent = conceito.titulo;
+      const description = document.createElement('p');
+      description.textContent = `${conceito.texto} (a validar com a comunidade)`;
+      article.append(title, description);
+      sections[0].appendChild(article);
+    });
+  }
+  if (estado.locaisVisitados.includes('peixaria')) {
+    const article = document.createElement('article');
+    article.className = 'notebook-card';
+    const title = document.createElement('h4');
+    title.textContent = 'Peixaria · produtos para observar';
+    const description = document.createElement('p');
+    description.textContent = `${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}. Identificações a validar com a comunidade.`;
+    article.append(title, description);
+    sections[0].appendChild(article);
+  }
   categorias.forEach((cartasDaCategoria, categoria) => {
     if (!cartasDaCategoria.length) return;
     const heading = document.createElement('h4');
@@ -435,6 +485,20 @@ function abrirCaderno(abrirMapa = false) {
   });
   sections[0].appendChild(colecao);
 
+  const fauna = document.createElement('article');
+  fauna.className = 'notebook-card';
+  const faunaTitulo = document.createElement('h4');
+  faunaTitulo.textContent = 'Fauna observada';
+  fauna.appendChild(faunaTitulo);
+  Object.entries(ESPECIES_FAUNA).forEach(([id, especie]) => {
+    const item = document.createElement('p');
+    item.textContent = estado.colecaoFauna.includes(id)
+      ? `${especie.nome}: ${especie.ficha} (a validar)`
+      : '? espécie ainda não observada';
+    fauna.appendChild(item);
+  });
+  sections[0].appendChild(fauna);
+
   content.append(tabs, ...sections);
 }
 
@@ -444,7 +508,7 @@ function atualizarMapaDoCaderno(section) {
   wrapper.className = 'mapa-caderno';
   const canvasMapa = document.createElement('canvas');
   canvasMapa.width = 384;
-  canvasMapa.height = 256;
+  canvasMapa.height = 304;
   canvasMapa.setAttribute('role', 'img');
   canvasMapa.setAttribute('aria-label', 'Mapa da Ponta Oeste mostrando sua posição atual');
   canvasMapa.className = 'notebook-map';
@@ -515,6 +579,10 @@ function mostrarJogo() {
       jogador: { ...ESTADO_PADRAO.jogador, nome: nomeJogador },
       ...preferencias
     });
+    faunaVoo.clear();
+    tempoMovimentoFauna = 0;
+    tempoFaunaAnterior = performance.now();
+    pescaResultadoAnimacao = null;
     novaJornada = false;
   }
   estado.fase = 'jogo';
@@ -524,7 +592,10 @@ function mostrarJogo() {
     estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   }
   estado.interiorAtivo = null;
-  if (!isPassable(estado.jogador.x, estado.jogador.y)) estado.jogador = posicaoInicialJogador();
+  if (!isPassable(estado.jogador.x, estado.jogador.y, estado.emCanoa ? 'canoa' : 'pe')) {
+    estado.emCanoa = false;
+    estado.jogador = posicaoInicialJogador();
+  }
   if (!isPassable(estado.cachorro.x, estado.cachorro.y)) estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   playerMotion = null;
   dogMotion = null;
@@ -556,7 +627,10 @@ function continuarJogo() {
   }
   estado.interiorAtivo = null;
   estado.cenaAtual = 'exterior';
-  if (!isPassable(estado.jogador.x, estado.jogador.y)) estado.jogador = posicaoInicialJogador();
+  if (!isPassable(estado.jogador.x, estado.jogador.y, estado.emCanoa ? 'canoa' : 'pe')) {
+    estado.emCanoa = false;
+    estado.jogador = posicaoInicialJogador();
+  }
   if (!isPassable(estado.cachorro.x, estado.cachorro.y)) estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   showScreen('screen-game');
   atualizarHud();
@@ -657,6 +731,7 @@ function nomeEdificio(edificio) {
     armazem: 'armazém',
     escola: 'escola',
     capela: 'capela',
+    peixaria: 'peixaria',
     barraca: 'barraca',
     mercadinho: 'Mercadinho'
   };
@@ -668,6 +743,8 @@ function acaoNoEdificio(edificio) {
   if (edificio.id === 'armazem') return 'Entrar no armazém';
   if (edificio.id === 'casa-musical') return 'Entrar na casa musical';
   if (edificio.id === 'mercadinho') return 'Visitar o mercadinho';
+  if (edificio.id === 'capela') return 'Observar a capela';
+  if (edificio.id === 'peixaria') return 'Observar a peixaria';
   return `Entrar na ${nomeEdificio(edificio)}`;
 }
 
@@ -681,7 +758,32 @@ function edificioProximo() {
 }
 
 function pontoPescaProximo() {
-  return PONTOS_PESCA.find((ponto) => distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5);
+  return PONTOS_PESCA.find((ponto) => (
+    (!estado.emCanoa || ponto.tipo === 'mar' && tileAt(ponto.x, ponto.y) === 'mar')
+    && (estado.emCanoa || ponto.tipo !== 'mar' || ponto.y <= 29)
+    && distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5
+  ));
+}
+
+function atracacaoProxima() {
+  return PONTOS_ATRACACAO.find((ponto) => distancia(
+    estado.jogador.x, estado.jogador.y, estado.emCanoa ? ponto.agua.x : ponto.x, estado.emCanoa ? ponto.agua.y : ponto.y
+  ) <= 1.5);
+}
+
+function embarqueCanoaProximo() {
+  return [...PONTOS_ATRACACAO, ...PONTOS_EMBARQUE].find((ponto) => distancia(
+    estado.jogador.x, estado.jogador.y, ponto.x, ponto.y
+  ) <= 1.5);
+}
+
+function faunaProxima(agora = performance.now()) {
+  return FAUNA.find((animal, indice) => {
+    const posicao = posicaoFauna(animal, indice, agora);
+    const distanciaBase = distancia(estado.jogador.x, estado.jogador.y, animal.x, animal.y);
+    const alcance = ['caranguejo', 'passaro'].includes(animal.especieId) ? 2 : 1.35;
+    return distanciaBase <= alcance || distancia(estado.jogador.x, estado.jogador.y, posicao.x, posicao.y) <= 1.35;
+  });
 }
 
 function pontosDaEtapa(contexto) {
@@ -873,6 +975,7 @@ function nomeDebug(tipo) {
   const nomes = {
     barraca: 'barraca', varapesca: 'vara de pesca', 'vara-pesca': 'vara de pesca', casa: 'casa', casaFarinha: 'casa de farinha', mercadinho: 'mercadinho', pavilhao: 'terreiro dos fandangos', luminaria: 'luminaria', banco: 'banco', placa: 'placa', 'ponte-saber': 'placa Ponte do Saber', arvore: 'arvore', palmeira: 'palmeira', mangue: 'mangue', arbusto: 'arbusto', flor: 'flor', pedra: 'pedra', capim: 'capim', cerca: 'cerca', 'vitoria-regia': 'vitoria-regia', junco: 'junco', tronco: 'tronco', lixeiraOrganica: 'lixeira organica', lixeiraReciclavel: 'lixeira reciclavel', viola: 'viola', rabeca: 'rabeca', adufo: 'adufo', forno: 'forno', prensa: 'prensa', peneira: 'peneira', rede: 'rede', peixe: 'peixe', cataia: 'cataia', biju: 'biju'
   };
+  Object.assign(nomes, { escola: 'escola', capela: 'capela', peixaria: 'peixaria', coreto: 'coreto', canteiro: 'canteiro', luminaria: 'poste' });
   return nomes[tipo] || tipo;
 }
 
@@ -1102,6 +1205,20 @@ function interagir() {
     return;
   }
 
+  if (edificio?.id === 'capela') {
+    dialogController.open({ nome: 'Capela da vila', texto: 'Uma pequena capela perto da praça central.', typewriter: false });
+    return;
+  }
+  if (edificio?.id === 'peixaria') {
+    estado.locaisVisitados = [...new Set([...(estado.locaisVisitados || []), 'peixaria'])];
+    salvar();
+    dialogController.open({
+      nome: 'Peixaria da vila',
+      texto: `Balcão de observação, sem compra ou venda. Produtos cadastrados para validação: ${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}.`,
+      typewriter: false
+    });
+    return;
+  }
   if (edificio?.enterable) {
     abrirInterior(edificio);
     return;
@@ -1152,6 +1269,27 @@ function interagir() {
     salvar();
     return;
   }
+  const atracacao = atracacaoProxima();
+  const embarque = embarqueCanoaProximo();
+  if (estado.emCanoa && atracacao) {
+    estado.emCanoa = false;
+    estado.jogador = { x: atracacao.x, y: atracacao.y, nome: nomeJogadorAtivo() };
+    playerMotion = null;
+    salvar();
+    return;
+  }
+  if (!estado.emCanoa && embarque) {
+    estado.emCanoa = true;
+    estado.jogador = { ...embarque.agua, nome: nomeJogadorAtivo() };
+    playerMotion = null;
+    salvar();
+    return;
+  }
+  const animal = pontoPesca ? null : faunaProxima();
+  if (animal) {
+    registrarFauna(animal.especieId);
+    return;
+  }
   if (pontoPesca) {
     interagirComPesca(pontoPesca);
     return;
@@ -1196,51 +1334,99 @@ function renderizarInterior(edificio) {
   if (!interior) return;
 
   sala.replaceChildren();
+  sala.parentElement.querySelector('.interior-controles')?.remove();
   sala.className = 'interior-canvas-wrap';
   feedback.textContent = '';
 
+  const tile = 16 * escalaDoMapa();
+  const larguraSala = interior.largura * tile;
+  const alturaSala = interior.altura * tile;
+  const larguraViewport = Math.max(1, Math.floor(sala.clientWidth || document.getElementById('interior-panel').clientWidth - 24));
+  const alturaViewport = Math.max(tile * 5, Math.floor(window.innerHeight * 0.52));
+  const larguraJanela = Math.min(larguraSala, larguraViewport);
+  const alturaJanela = Math.min(alturaSala, alturaViewport);
+
   const canvasInterior = document.createElement('canvas');
-  canvasInterior.width = interior.largura * 48;
-  canvasInterior.height = interior.altura * 48;
+  canvasInterior.width = larguraSala;
+  canvasInterior.height = alturaSala;
   canvasInterior.className = 'interior-canvas';
   canvasInterior.setAttribute('role', 'img');
   canvasInterior.setAttribute('aria-label', `Cena interna de ${interior.titulo}`);
   canvasInterior.setAttribute('aria-describedby', 'interior-feedback');
+  canvasInterior.style.setProperty('--interior-tiles-w', String(interior.largura));
   const ctxInterior = canvasInterior.getContext('2d');
   ctxInterior.imageSmoothingEnabled = false;
 
+  sala.style.width = `${larguraJanela}px`;
+  sala.style.height = `${alturaJanela}px`;
+  sala.style.marginInline = 'auto';
+  sala.style.position = 'relative';
+  sala.style.justifyContent = 'flex-start';
+  sala.style.alignItems = 'flex-start';
+  sala.style.gap = '0';
   ctxInterior.fillStyle = '#D9BE82';
   ctxInterior.fillRect(0, 0, canvasInterior.width, canvasInterior.height);
+  for (let y = 1; y < interior.altura; y += 1) {
+    for (let x = 0; x < interior.largura; x += 1) {
+      desenharPiso(ctxInterior, 'madeira', x * tile, y * tile, tile, x * 23 + y);
+    }
+  }
+
   ctxInterior.fillStyle = '#68452B';
-  ctxInterior.fillRect(0, 0, canvasInterior.width, 48);
-  ctxInterior.fillRect(0, 48, 30, canvasInterior.height - 48);
-  ctxInterior.fillRect(canvasInterior.width - 30, 48, 30, canvasInterior.height - 48);
-  ctxInterior.fillStyle = '#F0D9A0';
-  ctxInterior.fillRect(30, 48, canvasInterior.width - 60, canvasInterior.height - 48);
+  ctxInterior.fillRect(0, 0, canvasInterior.width, tile);
+  ctxInterior.fillRect(0, tile, tile, canvasInterior.height - tile);
+  ctxInterior.fillRect(canvasInterior.width - tile, tile, tile, canvasInterior.height - tile);
 
+  const portaX = (interior.saida.x + 0.5) * tile;
+  const portaY = (interior.saida.y + 0.5) * tile;
   ctxInterior.fillStyle = '#5A3A1E';
-  ctxInterior.fillRect((interior.saida.x + 0.5) * 48 - 34, (interior.altura - 0.35) * 48 - 18, 68, 24);
+  ctxInterior.fillRect(portaX - tile * 0.42, portaY - tile * 0.28, tile * 0.84, tile);
   ctxInterior.fillStyle = '#A78354';
-  ctxInterior.fillRect((interior.saida.x + 0.5) * 48 - 26, (interior.altura - 0.35) * 48 - 14, 52, 16);
+  ctxInterior.fillRect(portaX - tile * 0.28, portaY - tile * 0.18, tile * 0.56, tile * 0.82);
+  ctxInterior.fillStyle = '#D9A441';
+  ctxInterior.fillRect(portaX + tile * 0.18, portaY + tile * 0.1, tile * 0.05, tile * 0.05);
 
-  const elementos = interior.objetos.map((objeto, indice) => ({ tipo: 'objeto', objeto, indice }));
+  const camX = Math.max(0, Math.min(larguraSala - larguraJanela, (estado.posicaoInterior.x + 0.5) * tile - larguraJanela / 2));
+  const camY = Math.max(0, Math.min(alturaSala - alturaJanela, (estado.posicaoInterior.y + 0.5) * tile - alturaJanela * 0.62));
+  ctxInterior.save();
+  ctxInterior.translate(-camX, -camY);
+  const elementos = interior.objetos.map((objeto, indice) => ({ tipo: 'objeto', objeto, indice, y: objeto.y }));
+  if (interior.professora) elementos.push({ tipo: 'professora', x: interior.professora.x, y: interior.professora.y, id: interior.professora.id });
+  (interior.alunos || []).forEach((aluno, indice) => elementos.push({ tipo: 'aluno', x: aluno.x, y: aluno.y, indice }));
   elementos.push({ tipo: 'player', y: estado.posicaoInterior.y, x: estado.posicaoInterior.x });
-  elementos.sort((a, b) => (a.tipo === 'player' ? a.y : a.objeto.y) - (b.tipo === 'player' ? b.y : b.objeto.y));
+  elementos.sort((a, b) => a.y - b.y);
 
   elementos.forEach((elemento) => {
     if (elemento.tipo === 'player') {
-      const centerX = (elemento.x + 0.5) * 48;
-      const baseY = (elemento.y + 1) * 48;
-      desenharSombraInterno(ctxInterior, centerX, baseY);
-      desenharJogador(ctxInterior, centerX, baseY, 48, estado.reduzirMovimento ? 0 : animationTick, playerDirection, false, estado.avatar);
+      const centerX = (elemento.x + 0.5) * tile;
+      const baseY = (elemento.y + 1) * tile;
+      desenharSombraInterno(ctxInterior, centerX, baseY, tile);
+      desenharJogador(ctxInterior, centerX, baseY, tile, estado.reduzirMovimento ? 0 : animationTick, playerDirection, false, estado.avatar);
+      return;
+    }
+
+    if (elemento.tipo === 'professora' || elemento.tipo === 'aluno') {
+      const centerX = (elemento.x + 0.5) * tile;
+      const baseY = (elemento.y + 1) * tile;
+      desenharSombraInterno(ctxInterior, centerX, baseY, tile);
+      if (elemento.tipo === 'professora') {
+        desenharNpc(ctxInterior, centerX, baseY, tile, 0, elemento.id);
+        if (conceitoEscolaAtivo) desenharPensamentoEscola(ctxInterior, centerX, baseY - tile * 1.35, tile, conceitoEscolaAtivo);
+      } else {
+        desenharAlunoSentado(ctxInterior, centerX, baseY, tile, elemento.indice);
+      }
       return;
     }
 
     const objeto = elemento.objeto;
-    const centerX = (objeto.x + 0.5) * 48;
-    const baseY = (objeto.y + 1) * 48;
-    desenharSombraInterno(ctxInterior, centerX, baseY);
-    const tipoSprite = objeto.tipo === 'farinha' && objeto.etapa === 2
+    const centerX = (objeto.x + 0.5) * tile;
+    const baseY = (objeto.y + 1) * tile;
+    desenharSombraInterno(ctxInterior, centerX, baseY, tile);
+    const tipoSprite = objeto.tipo === 'farinha' && objeto.etapa === 0
+      ? 'saco'
+      : objeto.tipo === 'farinha' && objeto.etapa === 1
+        ? 'saco'
+        : objeto.tipo === 'farinha' && objeto.etapa === 2
       ? 'prensa'
       : objeto.tipo === 'farinha' && objeto.etapa === 3
         ? 'peneira'
@@ -1249,12 +1435,13 @@ function renderizarInterior(edificio) {
           : objeto.tipo === 'musica'
             ? objeto.id
             : objeto.tipo === 'produto'
-              ? (objeto.id === 'peixe-seco' || objeto.id === 'peixe' ? 'peixe' : 'placa')
+              ? (objeto.id === 'peixe-seco' || objeto.id === 'peixe' ? 'peixe' : objeto.id === 'farinha' ? 'saco' : 'biju')
               : 'prensa';
-    if (['prensa', 'peneira', 'forno', 'viola', 'rabeca', 'adufo', 'peixe', 'placa'].includes(tipoSprite)) {
-      desenharObjeto(ctxInterior, tipoSprite, centerX, baseY, 48, elemento.indice);
+    if (['prensa', 'peneira', 'forno', 'saco', 'biju', 'viola', 'rabeca', 'adufo', 'peixe', 'placa'].includes(tipoSprite)) {
+      desenharObjeto(ctxInterior, tipoSprite, centerX, baseY, tile, elemento.indice);
     }
   });
+  ctxInterior.restore();
 
   const controles = document.createElement('div');
   controles.className = 'interior-controles';
@@ -1269,6 +1456,17 @@ function renderizarInterior(edificio) {
     });
     controles.appendChild(botao);
   });
+  if (interior.professora) {
+    const conversar = document.createElement('button');
+    conversar.type = 'button';
+    conversar.textContent = 'Conversar com a professora';
+    conversar.addEventListener('click', () => {
+      estado.posicaoInterior = { x: interior.professora.x, y: interior.professora.y + 1 };
+      renderizarInterior(edificio);
+      interagirNoInterior();
+    });
+    controles.appendChild(conversar);
+  }
   const sair = document.createElement('button');
   sair.type = 'button';
   sair.textContent = 'Sair pela porta';
@@ -1276,7 +1474,8 @@ function renderizarInterior(edificio) {
   sair.addEventListener('click', fecharInterior);
   controles.appendChild(sair);
 
-  sala.append(canvasInterior, controles);
+  sala.append(canvasInterior);
+  sala.after(controles);
 
   if (edificio.id === 'casa-de-farinha') {
     descricao.textContent = 'Siga as estações da mandioca. Os passos podem ser feitos com um toque simples.';
@@ -1284,16 +1483,46 @@ function renderizarInterior(edificio) {
     descricao.textContent = 'A casa musical guarda instrumentos e ensina um padrão ritmico curto.';
   } else if (edificio.id === 'mercadinho') {
     descricao.textContent = 'Observe os produtos locais e seus saberes. Não há troca monetária neste prototipo.';
+  } else if (edificio.id === 'escola') {
+    descricao.textContent = 'Converse com a professora para conhecer dois conceitos. Os registros culturais estão marcados para validação comunitária.';
   } else {
     descricao.textContent = 'Você entrou no armazém da vila.';
   }
 }
 
-function desenharSombraInterno(ctxInterior, centerX, baseY) {
+function desenharSombraInterno(ctxInterior, centerX, baseY, tile = 16) {
   ctxInterior.fillStyle = 'rgba(43,26,14,0.22)';
   ctxInterior.beginPath();
-  ctxInterior.ellipse(centerX, baseY + 3, 18, 5, 0, 0, Math.PI * 2);
+  ctxInterior.ellipse(centerX, baseY + tile * 0.12, tile * 0.28, tile * 0.08, 0, 0, Math.PI * 2);
   ctxInterior.fill();
+}
+
+function desenharPensamentoEscola(ctxInterior, centerX, baseY, tile, conceitoId) {
+  const conceito = CONCEITOS_ESCOLA.find((item) => item.id === conceitoId);
+  if (!conceito) return;
+  const largura = tile * 2.6;
+  const altura = tile * 1.25;
+  const x = centerX + tile * 0.25;
+  const y = baseY - altura;
+  ctxInterior.save();
+  ctxInterior.fillStyle = '#F6E7C1';
+  ctxInterior.strokeStyle = '#68452B';
+  ctxInterior.lineWidth = Math.max(1, tile / 12);
+  ctxInterior.beginPath();
+  ctxInterior.roundRect(x, y, largura, altura, tile * 0.18);
+  ctxInterior.fill();
+  ctxInterior.stroke();
+  ctxInterior.beginPath();
+  ctxInterior.arc(x - tile * 0.12, y + altura * 0.78, tile * 0.12, 0, Math.PI * 2);
+  ctxInterior.fill();
+  ctxInterior.stroke();
+  ctxInterior.fillStyle = '#3B2A1A';
+  ctxInterior.font = `bold ${Math.max(7, tile * 0.25)}px sans-serif`;
+  ctxInterior.textAlign = 'left';
+  ctxInterior.textBaseline = 'middle';
+  ctxInterior.fillText(conceito.titulo, x + tile * 0.12, y + altura * 0.3, tile * 1.75);
+  desenharObjeto(ctxInterior, conceito.ilustracao, x + largura - tile * 0.45, y + altura * 0.83, tile * 0.75, 0);
+  ctxInterior.restore();
 }
 
 function moverNoInterior(dx, dy) {
@@ -1313,7 +1542,12 @@ function objetoInteriorProximo() {
   const interior = INTERIORES[estado.interiorAtivo];
   if (!interior) return null;
   const posicao = estado.posicaoInterior || interior.spawn;
-  return interior.objetos.find((objeto) => Math.abs(objeto.x - posicao.x) + Math.abs(objeto.y - posicao.y) <= 1) || null;
+  const objeto = interior.objetos.find((item) => Math.abs(item.x - posicao.x) + Math.abs(item.y - posicao.y) <= 1);
+  if (objeto) return objeto;
+  if (interior.professora && Math.abs(interior.professora.x - posicao.x) + Math.abs(interior.professora.y - posicao.y) <= 1) {
+    return { ...interior.professora, tipo: 'professora', nome: 'Professora Marina' };
+  }
+  return null;
 }
 
 function interagirNoInterior() {
@@ -1328,6 +1562,25 @@ function interagirNoInterior() {
   const feedback = document.getElementById('interior-feedback');
   if (!objeto) {
     feedback.textContent = 'Aproxime-se de uma estação e use Interagir.';
+    return;
+  }
+
+  if (objeto.tipo === 'professora') {
+    const conceito = CONCEITOS_ESCOLA.find((item) => !estado.conceitosEscola.includes(item.id)) || CONCEITOS_ESCOLA[0];
+    conceitoEscolaAtivo = conceito.id;
+    dialogController.open({
+      nome: 'Professora Marina',
+      personagemId: 'professora-marina',
+      texto: conceito.texto,
+      typewriter: false,
+      onContinue: () => {
+        dialogController.close();
+        if (!estado.conceitosEscola.includes(conceito.id)) estado.conceitosEscola.push(conceito.id);
+        salvar();
+        renderizarInterior({ id: 'escola' });
+      }
+    });
+    renderizarInterior({ id: 'escola' });
     return;
   }
 
@@ -1408,6 +1661,43 @@ function interagirNoInterior() {
     return;
   }
 
+  if (objeto.tipo === 'produto' && objeto.retirar) {
+    const mapaInventario = {
+      farinha: 'farinha',
+      peixe: 'peixe',
+      'produtos-comunidade': 'produtos-comunidade'
+    };
+    const chave = mapaInventario[objeto.id];
+    if (!chave) {
+      feedback.textContent = `${objeto.nome}: produto não possui ação configurada.`;
+      return;
+    }
+    dialogController.open({
+      nome: 'Armazém da vila',
+      texto: `O que fazer com ${objeto.nome.toLowerCase()}?`,
+      choices: [{ text: 'Guardar 1 item' }, { text: 'Retirar 1 item' }, { text: 'Cancelar' }],
+      onChoice: (indice) => {
+        if (indice === 0) {
+          estado.inventario[chave] = (Number(estado.inventario[chave]) || 0) + 1;
+          feedback.textContent = `${objeto.nome} guardado no inventário.`;
+        } else if (indice === 1) {
+          if (Number(estado.inventario[chave]) > 0) {
+            estado.inventario[chave] -= 1;
+            if (estado.inventario[chave] <= 0) delete estado.inventario[chave];
+            feedback.textContent = `${objeto.nome} retirado do inventário.`;
+          } else {
+            feedback.textContent = `Não há ${objeto.nome.toLowerCase()} disponível para retirar.`;
+          }
+        } else {
+          feedback.textContent = 'Nenhuma alteração feita no inventário.';
+        }
+        atualizarHud();
+        salvar();
+      }
+    });
+    return;
+  }
+
   if (objeto.tipo === 'produto') {
     feedback.textContent = `${objeto.nome}: ${objeto.descricao}`;
     if (!estado.locaisVisitados.includes(`produto-${objeto.id}`)) {
@@ -1427,6 +1717,7 @@ function fecharInterior() {
     panel.classList.remove('fechando');
   }, estado.reduzirMovimento ? 0 : 220);
   estado.interiorAtivo = null;
+  conceitoEscolaAtivo = null;
   estado.cenaAtual = 'exterior';
   estado.posicaoInterior = null;
   salvar();
@@ -1473,6 +1764,7 @@ function interagirComPesca(ponto) {
 }
 
 function iniciarAnimacaoPesca(ponto) {
+  pontoDaPescaAtual = ponto;
   if (estado.reduzirMovimento) {
     abrirEscolhaPeixe();
     return;
@@ -1530,15 +1822,23 @@ function sortearEspecie() {
 }
 
 function registrarPesca(guardar) {
+  const especie = sortearEspecie();
   if (guardar) {
     estado.peixesDisponiveis = Math.max(0, estado.peixesDisponiveis - 1);
+    estado.inventario.peixe = (Number(estado.inventario.peixe) || 0) + 1;
     ajustarIndicadores(estado, { Renda: 1 });
   } else {
     estado.peixesDisponiveis = Math.min(5, estado.peixesDisponiveis + 1);
     ajustarIndicadores(estado, { Ambiente: 1 });
   }
   estado.horariosDePesca.push(estado.horario);
-  const especie = sortearEspecie();
+  pescaResultadoAnimacao = {
+    guardar,
+    especieId: especie.id,
+    ponto: pontoDaPescaAtual || pontoPescaProximo(),
+    inicio: performance.now(),
+    ultimoTick: performance.now()
+  };
   if (!estado.colecaoPeixes.includes(especie.id)) estado.colecaoPeixes.push(especie.id);
   const carta = CONTEUDO.cartas.find((item) => item.id === 'registro-pesca');
   if (carta && !estado.cartasColetadas.includes(carta.texto)) {
@@ -1555,12 +1855,20 @@ function registrarPesca(guardar) {
   salvar();
 }
 
+function atualizarAnimacaoResultadoPesca(agora) {
+  if (!pescaResultadoAnimacao) return;
+  const delta = Math.max(0, agora - pescaResultadoAnimacao.ultimoTick);
+  if (estado.reduzirMovimento) pescaResultadoAnimacao.inicio += delta;
+  pescaResultadoAnimacao.ultimoTick = agora;
+  if (!estado.reduzirMovimento && agora - pescaResultadoAnimacao.inicio >= 1050) pescaResultadoAnimacao = null;
+}
+
 function moverPlayer(dx, dy, agora = performance.now()) {
   if (estado.fase !== 'jogo' || estado.pausa || estado.interiorAtivo || pescaAnimacao || !dialogController.overlay.classList.contains('hidden')) return;
   if (playerMotion || agora < playerNextStepAt) return;
   const origem = { x: estado.jogador.x, y: estado.jogador.y };
   const destino = { x: origem.x + dx, y: origem.y + dy };
-  if (!isPassable(destino.x, destino.y)) return;
+  if (!isPassable(destino.x, destino.y, estado.emCanoa ? 'canoa' : 'pe')) return;
   playerDirection = Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'right' : 'left') : (dy > 0 ? 'down' : 'up');
   playerMotion = { origem, destino, inicio: agora, duracao: estado.reduzirMovimento ? 1 : 180 };
 }
@@ -1700,6 +2008,11 @@ function desenharPeixesSaltantes(tile, camera, agora) {
     ctx.beginPath();
     ctx.ellipse(x, y + tile * 0.06, tile * (0.16 + progresso * 0.12), tile * 0.06, 0, 0, Math.PI * 2);
     ctx.stroke();
+    if (progresso > 0.35) {
+      ctx.fillStyle = '#F6E7C1';
+      ctx.fillRect(Math.round(x - tile * 0.2), Math.round(y - tile * 0.14 - arco * 0.2), tile * 0.045, tile * 0.06);
+      ctx.fillRect(Math.round(x + tile * 0.16), Math.round(y - tile * 0.1 - arco * 0.15), tile * 0.04, tile * 0.05);
+    }
     ctx.restore();
   });
 }
@@ -1714,6 +2027,19 @@ function abrirPeixeSaltante(peixe) {
   dialogController.open({
     nome: especie.nome,
     texto: `${especie.ficha} Registro de observação adicionado ao Caderno.`,
+    typewriter: false
+  });
+}
+
+function registrarFauna(especieId) {
+  const especie = ESPECIES_FAUNA[especieId];
+  if (!especie) return;
+  if (!estado.colecaoFauna.includes(especieId)) estado.colecaoFauna.push(especieId);
+  atualizarHud();
+  salvar();
+  dialogController.open({
+    nome: 'Caderno de Saberes',
+    texto: `${especie.nome}: ${especie.ficha} Esta ficha precisa de validação com a comunidade.`,
     typewriter: false
   });
 }
@@ -1752,12 +2078,12 @@ function tocarMapa(event) {
   const pixelX = ((event.clientX - rect.left) / rect.width) * canvas.width + camera.x;
   const pixelY = ((event.clientY - rect.top) / rect.height) * canvas.height + camera.y;
   const destino = { x: Math.floor(pixelX / tile), y: Math.floor(pixelY / tile) };
-  destinoAtual = isPassable(destino.x, destino.y) ? destino : null;
+  destinoAtual = isPassable(destino.x, destino.y, estado.emCanoa ? 'canoa' : 'pe') ? destino : null;
 }
 
 function atualizarMovimentoAlvo(agora) {
   if (!destinoAtual || estado.interiorAtivo || playerMotion || agora < playerNextStepAt) return;
-  const rota = findPath(estado.jogador, destinoAtual);
+  const rota = findPath(estado.jogador, destinoAtual, estado.emCanoa ? 'canoa' : 'pe');
   if (rota.length > 1) {
     const next = rota[1];
     const dx = next.x - estado.jogador.x;
@@ -1870,17 +2196,72 @@ function posicaoMorador(morador, indice, agora) {
   };
 }
 
-function desenharAves(tile, camera) {
-  const tick = estado.reduzirMovimento ? 0 : animationTick;
-  AVES_POUSADAS.forEach((ave) => {
-    desenharAve(ctx, ave.x * tile - camera.x, ave.y * tile - camera.y, tile, tick, true);
+function atualizarFauna(agora) {
+  const delta = tempoFaunaAnterior ? Math.max(0, agora - tempoFaunaAnterior) : 0;
+  tempoFaunaAnterior = agora;
+  if (estado.reduzirMovimento) return;
+  tempoMovimentoFauna += delta;
+  FAUNA.filter((animal) => animal.especieId === 'passaro').forEach((animal) => {
+    const restante = faunaVoo.get(animal.id) || 0;
+    const proximidade = distancia(estado.jogador.x, estado.jogador.y, animal.x, animal.y);
+    if (restante > 0) {
+      const novoRestante = Math.max(0, restante - delta);
+      if (novoRestante) faunaVoo.set(animal.id, novoRestante);
+      else faunaVoo.delete(animal.id);
+    } else if (proximidade < 2) {
+      faunaVoo.set(animal.id, 1900);
+    }
   });
-  if (!estado.reduzirMovimento) {
-    const primeiroX = 29 + (animationTick / 35) % 10;
-    const segundoX = 39 - (animationTick / 47) % 10;
-    desenharAve(ctx, primeiroX * tile - camera.x, 6.2 * tile - camera.y, tile, tick);
-    desenharAve(ctx, segundoX * tile - camera.x, 6.6 * tile - camera.y, tile, tick + 10);
+}
+
+function posicaoFauna(animal, indice, agora = performance.now()) {
+  const tick = tempoMovimentoFauna;
+  if (animal.especieId === 'caranguejo') {
+    const perto = distancia(estado.jogador.x, estado.jogador.y, animal.x, animal.y) < 2;
+    const lado = animal.x < estado.jogador.x ? -1 : animal.x > estado.jogador.x ? 1 : indice % 2 ? -1 : 1;
+    const fuga = perto ? lado * 1.2 : 0;
+    const passo = ((tick / 320 + indice * 0.31) % 2) - 1;
+    return { x: Math.max(0.5, Math.min(47.5, animal.x + fuga + passo * 0.38)), y: animal.y };
   }
+  if (animal.especieId === 'lagarto') {
+    const ciclo = (tick + indice * 430) % 2100;
+    const corrida = ciclo > 1500 ? (ciclo - 1500) / 600 : 0;
+    return { x: animal.x + corrida * (indice % 2 ? -0.8 : 0.8), y: animal.y };
+  }
+  const restante = faunaVoo.get(animal.id) || 0;
+  if (!restante) return { x: animal.x, y: animal.y };
+  const progresso = 1 - restante / 1900;
+  const lado = animal.x < estado.jogador.x ? -1 : 1;
+  return { x: animal.x + lado * progresso * 1.5, y: animal.y - Math.sin(progresso * Math.PI) * 1.1 };
+}
+
+function desenharFauna(tile, camera, agora) {
+  const tick = estado.reduzirMovimento ? 0 : animationTick;
+  FAUNA.forEach((animal, indice) => {
+    const posicao = posicaoFauna(animal, indice, agora);
+    const x = (posicao.x + 0.5) * tile - camera.x;
+    const y = (posicao.y + 0.5) * tile - camera.y;
+    if (animal.especieId === 'passaro') {
+      desenharAve(ctx, x, y, tile, tick + indice * 3, !faunaVoo.get(animal.id));
+    } else if (animal.especieId === 'caranguejo') {
+      ctx.fillStyle = '#A64C3A';
+      ctx.fillRect(Math.round(x - tile * 0.15), Math.round(y - tile * 0.08), tile * 0.3, tile * 0.16);
+      ctx.fillStyle = '#5A3A1E';
+      for (let pata = -1; pata <= 1; pata += 1) {
+        ctx.fillRect(Math.round(x + pata * tile * 0.09), Math.round(y + tile * 0.05), tile * 0.035, tile * 0.11);
+      }
+    } else {
+      ctx.fillStyle = '#5F8B45';
+      ctx.fillRect(Math.round(x - tile * 0.17), Math.round(y - tile * 0.06), tile * 0.3, tile * 0.12);
+      ctx.fillRect(Math.round(x + tile * 0.1), Math.round(y - tile * 0.13), tile * 0.12, tile * 0.12);
+      ctx.fillStyle = '#2B1A0E';
+      ctx.fillRect(Math.round(x + tile * 0.18), Math.round(y - tile * 0.1), tile * 0.025, tile * 0.025);
+    }
+  });
+}
+
+function desenharAves(tile, camera, agora) {
+  desenharFauna(tile, camera, agora);
 }
 
 function desenharBorboletas(tile, camera) {
@@ -1941,7 +2322,7 @@ function posicaoOcultaPorEdificio(posicao) {
 }
 
 function desenharLuzes(tile, camera) {
-  if (estado.horario !== '17:30') return;
+  if (estado.horario !== '17:30' || estado.reduzirMovimento) return;
   MAPA_DECORACOES.filter((item) => item.tipo === 'luminaria').forEach((luz) => {
     const x = (luz.x + 0.5) * tile - camera.x;
     const y = (luz.y + 0.5) * tile - camera.y;
@@ -1970,11 +2351,52 @@ function desenharPeixe(x, y, escala) {
   ctx.fillRect(Math.round(x + escala * 2), Math.round(y + escala), escala, escala);
 }
 
+function desenharCestoPeixe(centroX, baseY, tile, comPeixe) {
+  ctx.fillStyle = '#8A5A33';
+  ctx.fillRect(Math.round(centroX - tile * 0.19), Math.round(baseY - tile * 0.2), tile * 0.38, tile * 0.19);
+  ctx.fillStyle = '#A78354';
+  ctx.fillRect(Math.round(centroX - tile * 0.17), Math.round(baseY - tile * 0.18), tile * 0.34, tile * 0.16);
+  ctx.fillStyle = '#5A3A1E';
+  ctx.fillRect(Math.round(centroX - tile * 0.2), Math.round(baseY - tile * 0.2), tile * 0.4, tile * 0.035);
+  if (comPeixe) desenharPeixe(centroX - tile * 0.11, baseY - tile * 0.29, tile * 0.025);
+}
+
+function desenharResultadoPesca(tile, camera, agora) {
+  if (!pescaResultadoAnimacao) return;
+  const ponto = pescaResultadoAnimacao.ponto;
+  const agua = ponto?.agua || ponto || estado.jogador;
+  const progresso = estado.reduzirMovimento
+    ? 0
+    : Math.max(0, Math.min(1, (agora - pescaResultadoAnimacao.inicio) / 1050));
+  const origemX = (pescaResultadoAnimacao.guardar ? agua.x + 0.5 : estado.jogador.x + 0.5) * tile - camera.x;
+  const origemY = (pescaResultadoAnimacao.guardar ? agua.y + 0.5 : estado.jogador.y + 0.5) * tile - camera.y;
+  const destinoX = (pescaResultadoAnimacao.guardar ? estado.jogador.x + 1.05 : agua.x + 0.5) * tile - camera.x;
+  const destinoY = (pescaResultadoAnimacao.guardar ? estado.jogador.y + 0.82 : agua.y + 0.5) * tile - camera.y;
+  const peixeX = origemX + (destinoX - origemX) * progresso;
+  const peixeY = origemY + (destinoY - origemY) * progresso - Math.sin(progresso * Math.PI) * tile * 0.85;
+  if (progresso < 1 || estado.reduzirMovimento) desenharPeixe(peixeX, peixeY, tile * 0.045);
+  if (!pescaResultadoAnimacao.guardar && progresso > 0.82) {
+    const intensidade = estado.reduzirMovimento ? 0.7 : (progresso - 0.82) / 0.18;
+    ctx.strokeStyle = `rgba(241,255,229,${intensidade})`;
+    ctx.lineWidth = Math.max(1, tile * 0.035);
+    ctx.beginPath();
+    ctx.ellipse(destinoX, destinoY, tile * 0.28 * intensidade, tile * 0.09 * intensidade, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = '#2BB5C9';
+    ctx.fillRect(destinoX - tile * 0.11, destinoY - tile * 0.12, tile * 0.07, tile * 0.05);
+    ctx.fillRect(destinoX + tile * 0.08, destinoY - tile * 0.04, tile * 0.06, tile * 0.045);
+  }
+}
+
 function desenharAnimacaoPesca(tile, camera, agora) {
-  if (!pescaAnimacao) return;
   const jogador = posicaoVisual(estado.jogador, playerMotion, agora);
   const jogadorX = (jogador.x + 0.5) * tile - camera.x;
   const jogadorY = (jogador.y + 0.2) * tile - camera.y;
+  if (!pescaAnimacao) {
+    if ((Number(estado.inventario.peixe) || 0) > 0) desenharCestoPeixe(jogadorX + tile * 0.55, (jogador.y + 1) * tile - camera.y, tile, true);
+    desenharResultadoPesca(tile, camera, agora);
+    return;
+  }
   const direcao = pescaAnimacao.direcao;
   const maoX = jogadorX + tile * (direcao === 'left' ? -0.1 : direcao === 'right' ? 0.1 : 0);
   const maoY = jogadorY - tile * 0.45;
@@ -1989,23 +2411,6 @@ function desenharAnimacaoPesca(tile, camera, agora) {
 
   ctx.save();
   desenharVaraPesca(ctx, maoX, maoY, pontaX, pontaY, aguaX, aguaY, tile, direcao, pescaAnimacao.fase, progressoVisual, estado.reduzirMovimento);
-  ctx.fillStyle = '#8A5A33';
-  ctx.strokeStyle = '#5A3A1E';
-  ctx.lineWidth = Math.max(2, tile * 0.035);
-  ctx.fillStyle = '#D9A441';
-  ctx.fillRect(Math.round(maoX - tile * 0.06), Math.round(maoY - tile * 0.06), tile * 0.12, tile * 0.12);
-  ctx.strokeStyle = '#5A3A1E';
-  ctx.lineWidth = Math.max(2, tile * 0.035);
-  ctx.beginPath();
-  ctx.moveTo(maoX, maoY);
-  ctx.lineTo(pontaX, pontaY);
-  ctx.stroke();
-  ctx.strokeStyle = '#F0D9A0';
-  ctx.lineWidth = Math.max(1, tile * 0.012);
-  ctx.beginPath();
-  ctx.moveTo(pontaX, pontaY);
-  ctx.lineTo(aguaX, aguaY);
-  ctx.stroke();
 
   if (pescaAnimacao.fase === 'lancamento') {
     const flutuadorX = pontaX + (aguaX - pontaX) * progressoVisual;
@@ -2049,6 +2454,8 @@ function desenharAnimacaoPesca(tile, camera, agora) {
     ctx.fillRect(Math.round(aguaX + tile * 0.04), Math.round(aguaY - tile * 0.04), tile * 0.06, tile * 0.045);
   }
   ctx.restore();
+  if ((Number(estado.inventario.peixe) || 0) > 0) desenharCestoPeixe(jogadorX + tile * 0.55, (jogador.y + 1) * tile - camera.y, tile, true);
+  desenharResultadoPesca(tile, camera, agora);
 }
 
 function criarCamadaEstaticaMinimapa() {
@@ -2079,6 +2486,18 @@ function desenharIconeInteresse(ctx, tipo, x, y) {
   ctx.lineWidth = 1;
   if (tipo === 'casa-musical' || tipo === 'casa-de-farinha' || tipo === 'terreiro') {
     ctx.fillRect(x - 2, y - 2, 4, 4);
+  } else if (tipo === 'praca') {
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(x - 3, y - 3, 6, 6);
+    ctx.fillStyle = '#FFE066';
+    ctx.fillRect(x - 1, y - 1, 2, 2);
+  } else if (tipo === 'horta') {
+    ctx.fillStyle = '#3F813D';
+    ctx.fillRect(x - 3, y - 2, 6, 4);
+    ctx.fillStyle = '#8CCB5E';
+    ctx.fillRect(x - 2, y - 1, 1, 2);
+    ctx.fillRect(x, y - 1, 1, 2);
+    ctx.fillRect(x + 2, y - 1, 1, 2);
   } else if (tipo === 'lagoa' || tipo === 'praia') {
     ctx.beginPath();
     ctx.arc(x, y, 2, 0, Math.PI * 2);
@@ -2109,13 +2528,17 @@ function desenharMinimapa(canvas, ampliar = false) {
 
   const pontos = ampliar
     ? [
+      { tipo: 'praca', x: PRACA_CENTRAL.coreto.x, y: PRACA_CENTRAL.coreto.y, nome: PRACA_CENTRAL.nome },
+      { tipo: 'horta', x: HORTA_CENTRAL.x + Math.floor(HORTA_CENTRAL.largura / 2), y: HORTA_CENTRAL.y + Math.floor(HORTA_CENTRAL.altura / 2), nome: HORTA_CENTRAL.nome },
       { tipo: 'casa-de-farinha', x: 25, y: 10, nome: 'Casa de farinha' },
       { tipo: 'mercadinho', x: 21, y: 16, nome: 'Mercadinho' },
       { tipo: 'armazem', x: 15, y: 16, nome: 'Armazém' },
       { tipo: 'casa-musical', x: 29, y: 16, nome: 'Casa musical' },
       { tipo: 'terreiro', x: 7, y: 18, nome: 'Terreiro dos Fandangos' },
       { tipo: 'pier', x: 13, y: 28, nome: 'Píer' },
-      { tipo: 'lagoa', x: 37, y: 23, nome: 'Lagoa' }
+      { tipo: 'lagoa', x: 37, y: 23, nome: 'Lagoa' },
+      ...EDIFICIOS.filter((edificio) => ['escola', 'capela', 'peixaria'].includes(edificio.id))
+        .map((edificio) => ({ tipo: edificio.id, x: edificio.x, y: edificio.y, nome: nomeEdificio(edificio) }))
     ]
     : [];
   pontos.forEach((ponto) => desenharIconeInteresse(ctxMinimapa, ponto.tipo, px(ponto.x), py(ponto.y)));
@@ -2223,13 +2646,13 @@ function desenhoMapa(agora = performance.now()) {
   for (let y = Math.max(0, inicioY - 2); y < Math.min(MAPA.length, fimY + 1); y += 1) {
     for (let x = Math.max(0, inicioX - 2); x < Math.min(MAPA[0].length, fimX + 2); x += 1) {
       const tipo = MAPA[y][x];
-      if (tipo !== 'mato' && !['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa', 'saco'].includes(tipo)) continue;
+      if (tipo !== 'mato' && !['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa', 'saco'].includes(tipo)) continue;
       elements.push({ tipo: 'objeto', objeto: tipo, x, y, seed: x * 17 + y * 31 });
     }
   }
   MAPA_DECORACOES.forEach((decoracao) => {
     if (decoracao.x >= inicioX - 1 && decoracao.x <= fimX && decoracao.y >= inicioY - 1 && decoracao.y <= fimY) {
-      elements.push({ tipo: 'decoracao', objeto: decoracao.tipo, x: decoracao.x, y: decoracao.y, seed: decoracao.x * 17 + decoracao.y * 31 });
+      elements.push({ tipo: 'decoracao', objeto: decoracao.tipo, x: decoracao.x, y: decoracao.y, seed: decoracao.variante ?? decoracao.x * 17 + decoracao.y * 31 });
     }
   });
   getNPCsNoHorario(estado.horario).forEach((npc) => elements.push({ tipo: 'npc', x: npc.x, y: npc.y, npc }));
@@ -2253,8 +2676,8 @@ function desenhoMapa(agora = performance.now()) {
     const baseY = (element.y + 1) * tile - camera.y;
     const tick = estado.reduzirMovimento ? 0 : animationTick;
     if (element.tipo === 'objeto' || element.tipo === 'decoracao') {
-      const casa = ['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho'].includes(element.objeto);
-      const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'].includes(element.objeto);
+      const casa = ['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(element.objeto);
+      const grande = element.tipo === 'objeto' && ['mato', 'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa'].includes(element.objeto);
       const destaque = element.tipo === 'decoracao' && ITENS_DESTAQUE.has(element.objeto);
       const salto = destaque && !estado.reduzirMovimento
         ? Math.sin(tick / 13 + element.seed) * tile * 0.035
@@ -2323,16 +2746,33 @@ function desenhoMapa(agora = performance.now()) {
       }
     } else {
       desenharSombra(centerX, baseY, tile, 0.7);
-      desenharJogador(
-        ctx,
-        centerX,
-        baseY,
-        tile,
-        tick,
-        playerDirection,
-        Boolean(playerMotion),
-        estado.avatar
-      );
+      if (element.tipo === 'player' && estado.emCanoa) {
+        desenharCanoaCaiçara(ctx, centerX, baseY, tile, estado.jogador.x + estado.jogador.y, estado.reduzirMovimento);
+      }
+      if (element.tipo === 'player' && estado.emCanoa) {
+        desenharJogadorSentado(ctx, centerX, baseY - tile * 0.08, tile, tick, playerDirection, estado.avatar);
+      } else {
+        desenharJogador(
+          ctx,
+          centerX,
+          baseY,
+          tile,
+          tick,
+          playerDirection,
+          Boolean(playerMotion),
+          estado.avatar
+        );
+      }
+      if (element.tipo === 'player' && estado.emCanoa) {
+        const remada = estado.reduzirMovimento ? 0 : Math.sin(animationTick / 3) * tile * 0.11;
+        ctx.strokeStyle = '#5A3A1E';
+        ctx.lineWidth = Math.max(2, tile * 0.05);
+        ctx.beginPath();
+        ctx.moveTo(centerX + tile * 0.45, baseY - tile * 0.55);
+        ctx.lineTo(centerX + tile * 0.9, baseY - tile * 0.25 + remada);
+        ctx.lineTo(centerX + tile * 0.98, baseY - tile * 0.08 + remada);
+        ctx.stroke();
+      }
       if (element.tipo === 'player' && portaAnimacao && !estado.reduzirMovimento && performance.now() - portaAnimacao.inicio < 360) {
         ctx.save();
         const quadros = Math.floor((performance.now() - portaAnimacao.inicio) / 90);
@@ -2349,7 +2789,7 @@ function desenhoMapa(agora = performance.now()) {
     }
   });
 
-  desenharAves(tile, camera);
+  desenharAves(tile, camera, agora);
   desenharBorboletas(tile, camera);
   desenharParticulas(tile, camera);
   desenharFumaca(tile, camera);
@@ -2388,7 +2828,9 @@ function loop(agora = performance.now()) {
     atualizarMovimentoAlvo(agora);
     atualizarCachorro(agora);
     atualizarAnimacaoPesca(agora);
+    atualizarAnimacaoResultadoPesca(agora);
     atualizarPeixesSaltantes(agora);
+    atualizarFauna(agora);
     atualizarInteracao();
   }
   desenhoMapa(agora);
@@ -2396,7 +2838,13 @@ function loop(agora = performance.now()) {
 }
 
 function setupEventos() {
-  window.addEventListener('resize', redimensionarCanvas);
+  window.addEventListener('resize', () => {
+    redimensionarCanvas();
+    if (estado.interiorAtivo) {
+      const edificio = EDIFICIOS.find((item) => item.id === estado.interiorAtivo);
+      if (edificio) renderizarInterior(edificio);
+    }
+  });
   document.getElementById('btn-jogar').addEventListener('click', () => {
     novaJornada = true;
     mostrarJogo();
@@ -2630,7 +3078,10 @@ function applyDefaults() {
     estado.jogador = posicaoInicialJogador();
     estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   }
-  if (!isPassable(estado.jogador.x, estado.jogador.y)) estado.jogador = posicaoInicialJogador();
+  if (!isPassable(estado.jogador.x, estado.jogador.y, estado.emCanoa ? 'canoa' : 'pe')) {
+    estado.emCanoa = false;
+    estado.jogador = posicaoInicialJogador();
+  }
   if (!isPassable(estado.cachorro.x, estado.cachorro.y)) estado.cachorro = { ...POSICAO_INICIAL_CACHORRO };
   playerMotion = null;
   dogMotion = null;

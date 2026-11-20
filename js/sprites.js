@@ -207,18 +207,19 @@ const NPC_PALETAS = {
   tiao: PALETAS.tiao,
   rita: PALETAS.rita,
   davi: PALETAS.davi,
-  erveiro: { ...PALETAS.nelson, pele: '#5D382E', cabelo: '#D5C6A0', blusa: '#2F6B3A', cabeloTipo: 'crespo' }
+  erveiro: { ...PALETAS.nelson, pele: '#5D382E', cabelo: '#D5C6A0', blusa: '#2F6B3A', cabeloTipo: 'crespo' },
+  'professora-marina': { ...PALETAS.rita, blusa: '#F0D9A0', detalhe: '#3D7180' }
 };
 
 const TIPOS_DE_PISO = ['vila', 'grama', 'mato', 'roca', 'plantacao', 'praia', 'mar', 'mar-fundo', 'caminho', 'madeira', 'ceu', 'lagoa'];
 const TIPOS_DE_OBJETO = [
-  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'banco', 'canoa', 'saco',
+  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canteiro', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
   'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'vara-pesca', 'lixeiraOrganica', 'lixeiraReciclavel',
   'arbusto', 'flor', 'pedra', 'capim', 'cerca', 'vitoria-regia', 'junco', 'tronco', 'tronco-caido'
 ];
 const OBJETOS_GRANDES = new Set([
-  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'
+  'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'coreto', 'canoa'
 ]);
 const COLUNAS_ATLAS = 8;
 const VARIANTES_PISO = 4;
@@ -401,6 +402,70 @@ function pintarObjeto(ctx, tipo, variante) {
       ctx.fillRect(25, 0, 2, 3);
       ctx.fillStyle = '#8A5A33';
       ctx.fillRect(4, 8, 24, 1);
+    }
+  } else if (tipo === 'escola' || tipo === 'capela' || tipo === 'peixaria') {
+    pintarObjeto(ctx, tipo === 'escola' ? 'casaRural' : 'casa', variante);
+    if (tipo === 'escola') {
+      ctx.fillStyle = '#3D7180';
+      ctx.fillRect(4, 3, 24, 6);
+      ctx.fillStyle = '#F6E7C1';
+      ctx.fillRect(8, 4, 16, 3);
+      ctx.fillStyle = '#5A3A1E';
+      ctx.fillRect(10, 5, 12, 1);
+    } else if (tipo === 'capela') {
+      ctx.fillStyle = '#F6E7C1';
+      ctx.fillRect(22, 0, 8, 17);
+      ctx.fillStyle = '#8A3D2B';
+      ctx.fillRect(21, 0, 10, 3);
+      ctx.fillStyle = '#5A3A1E';
+      ctx.fillRect(25, 2, 2, 9);
+      ctx.fillRect(22, 4, 8, 2);
+      ctx.fillStyle = '#D9A441';
+      ctx.fillRect(25, 14, 2, 2);
+    } else {
+      ctx.fillStyle = '#5A3A1E';
+      ctx.fillRect(4, 5, 24, 4);
+      ctx.fillStyle = '#2BB5C9';
+      ctx.fillRect(6, 6, 4, 2);
+      ctx.fillRect(13, 6, 4, 2);
+      ctx.fillRect(20, 6, 4, 2);
+      ctx.fillStyle = '#F0D9A0';
+      ctx.fillRect(5, 3, 22, 2);
+    }
+  } else if (tipo === 'coreto') {
+    ctx.fillStyle = 'rgba(43,26,14,0.25)';
+    ctx.fillRect(3, 27, 26, 3);
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 13, 3, 15);
+    ctx.fillRect(24, 13, 3, 15);
+    ctx.fillRect(8, 19, 16, 2);
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(2, 9, 28, 4);
+    ctx.fillStyle = '#D9A441';
+    ctx.fillRect(7, 5, 18, 4);
+    ctx.fillRect(12, 2, 8, 3);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(11, 14, 10, 4);
+  } else if (tipo === 'canteiro') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(2, 17, 28, 9);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(3, 15, 26, 3);
+    ctx.fillStyle = '#5A3A1E';
+    ctx.fillRect(4, 25, 3, 4);
+    ctx.fillRect(25, 25, 3, 4);
+    if (variante === 0) {
+      ctx.fillStyle = '#3F813D';
+      ctx.fillRect(7, 8, 6, 8); ctx.fillRect(17, 7, 7, 9);
+      ctx.fillStyle = '#8CCB5E'; ctx.fillRect(8, 6, 4, 4); ctx.fillRect(18, 5, 5, 4);
+    } else if (variante === 1) {
+      ctx.fillStyle = '#5FA844';
+      ctx.fillRect(6, 9, 8, 7); ctx.fillRect(17, 8, 8, 8);
+      ctx.fillStyle = '#8CCB5E'; ctx.fillRect(8, 6, 4, 5); ctx.fillRect(19, 5, 4, 5);
+    } else {
+      ctx.fillStyle = '#3F813D';
+      ctx.fillRect(7, 7, 3, 10); ctx.fillRect(14, 9, 3, 8); ctx.fillRect(21, 6, 3, 11);
+      ctx.fillStyle = '#D9BE82'; ctx.fillRect(8, 14, 2, 3); ctx.fillRect(22, 13, 2, 4);
     }
   } else if (tipo === 'pavilhao') {
     ctx.fillStyle = 'rgba(43,26,14,0.27)';
@@ -800,7 +865,7 @@ export function desenharObjeto(ctx, tipo, x, y, tile, seed = 0) {
     const objetoAtlas = criarAtlasObjetos();
     const objetoIndex = TIPOS_DE_OBJETO.indexOf(objeto) * 3 + variante;
     const objetoFrame = atlasIndex(objetoAtlas, objetoIndex);
-    const tamanho = ['casa', 'casaFarinha', 'casaRural', 'mercadinho'].includes(objeto)
+    const tamanho = ['casa', 'casaFarinha', 'casaRural', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(objeto)
       ? tile * 3.6
       : OBJETOS_GRANDES.has(objeto) ? tile * 2 : tile;
     objetoAtlas.drawFrame(
@@ -836,12 +901,37 @@ export function desenharJogador(ctx, centroX, baseY, tile, tick, direcao, andand
   desenharPersonagem(ctx, centroX, baseY, tile, AVATAR_PALETAS[avatar] || AVATAR_PALETAS.a1, tick, direcao, andando);
 }
 
+export function desenharJogadorSentado(ctx, centroX, baseY, tile, tick, direcao, avatar) {
+  const folha = criarFolhaPersonagem(AVATAR_PALETAS[avatar] || AVATAR_PALETAS.a1);
+  const escala = (tile / LARGURA_QUADRO) * 0.6;
+  const quadro = Math.floor(tick / 30) % 2;
+  const linha = DIRECOES[direcao] ?? DIRECOES.down;
+  const altura = ALTURA_QUADRO * escala * 0.72;
+  folha.drawFrame(
+    ctx,
+    quadro,
+    linha,
+    centroX - (LARGURA_QUADRO * escala) / 2,
+    baseY - altura,
+    LARGURA_QUADRO * escala,
+    altura
+  );
+}
+
 export function desenharNpc(ctx, centroX, baseY, tile, tick, id) {
   desenharPersonagem(ctx, centroX, baseY, tile, NPC_PALETAS[id] || PALETAS.jogador, tick, 'down');
 }
 
 export function desenharMorador(ctx, centroX, baseY, tile, tick, direcao = 'down', andando = false, variante = 0) {
   desenharPersonagem(ctx, centroX, baseY, tile, PALETAS_MORADORES[variante % PALETAS_MORADORES.length], tick, direcao, andando);
+}
+
+export function desenharAlunoSentado(ctx, centroX, baseY, tile, indice = 0) {
+  const px = tile / 16;
+  retanguloPixel(ctx, centroX - 6 * px, baseY - 5 * px, 12 * px, 2 * px, '#8A5A33');
+  retanguloPixel(ctx, centroX - 5 * px, baseY - 3 * px, 2 * px, 3 * px, '#68452B');
+  retanguloPixel(ctx, centroX + 3 * px, baseY - 3 * px, 2 * px, 3 * px, '#68452B');
+  desenharMorador(ctx, centroX, baseY - 4 * px, tile, 0, 'down', false, indice);
 }
 
 export function desenharDancarino(ctx, centroX, baseY, tile, tick, indice, estilo = 'homem') {
@@ -944,6 +1034,19 @@ export function desenharVaraPesca(ctx, maoX, maoY, pontaX, pontaY, aguaX, aguaY,
   ctx.beginPath();
   ctx.moveTo(flutuadorX, flutuadorY + tile * 0.09);
   ctx.lineTo(flutuadorX + tile * (reduzirMovimento ? 0.04 : 0.07), flutuadorY + tile * 0.18);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#D9BE82';
+  ctx.lineWidth = Math.max(1, tile * 0.018);
+  ctx.beginPath();
+  ctx.moveTo(flutuadorX + tile * 0.05, flutuadorY + tile * 0.16);
+  ctx.lineTo(flutuadorX + tile * 0.09, flutuadorY + tile * 0.24);
+  ctx.quadraticCurveTo(
+    flutuadorX + tile * 0.18,
+    flutuadorY + tile * 0.29,
+    flutuadorX + tile * 0.18,
+    flutuadorY + tile * 0.2
+  );
   ctx.stroke();
   ctx.restore();
 }

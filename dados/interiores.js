@@ -51,5 +51,18 @@ export const INTERIORES = {
       { id: 'peixe', nome: 'Peixe seco', descricao: 'Peixe preparado para guardar e compartilhar.', x: 3, y: 2, tipo: 'produto' },
       { id: 'produtos-comunidade', nome: 'Produtos da comunidade', descricao: 'Itens produzidos por diferentes moradores da vila.', x: 5, y: 2, tipo: 'produto' }
     ]
+  },
+  escola: {
+    titulo: 'Escola da vila',
+    largura: 14,
+    altura: 9,
+    spawn: { x: 7, y: 8 },
+    saida: { x: 7, y: 8 },
+    professora: { id: 'professora-marina', x: 7, y: 2 },
+    alunos: [
+      { x: 4, y: 4 }, { x: 6, y: 4 }, { x: 8, y: 4 },
+      { x: 10, y: 4 }, { x: 5, y: 6 }, { x: 9, y: 6 }
+    ],
+    objetos: []
   }
 };

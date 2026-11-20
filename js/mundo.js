@@ -2,10 +2,10 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=43';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=55';
 
 export const MAPA_LARGURA = 48;
-export const MAPA_ALTURA = 32;
+export const MAPA_ALTURA = 38;
 export const POSICAO_INICIAL_JOGADOR = { x: 14, y: 23 };
 export const POSICAO_INICIAL_CACHORRO = { x: 10, y: 21 };
 
@@ -18,6 +18,9 @@ const TIPOS_DE_TERRENO = {
   '-': 'caminho',
   'l': 'lagoa',
   H: 'casa',
+  T: 'escola',
+  A: 'capela',
+  Q: 'peixaria',
   M: 'mercadinho',
   F: 'casaFarinha',
   S: 'saco',
@@ -62,6 +65,12 @@ const DESENHO_MAPA = [
   '========C=====-======C==========================',
   '~~~~~~~~~~~~~~w~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~w~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
+  '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~',
   '~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~'
 ];
 
@@ -77,14 +86,26 @@ export const MAPA = DESENHO_MAPA.map((linha) => Array.from(linha, (simbolo) => {
   return terreno;
 }));
 
-const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho']);
+const TIPOS_DE_EDIFICIO = new Set(['casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria']);
 
 export const POSICOES_EDIFICIOS = {
+  escola: { x: 11, y: 10, tipo: 'escola' },
+  capela: { x: 18, y: 10, tipo: 'capela' },
   'casa-de-farinha': { x: 25, y: 10, tipo: 'casaFarinha' },
   armazem: { x: 15, y: 16, tipo: 'casa' },
   mercadinho: { x: 21, y: 16, tipo: 'mercadinho' },
   'casa-musical': { x: 29, y: 16, tipo: 'pavilhao' },
-  'casa-fechada': { x: 36, y: 16, tipo: 'casa' }
+  'casa-fechada': { x: 36, y: 16, tipo: 'casa' },
+  peixaria: { x: 9, y: 26, tipo: 'peixaria' }
+};
+export const PRACA_CENTRAL = { nome: 'Praça central', x: 17, y: 11, largura: 7, altura: 5, coreto: { x: 20, y: 13 } };
+export const HORTA_CENTRAL = {
+  nome: 'Horta da vila', x: 12, y: 11, largura: 5, altura: 5, cuidadora: { x: 15, y: 14 },
+  canteiros: [
+    { x: 13, y: 13, variante: 0 },
+    { x: 14, y: 13, variante: 1 },
+    { x: 15, y: 13, variante: 2 }
+  ]
 };
 
 for (let y = 0; y < MAPA_ALTURA; y += 1) {
@@ -125,6 +146,12 @@ function aplicarCaminhosDeclarativos() {
   // Trilha da mata com no máximo duas curvas.
   for (let y = 6; y <= 16; y += 1) MAPA[y][40] = 'caminho';
   for (let y = 5; y <= 6; y += 1) MAPA[y][40] = 'caminho';
+  for (let y = PRACA_CENTRAL.y; y < PRACA_CENTRAL.y + PRACA_CENTRAL.altura; y += 1) {
+    for (let x = PRACA_CENTRAL.x; x < PRACA_CENTRAL.x + PRACA_CENTRAL.largura; x += 1) MAPA[y][x] = 'caminho';
+  }
+  const eixoPraca = PRACA_CENTRAL.coreto.x;
+  for (let y = PRACA_CENTRAL.y + PRACA_CENTRAL.altura; y <= 18; y += 1) MAPA[y][eixoPraca] = 'caminho';
+  for (let x = 9; x <= 13; x += 1) MAPA[27][x] = 'caminho';
 }
 
 aplicarCaminhosDeclarativos();
@@ -156,8 +183,21 @@ export const NPCS = [
   { ...PERSONAGENS.tiao, x: 29, y: 15 },
   { ...PERSONAGENS.rita, x: 39, y: 26 },
   { ...PERSONAGENS.davi, x: 11, y: 23 },
-  { ...PERSONAGENS.erveiro, x: 40, y: 5 }
+  { ...PERSONAGENS.erveiro, x: 40, y: 5 },
+  { ...PERSONAGENS['hortela-da-vila'], ...HORTA_CENTRAL.cuidadora }
 ];
+
+function gerarCercaHorta() {
+  const { x, y, largura, altura } = HORTA_CENTRAL;
+  const cerca = [];
+  for (let dx = 0; dx < largura; dx += 1) {
+    cerca.push({ tipo: 'cerca', x: x + dx, y }, { tipo: 'cerca', x: x + dx, y: y + altura - 1 });
+  }
+  for (let dy = 1; dy < altura - 1; dy += 1) {
+    cerca.push({ tipo: 'cerca', x, y: y + dy }, { tipo: 'cerca', x: x + largura - 1, y: y + dy });
+  }
+  return cerca;
+}
 
 const npcPorId = new Map(NPCS.map((npc) => [npc.id, npc]));
 export const MISSION_POINTS = Object.fromEntries(
@@ -175,7 +215,7 @@ export const EDIFICIOS = MAPA.flatMap((linha, y) => linha.flatMap((tipo, x) => {
   if (!TIPOS_DE_EDIFICIO.has(tipo)) return [];
   const id = nomePorPosicao.get(`${x},${y}`);
   if (!id) return [];
-  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho' || id === 'casa-musical';
+  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho' || id === 'casa-musical' || id === 'escola';
   const enterable = temInterior;
   return [{ id, tipo, x, y, largura: 3, altura: 2, entrada: { x, y: y + 1 }, temInterior, enterable }];
 }));
@@ -187,11 +227,21 @@ export const PONTOS_DE_OBSERVACAO = {
   'manejo-mata': { x: 40, y: 6 }
 };
 
+export const PONTOS_ATRACACAO = [
+  { x: 13, y: 28, agua: { x: 13, y: 29 } }
+];
+
 export const PONTOS_PESCA = [
-  { x: 13, y: 28, tipo: 'mar', agua: { x: 13, y: 29 } },
+  { x: 13, y: 28, tipo: 'mar', agua: PONTOS_ATRACACAO[0].agua },
+  { x: 13, y: 31, tipo: 'mar' },
+  { x: 18, y: 33, tipo: 'mar' },
+  { x: 10, y: 36, tipo: 'mar' },
   { x: 34, y: 23, tipo: 'lagoa', agua: { x: 35, y: 23 } },
   { x: 40, y: 23, tipo: 'lagoa', agua: { x: 39, y: 23 } }
 ];
+export const PONTOS_EMBARQUE = MAPA.flatMap((linha, y) => linha.flatMap((terreno, x) => (
+  terreno === 'canoa' && MAPA[y + 1]?.[x] === 'mar' ? [{ x, y, agua: { x, y: y + 1 } }] : []
+)));
 
 export function getNPCsNoHorario(horario) {
   const rotina = ROTINAS_VILA[horario] || {};
@@ -216,6 +266,23 @@ export const MAPA_DECORACOES = [
   { tipo: 'luminaria', x: 36, y: 12 },
   { tipo: 'banco', x: 27, y: 12 },
   { tipo: 'banco', x: 35, y: 12 },
+  { tipo: 'coreto', ...PRACA_CENTRAL.coreto },
+  { tipo: 'banco', x: 18, y: 12 },
+  { tipo: 'banco', x: 22, y: 12 },
+  { tipo: 'banco', x: 18, y: 14 },
+  { tipo: 'banco', x: 22, y: 14 },
+  { tipo: 'arvore', x: 17, y: 11 },
+  { tipo: 'arvore', x: 23, y: 11 },
+  { tipo: 'arvore', x: 17, y: 15 },
+  { tipo: 'arvore', x: 23, y: 15 },
+  { tipo: 'luminaria', x: 18, y: 16 },
+  { tipo: 'luminaria', x: 22, y: 16 },
+  { tipo: 'luminaria', x: 12, y: 18 },
+  { tipo: 'luminaria', x: 20, y: 18 },
+  { tipo: 'luminaria', x: 31, y: 18 },
+  { tipo: 'luminaria', x: 35, y: 18 },
+  ...gerarCercaHorta(),
+  ...HORTA_CENTRAL.canteiros.map((canteiro) => ({ tipo: 'canteiro', ...canteiro })),
   { tipo: 'placa', x: 18, y: 13 },
   { tipo: 'planta-medicinal-a', x: 38, y: 4 },
   { tipo: 'planta-medicinal-b', x: 45, y: 4 },
@@ -340,15 +407,9 @@ export const PESSOAS_CENARIO = [
   }
 ];
 
-export const AVES_POUSADAS = [
-  { x: 8.5, y: 3.2 },
-  { x: 17.5, y: 3.5 },
-  { x: 44.2, y: 5.2 },
-  { x: 45.2, y: 11.2 }
-];
-
-export function isPassable(x, y) {
+export function isPassable(x, y, modo = 'pe') {
   if (x < 0 || y < 0 || x >= MAPA_LARGURA || y >= MAPA_ALTURA) return false;
+  if (modo === 'canoa') return MAPA[y][x] === 'mar';
   if (MAPA[y][x] === 'mar' || MAPA[y][x] === 'lagoa' || MAPA[y][x] === 'ceu' || MAPA[y][x] === 'mato') return false;
   return !EDIFICIOS.some((edificio) => (
     x >= edificio.x - 1
@@ -362,8 +423,8 @@ export function tileAt(x, y) {
   return MAPA[y]?.[x] || 'vila';
 }
 
-export function findPath(start, goal) {
-  if (!isPassable(start.x, start.y) || !isPassable(goal.x, goal.y)) return [];
+export function findPath(start, goal, modo = 'pe') {
+  if (!isPassable(start.x, start.y, modo) || !isPassable(goal.x, goal.y, modo)) return [];
 
   const queue = [{ x: start.x, y: start.y }];
   const visited = new Set([`${start.x},${start.y}`]);
@@ -387,7 +448,7 @@ export function findPath(start, goal) {
     for (const direction of directions) {
       const next = { x: current.x + direction.x, y: current.y + direction.y };
       const key = `${next.x},${next.y}`;
-      if (!visited.has(key) && isPassable(next.x, next.y)) {
+      if (!visited.has(key) && isPassable(next.x, next.y, modo)) {
         visited.add(key);
         previous.set(key, current);
         queue.push(next);

@@ -433,14 +433,11 @@ input[type="text"] {
 }
 
 .interior-room {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
-  gap: 0.55rem;
-  padding: 0.85rem;
-  border: 3px solid #68452b;
-  background:
-    linear-gradient(90deg, transparent 48%, rgba(90, 58, 30, 0.14) 49% 51%, transparent 52%),
-    #D9BE82;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: var(--mar-fundo);
 }
 
 .interior-item {
@@ -717,6 +714,8 @@ body.high-contrast .interior-item {
 
 #interior-panel {
   animation: interior-entrada 240ms ease-out;
+  background: var(--areia-umida);
+  width: min(760px, calc(100% - 24px));
 }
 
 #interior-panel.sem-fade,
@@ -732,18 +731,20 @@ body.high-contrast .interior-item {
 
 .interior-canvas-wrap {
   display: flex;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
   gap: 0.55rem;
   width: 100%;
+  overflow: hidden;
+  background: var(--mar-fundo);
 }
 
 .interior-canvas {
-  width: 100%;
-  max-height: 52vh;
-  aspect-ratio: 4 / 3;
+  display: block;
+  flex: 0 0 auto;
   image-rendering: pixelated;
-  border: 3px solid var(--borda);
-  background: #D9BE82;
+  background: var(--mar-fundo);
 }
 
 .interior-controles {
@@ -823,7 +824,7 @@ body.high-contrast .interior-item {
 .notebook-map {
   display: block;
   width: min(384px, 100%);
-  aspect-ratio: 3 / 2;
+  aspect-ratio: 24 / 19;
   height: auto;
   image-rendering: pixelated;
   border: 3px solid var(--borda);
@@ -911,6 +912,8 @@ body.pause-overlay #pause-menu {
 }
 
 @media (max-width: 540px) {
+  #interior-panel { width: calc(100% - 8px); padding: 0.35rem; }
+
   .opening-card, .large-panel {
     width: calc(100% - 20px);
   }
@@ -1008,8 +1011,8 @@ body.pause-overlay #pause-menu {
   }
 
   .button-row.compact-row button {
-    min-width: 40px;
-    min-height: 40px;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0.35rem;
   }
 

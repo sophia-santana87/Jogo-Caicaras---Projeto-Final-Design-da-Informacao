@@ -133,11 +133,11 @@ export const CONTEUDO = {
     },
     {
       id: 'fandango',
-      abertura: 'No pavilhão, a música pede que os instrumentos voltem a circular pela comunidade.',
+      abertura: 'Na casa musical, a música pede que os instrumentos voltem a circular pela comunidade.',
       validar: true,
       etapas: [
         { tipo: 'encontrar', texto: 'Encontre a viola, a rabeca e o adufo pela vila.', alvos: ['viola', 'rabeca', 'adufo'], validar: true },
-        { tipo: 'ir-ate', alvo: 'pavilhao-fandango', texto: 'Leve os instrumentos ao terreiro do fandango.' }
+        { tipo: 'ir-ate', alvo: 'casa-musical', texto: 'Leve os instrumentos à casa musical.' }
       ],
       escolhas: [
         {

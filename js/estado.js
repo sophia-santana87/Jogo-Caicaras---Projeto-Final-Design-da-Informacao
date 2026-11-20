@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=38';
+import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=43';
 
 export const ESTADO_PADRAO = {
   nomeJogador: 'Visitante',
@@ -65,6 +65,7 @@ export function carregarEstado() {
     return {
       ...structuredClone(ESTADO_PADRAO),
       ...parsed,
+      interiorAtivo: parsed.interiorAtivo === 'pavilhao-fandango' ? 'casa-musical' : parsed.interiorAtivo,
       indicadores: { ...ESTADO_PADRAO.indicadores, ...parsed.indicadores },
       jogador: {
         ...ESTADO_PADRAO.jogador,

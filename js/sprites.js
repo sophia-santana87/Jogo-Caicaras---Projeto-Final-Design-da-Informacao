@@ -64,6 +64,11 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
   ctx.ellipse(x + 8, y + 22, 6, 1.5, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Capa contínua de cabelo, pintada por cima da pele em todas as direções.
+  retanguloPixel(ctx, x + 3, y + 1, 10, 4, cabelo);
+  retanguloPixel(ctx, x + 2, y + 3, 3, 6, cabelo);
+  retanguloPixel(ctx, x + 11, y + 3, 3, 6, cabelo);
+
   if (direcao === 'up') {
     retanguloPixel(ctx, x + 5 + pernaEsquerda, y + 16, 3, 5, c.calca);
     retanguloPixel(ctx, x + 9 + pernaDireita, y + 16, 3, 5, c.calca);
@@ -210,7 +215,7 @@ const TIPOS_DE_OBJETO = [
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
   'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'vara-pesca', 'lixeiraOrganica', 'lixeiraReciclavel',
-  'arbusto', 'flor', 'pedra', 'capim', 'cerca', 'vitoria-regia', 'junco', 'tronco'
+  'arbusto', 'flor', 'pedra', 'capim', 'cerca', 'vitoria-regia', 'junco', 'tronco', 'tronco-caido'
 ];
 const OBJETOS_GRANDES = new Set([
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'
@@ -689,6 +694,15 @@ function pintarObjeto(ctx, tipo, variante) {
     ctx.fillRect(8, 14, 17, 3);
     ctx.fillStyle = '#A78354';
     ctx.fillRect(11, 15, 8, 1);
+  } else if (tipo === 'tronco-caido') {
+    ctx.fillStyle = 'rgba(43,26,14,0.22)';
+    ctx.fillRect(4, 24, 24, 3);
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(3, 15, 26, 6);
+    ctx.fillStyle = '#8A5A33';
+    ctx.fillRect(6, 13, 20, 3);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(9, 14, 10, 1);
   } else if (tipo === 'lixeiraOrganica' || tipo === 'lixeiraReciclavel') {
     ctx.fillStyle = '#68452B';
     ctx.fillRect(8, 10, 16, 17);

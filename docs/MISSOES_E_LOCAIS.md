@@ -23,7 +23,7 @@ Todos os textos são rascunhos. Siga a seção «Linguagem» de docs/NARRATIVA.m
 | horta-e-roca | 6x4 | não | Roça de mandioca e horta |
 | lagoa | 8x6 | não | Peixes visíveis, ondulações, aves aquáticas, plantas e pedras |
 | casa-rural | 3x3 | não | Afastada, ligada à vila por estrada sinuosa com cerca, flores e pedras |
-| pavilhao-fandango | 5x4 + terreiro | não | Terreiro aberto onde fica a roda de dança |
+| casa-musical | 5x4 | sim | Casa musical do Mestre Tião; o Terreiro dos Fandangos fica lateralmente em clareira própria |
 | barraca | 3x2 | não | Artesanato e comida, com placa, biju, cataia e lixeiras |
 | trilha-da-mata | área aberta da mata | não | Caminho de observação com plantas; os usos locais precisam ser validados |
 

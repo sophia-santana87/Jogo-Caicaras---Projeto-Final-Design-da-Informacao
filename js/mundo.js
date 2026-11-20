@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=38';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=43';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 32;
@@ -83,7 +83,7 @@ export const POSICOES_EDIFICIOS = {
   'casa-de-farinha': { x: 25, y: 10, tipo: 'casaFarinha' },
   armazem: { x: 15, y: 16, tipo: 'casa' },
   mercadinho: { x: 21, y: 16, tipo: 'mercadinho' },
-  'pavilhao-fandango': { x: 29, y: 16, tipo: 'pavilhao' },
+  'casa-musical': { x: 29, y: 16, tipo: 'pavilhao' },
   'casa-fechada': { x: 36, y: 16, tipo: 'casa' }
 };
 
@@ -98,19 +98,36 @@ Object.values(POSICOES_EDIFICIOS).forEach((posicao) => {
 MAPA[9][43] = 'caminho';
 MAPA[5][39] = 'grama';
 MAPA[6][39] = 'grama';
-for (let x = 15; x <= 36; x += 1) {
-  if (!TIPOS_DE_EDIFICIO.has(MAPA[16][x])) MAPA[16][x] = 'caminho';
+
+function aplicarCaminhosDeclarativos() {
+  // Avenida principal reta e dois tiles de largura, à frente das portas.
+  for (let y = 17; y <= 18; y += 1) {
+    for (let x = 10; x <= 38; x += 1) {
+      if (!TIPOS_DE_EDIFICIO.has(MAPA[y][x])) MAPA[y][x] = 'caminho';
+    }
+  }
+
+  // Rua transversal da casa de farinha.
+  for (let y = 11; y <= 16; y += 1) {
+    MAPA[y][25] = 'caminho';
+  }
+
+  // Rua transversal até o píer.
+  for (let y = 19; y <= 28; y += 1) MAPA[y][13] = 'caminho';
+
+  // Rua transversal até a lagoa.
+  for (let y = 19; y <= 23; y += 1) MAPA[y][37] = 'caminho';
+
+  // Trilha reta da vila até o Terreiro, terminando na borda da clareira.
+  for (let x = 10; x <= 18; x += 1) MAPA[18][x] = 'caminho';
+  for (let x = 4; x <= 10; x += 1) MAPA[18][x] = 'grama';
+
+  // Trilha da mata com no máximo duas curvas.
+  for (let y = 6; y <= 16; y += 1) MAPA[y][40] = 'caminho';
+  for (let y = 5; y <= 6; y += 1) MAPA[y][40] = 'caminho';
 }
-for (let y = 14; y <= 18; y += 1) {
-  MAPA[y][26] = 'caminho';
-}
-for (let x = 7; x <= 17; x += 1) {
-  MAPA[18][x] = 'caminho';
-}
-for (let x = 19; x <= 28; x += 1) MAPA[15][x] = 'caminho';
-for (let y = 21; y <= 25; y += 1) {
-  for (let x = 35; x <= 39; x += 1) MAPA[y][x] = 'grama';
-}
+
+aplicarCaminhosDeclarativos();
 [36, 37, 38].forEach((x) => { MAPA[21][x] = 'lagoa'; });
 [35, 36, 37, 38, 39].forEach((x) => { MAPA[22][x] = 'lagoa'; });
 [34, 35, 36, 37, 38, 39, 40].forEach((x) => { MAPA[23][x] = 'lagoa'; });
@@ -130,34 +147,14 @@ for (let x = 39; x <= 44; x += 1) MAPA[6][x] = 'caminho';
 MAPA[5][43] = 'caminho';
 MAPA[4][43] = 'caminho';
 
-const ESTRADA_RURAL = [
-  { x: 43, y: 10 }, { x: 44, y: 10 }, { x: 44, y: 11 }, { x: 43, y: 11 },
-  { x: 43, y: 12 }, { x: 42, y: 12 }, { x: 42, y: 13 }, { x: 42, y: 14 },
-  { x: 41, y: 14 }, { x: 41, y: 15 }, { x: 41, y: 16 }, { x: 42, y: 16 },
-  { x: 42, y: 17 }, { x: 42, y: 18 }, { x: 42, y: 19 }, { x: 41, y: 19 },
-  { x: 40, y: 19 }, { x: 39, y: 19 }, { x: 38, y: 19 }, { x: 37, y: 19 },
-  { x: 37, y: 18 }
-];
-ESTRADA_RURAL.forEach(({ x, y }) => {
-  MAPA[y][x] = 'caminho';
-});
-
-for (const [y, inicio, fim] of [[15, 8, 40], [17, 10, 38], [18, 10, 39], [21, 14, 34]]) {
-  for (let x = inicio; x <= fim; x += 1) {
-    if (MAPA[y][x] === 'vila' || MAPA[y][x] === 'caminho') {
-      MAPA[y][x] = 'caminho';
-    }
-  }
-}
-MAPA[19][22] = 'caminho';
-MAPA[20][22] = 'caminho';
+// Ruas antigas em zigue-zague removidas: os acessos agora sao declarativos acima.
 
 export const NPCS = [
   { ...PERSONAGENS['dona-cida'], x: 21, y: 10 },
   { ...PERSONAGENS.nelson, x: 13, y: 26 },
   { ...PERSONAGENS.jaque, x: 34, y: 27 },
   { ...PERSONAGENS.tiao, x: 29, y: 15 },
-  { ...PERSONAGENS.rita, x: 39, y: 25 },
+  { ...PERSONAGENS.rita, x: 39, y: 26 },
   { ...PERSONAGENS.davi, x: 11, y: 23 },
   { ...PERSONAGENS.erveiro, x: 40, y: 5 }
 ];
@@ -178,14 +175,14 @@ export const EDIFICIOS = MAPA.flatMap((linha, y) => linha.flatMap((tipo, x) => {
   if (!TIPOS_DE_EDIFICIO.has(tipo)) return [];
   const id = nomePorPosicao.get(`${x},${y}`);
   if (!id) return [];
-  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho' || id === 'pavilhao-fandango';
+  const temInterior = tipo === 'casaFarinha' || id === 'armazem' || id === 'mercadinho' || id === 'casa-musical';
   const enterable = temInterior;
   return [{ id, tipo, x, y, largura: 3, altura: 2, entrada: { x, y: y + 1 }, temInterior, enterable }];
 }));
 
 export const PONTOS_DE_OBSERVACAO = {
-  mare: { x: 13, y: 26 },
-  vento: { x: 15, y: 28 },
+  mare: { x: 14, y: 26 },
+  vento: { x: 16, y: 28 },
   ceu: { x: 16, y: 26 },
   'manejo-mata': { x: 40, y: 6 }
 };
@@ -201,6 +198,8 @@ export function getNPCsNoHorario(horario) {
   return NPCS.map((npc) => ({ ...npc, ...(rotina[npc.id] || {}) }));
 }
 
+export const CENA_FANDANGO = { x: 7, y: 18 };
+
 export const MAPA_DECORACOES = [
   { tipo: 'barraca', x: 42, y: 24, nome: 'Barraca da praia' },
   { tipo: 'barraca', x: 6, y: 27, nome: 'Barraca da vila' },
@@ -211,7 +210,6 @@ export const MAPA_DECORACOES = [
   { tipo: 'rede', x: 12, y: 28 },
   { tipo: 'bandeira', x: 15, y: 28 },
   { tipo: 'luminaria', x: 24, y: 12 },
-  { tipo: 'luminaria', x: 9, y: 18 },
   { tipo: 'luminaria', x: 26, y: 18 },
   { tipo: 'luminaria', x: 39, y: 18 },
   { tipo: 'luminaria', x: 28, y: 12 },
@@ -224,18 +222,14 @@ export const MAPA_DECORACOES = [
   { tipo: 'planta-medicinal-c', x: 46, y: 6 },
   { tipo: 'arvore', x: 40, y: 3 },
   { tipo: 'arbusto', x: 47, y: 5 },
-  { tipo: 'arbusto', x: 40, y: 5 },
   { tipo: 'arbusto', x: 47, y: 4 },
   { tipo: 'viola', x: 26, y: 17 },
   { tipo: 'rabeca', x: 28, y: 17 },
   { tipo: 'adufo', x: 30, y: 17 },
-  { tipo: 'placa', x: 40, y: 24 },
+  { tipo: 'placa', x: 40, y: 25, nome: 'Pescar com cuidado' },
   { tipo: 'ponte-saber', x: 20, y: 16, nome: 'Ponte do Saber' },
-  { tipo: 'peixe', x: 41, y: 25 },
-  { tipo: 'biju', x: 42, y: 25 },
-  { tipo: 'cataia', x: 43, y: 25 },
   { tipo: 'lixeiraOrganica', x: 41, y: 24 },
-  { tipo: 'lixeiraReciclavel', x: 43, y: 24 },
+  { tipo: 'lixeiraReciclavel', x: 43, y: 25 },
   { tipo: 'bandeira', x: 30, y: 7 },
   { tipo: 'bandeira', x: 38, y: 7 },
   { tipo: 'flor', x: 30, y: 11 },
@@ -244,13 +238,12 @@ export const MAPA_DECORACOES = [
   { tipo: 'arbusto', x: 38, y: 10 },
   { tipo: 'flor', x: 39, y: 12 },
   { tipo: 'pedra', x: 40, y: 11 },
-  { tipo: 'capim', x: 44, y: 13 },
+
   { tipo: 'cerca', x: 45, y: 11 },
   { tipo: 'cerca', x: 45, y: 12 },
   { tipo: 'cerca', x: 44, y: 13 },
   { tipo: 'flor', x: 40, y: 14 },
   { tipo: 'pedra', x: 40, y: 15 },
-  { tipo: 'arbusto', x: 39, y: 16 },
   { tipo: 'capim', x: 37, y: 17 },
   { tipo: 'flor', x: 30, y: 20 },
   { tipo: 'arbusto', x: 30, y: 23 },
@@ -258,26 +251,64 @@ export const MAPA_DECORACOES = [
   { tipo: 'junco', x: 40, y: 24 },
   { tipo: 'tronco', x: 36, y: 24 },
   { tipo: 'flor', x: 39, y: 20 },
-  { tipo: 'cerca', x: 41, y: 25 },
   { tipo: 'cerca', x: 44, y: 24 },
   { tipo: 'capim', x: 45, y: 23 },
   { tipo: 'capim', x: 34, y: 21 },
   { tipo: 'capim', x: 33, y: 23 },
   { tipo: 'pedra', x: 41, y: 23 },
-  { tipo: 'flor', x: 40, y: 25 },
+
   { tipo: 'capim', x: 40, y: 21 },
-  { tipo: 'arbusto', x: 8, y: 17 },
-  { tipo: 'flor', x: 9, y: 16 },
   { tipo: 'arbusto', x: 25, y: 19 },
   { tipo: 'flor', x: 36, y: 20 },
-  { tipo: 'arvore', x: 6, y: 17 },
   { tipo: 'arbusto', x: 9, y: 22 },
   { tipo: 'flor', x: 11, y: 22 },
-  { tipo: 'arbusto', x: 39, y: 16 },
   { tipo: 'pedra', x: 34, y: 24 },
 ];
 
-export const CENA_FANDANGO = { x: 7, y: 18 };
+function gerarVegetacaoDeterministica() {
+  const novos = [];
+  const ocupados = new Set(MAPA_DECORACOES.map((item) => `${item.x},${item.y}`));
+  const proibidos = new Set([
+    ...EDIFICIOS.map((item) => `${item.x},${item.y}`),
+    ...PONTOS_PESCA.map((item) => `${item.x},${item.y}`),
+    `${CENA_FANDANGO.x},${CENA_FANDANGO.y}`
+  ]);
+
+  let semente = 7321;
+  const sorteio = (indice) => {
+    semente = (semente * 1103515245 + 12345 + indice * 101) >>> 0;
+    return semente % 1000;
+  };
+
+  for (let indice = 0; novos.length < 24 && indice < 260; indice += 1) {
+    const x = 4 + sorteio(indice * 2) % 43;
+    const y = 3 + sorteio(indice * 2 + 1) % 24;
+    const chave = `${x},${y}`;
+    const terreno = tileAt(x, y);
+    if (ocupados.has(chave) || proibidos.has(chave)) continue;
+    if (terreno === 'lagoa' || terreno === 'mar' || terreno === 'mato' && y > 12) continue;
+    if (MAPA_DECORACOES.some((item) => Math.abs(item.x - x) + Math.abs(item.y - y) < 2)) continue;
+
+    let pertoDeCaminho = false;
+    for (let dy = -2; dy <= 2 && !pertoDeCaminho; dy += 1) {
+      for (let dx = -2; dx <= 2; dx += 1) {
+        if (tileAt(x + dx, y + dy) === 'caminho') pertoDeCaminho = true;
+      }
+    }
+    if (pertoDeCaminho) continue;
+
+    const tipo = y >= 24 && terreno === 'praia'
+      ? 'palmeira'
+      : (sorteio(indice + 50) % 4 === 0 ? 'palmeira' : 'arvore');
+    novos.push({ tipo, x, y, gerar: true });
+    ocupados.add(chave);
+  }
+
+  return novos;
+}
+
+MAPA_DECORACOES.push(...gerarVegetacaoDeterministica());
+MAPA_DECORACOES.push({ tipo: 'tronco-caido', x: 43, y: 7, nome: 'Tronco caído' });
 
 export const DANCARINOS_FANDANGO = [
   { x: 5, y: 18, estilo: 'homem' },

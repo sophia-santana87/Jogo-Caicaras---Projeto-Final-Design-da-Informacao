@@ -189,6 +189,18 @@ Com `?debug=1`, `desenharDebugMapa()` exibe:
 
 Sem `?debug=1`, o bloco debug não desenha nada.
 
+## Correcoes da Fase A
+
+- O cabelo ganhou uma capa opaca continua sobre pele e cabelo em todas as direcoes. `?teste=sprites` mostra as 8 combinacoes, 4 direcoes e 3 quadros.
+- O bloco retangular de grama ao redor da lagoa foi removido. A lagoa ficou com 25 tiles irregulares e o minimapa usa a mesma geometria; barracas/praia/ícone variavel foram retirados dos pontos principais.
+- O edifício antigo `pavilhao-fandango` passou a `casa-musical`, com rótulo próprio e compatibilidade de save antigo.
+- O rótulo `Terreiro dos Fandangos` usa `CENA_FANDANGO=(7,18)`; a clareira ganhou piso de terra batida e bordas de pedra.
+- Os remendos antigos de caminho foram removidos e substituidos por avenida reta y17/18 e trancas retas para roça, píer, lagoa, mata e terreiro.
+- Foram adicionadas 25 árvores/palmeiras com seed determinística e exclusoes de caminho, edificios, lagoa, terreiro e pontos interativos.
+- Nenhuma casa foi removida por estar na clareira/área da mata: não havia casa nesse setor; apenas elementos da clareira foram separados.
+- A placa de pesca ficou em margem, lixeiras separadas, itens de balcão removidos e vegetacao terrestre fora da agua.
+- Sobreposicoes antigas foram zeradas na auditoria final; Rita ficou fora da lagoa em y26 e o vento deixou de compartilhar o tile da bandeira.
+
 ## Arquivos envolvidos
 
 - [js/mundo.js](js/mundo.js)

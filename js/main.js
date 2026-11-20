@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=38';
-import { INTERIORES } from '../dados/interiores.js?v=38';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=38';
-import { DialogoController } from './dialogo.js?v=38';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=38';
-import { SomManager } from './som.js?v=38';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=38';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=38';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=38';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=38';
+import { CONTEUDO } from '../dados/conteudo.js?v=43';
+import { INTERIORES } from '../dados/interiores.js?v=43';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=43';
+import { DialogoController } from './dialogo.js?v=43';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=43';
+import { SomManager } from './som.js?v=43';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=43';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=43';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=43';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=43';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -653,7 +653,7 @@ function falaDoNpc(npc) {
 function nomeEdificio(edificio) {
   const nomes = {
     'casa-de-farinha': 'Casa de farinha',
-    'pavilhao-fandango': 'terreiro do fandango',
+    'casa-musical': 'Casa musical',
     armazem: 'armazém',
     escola: 'escola',
     capela: 'capela',
@@ -666,7 +666,7 @@ function nomeEdificio(edificio) {
 function acaoNoEdificio(edificio) {
   if (edificio.id === 'casa-de-farinha') return 'Entrar na casa de farinha';
   if (edificio.id === 'armazem') return 'Entrar no armazém';
-  if (edificio.id === 'pavilhao-fandango') return 'Visitar o terreiro do fandango';
+  if (edificio.id === 'casa-musical') return 'Entrar na casa musical';
   if (edificio.id === 'mercadinho') return 'Visitar o mercadinho';
   return `Entrar na ${nomeEdificio(edificio)}`;
 }
@@ -815,6 +815,12 @@ function desenharIndicadorMissao(tile, camera) {
 
 function desenharIdentificacaoLocal(tile, camera) {
   const locais = [
+    {
+      nome: 'Terreiro dos Fandangos',
+      x: CENA_FANDANGO.x,
+      y: CENA_FANDANGO.y,
+      alturaMarcador: 1.2
+    },
     ...EDIFICIOS.map((edificio) => ({
       nome: nomeEdificio(edificio),
       x: edificio.entrada.x,
@@ -1274,7 +1280,7 @@ function renderizarInterior(edificio) {
 
   if (edificio.id === 'casa-de-farinha') {
     descricao.textContent = 'Siga as estações da mandioca. Os passos podem ser feitos com um toque simples.';
-  } else if (edificio.id === 'pavilhao-fandango') {
+  } else if (edificio.id === 'casa-musical') {
     descricao.textContent = 'A casa musical guarda instrumentos e ensina um padrão ritmico curto.';
   } else if (edificio.id === 'mercadinho') {
     descricao.textContent = 'Observe os produtos locais e seus saberes. Não há troca monetária neste prototipo.';
@@ -1827,17 +1833,25 @@ function desenharFumaca(tile, camera) {
 function desenharTerreiroFandango(tile, camera) {
   const x = (CENA_FANDANGO.x + 0.5) * tile - camera.x;
   const y = (CENA_FANDANGO.y + 0.5) * tile - camera.y;
-  ctx.fillStyle = 'rgba(156,107,63,0.28)';
+  ctx.fillStyle = 'rgba(156,107,63,0.42)';
   ctx.beginPath();
   ctx.ellipse(x, y, tile * 4.1, tile * 2.8, -0.08, 0, Math.PI * 2);
   ctx.fill();
-  ctx.strokeStyle = 'rgba(90,58,30,0.4)';
+  ctx.strokeStyle = 'rgba(90,58,30,0.72)';
   ctx.lineWidth = Math.max(2, tile * 0.035);
   ctx.setLineDash([tile * 0.14, tile * 0.12]);
   ctx.beginPath();
   ctx.ellipse(x, y, tile * 2.25, tile * 1.65, -0.08, 0, Math.PI * 2);
   ctx.stroke();
   ctx.setLineDash([]);
+
+  ctx.fillStyle = '#9A9B8C';
+  for (let indice = 0; indice < 14; indice += 1) {
+    const angulo = (indice / 14) * Math.PI * 2;
+    const pedraX = x + Math.cos(angulo) * tile * 2.12;
+    const pedraY = y + Math.sin(angulo) * tile * 1.55;
+    ctx.fillRect(Math.round(pedraX - tile * 0.08), Math.round(pedraY - tile * 0.06), tile * 0.16, tile * 0.12);
+  }
 }
 
 function posicaoMorador(morador, indice, agora) {
@@ -2063,7 +2077,7 @@ function desenharIconeInteresse(ctx, tipo, x, y) {
   ctx.fillStyle = '#FFE066';
   ctx.strokeStyle = '#2B1A0E';
   ctx.lineWidth = 1;
-  if (tipo === 'pavilhao' || tipo === 'casa-de-farinha') {
+  if (tipo === 'casa-musical' || tipo === 'casa-de-farinha' || tipo === 'terreiro') {
     ctx.fillRect(x - 2, y - 2, 4, 4);
   } else if (tipo === 'lagoa' || tipo === 'praia') {
     ctx.beginPath();
@@ -2095,16 +2109,13 @@ function desenharMinimapa(canvas, ampliar = false) {
 
   const pontos = ampliar
     ? [
-      { tipo: 'pavilhao', x: 29, y: 16, nome: 'Casa musical / Terreiro lateral' },
-      { tipo: 'armazem', x: 15, y: 16, nome: 'Armazém' },
-      { tipo: 'mercadinho', x: 21, y: 16, nome: 'Mercadinho' },
       { tipo: 'casa-de-farinha', x: 25, y: 10, nome: 'Casa de farinha' },
-      { tipo: 'pier', x: 12, y: 27, nome: 'Píer e vara' },
-      { tipo: 'praia', x: 13, y: 25, nome: 'Praia' },
-      { tipo: 'trilha', x: 7, y: 18, nome: 'Terreiro dos Fandangos' },
-      { tipo: 'lagoa', x: 37, y: 23, nome: 'Lagoa' },
-      { tipo: 'barraca', x: 42, y: 24, nome: 'Barraca da praia' },
-      { tipo: 'barraca', x: 6, y: 27, nome: 'Barraca da vila' }
+      { tipo: 'mercadinho', x: 21, y: 16, nome: 'Mercadinho' },
+      { tipo: 'armazem', x: 15, y: 16, nome: 'Armazém' },
+      { tipo: 'casa-musical', x: 29, y: 16, nome: 'Casa musical' },
+      { tipo: 'terreiro', x: 7, y: 18, nome: 'Terreiro dos Fandangos' },
+      { tipo: 'pier', x: 13, y: 28, nome: 'Píer' },
+      { tipo: 'lagoa', x: 37, y: 23, nome: 'Lagoa' }
     ]
     : [];
   pontos.forEach((ponto) => desenharIconeInteresse(ctxMinimapa, ponto.tipo, px(ponto.x), py(ponto.y)));
@@ -2558,6 +2569,42 @@ function setupEventos() {
   document.getElementById('player-name').value = nomeJogadorAtivo();
 }
 
+function criarPaginaTesteSprites() {
+  if (new URLSearchParams(window.location.search).get('teste') !== 'sprites') return;
+  showScreen('screen-game');
+  const app = document.getElementById('app');
+  const canvasTeste = document.createElement('canvas');
+  canvasTeste.width = 760;
+  canvasTeste.height = 620;
+  canvasTeste.className = 'sprite-test-canvas';
+  canvasTeste.setAttribute('aria-label', 'Teste das combinações de personagem em todas as direções');
+  canvasTeste.style.cssText = 'position:absolute;z-index:30;left:50%;top:50%;transform:translate(-50%,-50%);width:min(760px,calc(100% - 24px));height:auto;image-rendering:pixelated;background:#F6E7C1;border:4px solid #68452B;border-radius:8px';
+  app.appendChild(canvasTeste);
+
+  const testeCtx = canvasTeste.getContext('2d');
+  testeCtx.imageSmoothingEnabled = false;
+  testeCtx.fillStyle = '#F6E7C1';
+  testeCtx.fillRect(0, 0, canvasTeste.width, canvasTeste.height);
+  testeCtx.fillStyle = '#2B1A0E';
+  testeCtx.font = 'bold 14px monospace';
+
+  const avatares = ['a1', 'a2', 'a3', 'a4', 'a5', 'a6', 'a7', 'a8'];
+  const direcoes = ['down', 'up', 'left', 'right'];
+  avatares.forEach((avatar, avatarIndex) => {
+    const x = 92 + avatarIndex * 82;
+    testeCtx.fillText(avatar, x - 10, 18);
+    direcoes.forEach((direcao, direcaoIndex) => {
+      const y = 70 + direcaoIndex * 132;
+      if (avatarIndex === 0) testeCtx.fillText(direcao, 8, y + 32);
+      for (let quadro = 0; quadro < 3; quadro += 1) {
+        const tick = quadro * 8;
+        const px = x + (quadro - 1) * 24;
+        desenharJogador(testeCtx, px, y + 56, 48, tick, direcao, quadro > 0, avatar);
+      }
+    });
+  });
+}
+
 function init() {
   applyDefaults();
   if (new URLSearchParams(window.location.search).get('dev') === '1') {
@@ -2566,6 +2613,7 @@ function init() {
   redimensionarCanvas();
   syncAudioState();
   setupEventos();
+  criarPaginaTesteSprites();
   aplicarAcessibilidade(estado);
   atualizarMenuPausa();
   showScreen('screen-opening');

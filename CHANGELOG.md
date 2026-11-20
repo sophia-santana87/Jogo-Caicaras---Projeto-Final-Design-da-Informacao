@@ -69,3 +69,13 @@
 - URL: `?debug=1`.
 - Não altera o mapa ou o layout normal.
 - Exibe ID/nome sobre edificações, NPCs, decoração, pontos de pesca e praça; caixas vermelhas de colisão; coordenadas do jogador.
+
+## Fase A - Correcoes verificaveis
+- Item A1 | verificado: sim | como testei: abri `/?teste=sprites`, confirmei 8 avatares em 4 direcoes e 3 quadros, ativei alto contraste e não houve erro no console.
+- Item A2 | verificado: sim | como testei: exportei `tileAt` em `/?debug=1`, confirmei zero tiles de grama no bloco 35..39/y21..25 e 25 tiles lagoa em formato irregular; revistei o mapa ampliado e removi barracas/praia do conjunto de icones.
+- Item A3 | verificado: sim | como testei: confirmei `casa-musical` em `EDIFICIOS`, `CENA_FANDANGO` em (7,18), remoção dos objetos da clareira e rótulo próprio no debug; cinco casas e sem colisao das portas.
+- Item A4 | verificado: sim | como testei: percorri `findPath` e `verificarEdificios` em navegador, todas as portas tiveram rota e não houve avisos de edificações próximas; a rua principal ficou em y17/18 e trilhas verticais em x25,13,37,40.
+- Item A5 | verificado: sim | como testei: carreguei o modulo repetidamente em `/?debug=1`; gerador fixo produziu 25 elementos arvore/palmeira sem coordenadas repetidas e sem tiles caminho/agua/edificio.
+- Item A6 | verificado: sim | como testei: listei `EDIFICIOS` e objetos da clareira direita em `?debug=1`; não havia casa dentro ou na beira da mata. Casa removida: nenhuma nesta fase; adicionei `tronco-caido` em (43,7).
+- Item A7 | verificado: sim | como testei: confirmei placa em margem nao aquatica em (40,25), lixeira organica em (41,24), reciclavel em (43,25), zero peixe/biju/cataia e somente vitoria-regia/junco/tronco em tiles lagoa.
+- Item A8 | verificado: sim | como testei: rodei a checagem de sobreposicao em decoracoes em `?debug=1`; a bandeira ficou separada do vento, Rita saiu da lagoa, arbustos duplicados foram removidos e não restaram pares próximos em coordenadas iguais.

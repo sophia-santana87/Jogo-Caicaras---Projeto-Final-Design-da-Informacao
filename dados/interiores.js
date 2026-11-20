@@ -14,7 +14,7 @@ export const INTERIORES = {
       { id: 'torrar', nome: 'Torrar no forno de barro', x: 2, y: 4, tipo: 'farinha', etapa: 4 }
     ]
   },
-  'pavilhao-fandango': {
+  'casa-musical': {
     titulo: 'Casa musical do Mestre Tiao',
     largura: 8,
     altura: 6,

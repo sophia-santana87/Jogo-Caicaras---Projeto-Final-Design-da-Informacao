@@ -227,6 +227,7 @@ export const MAPA_DECORACOES = [
   { tipo: 'rabeca', x: 28, y: 17 },
   { tipo: 'adufo', x: 30, y: 17 },
   { tipo: 'placa', x: 40, y: 24 },
+  { tipo: 'ponte-saber', x: 20, y: 16, nome: 'Ponte do Saber' },
   { tipo: 'peixe', x: 41, y: 25 },
   { tipo: 'biju', x: 42, y: 25 },
   { tipo: 'cataia', x: 43, y: 25 },

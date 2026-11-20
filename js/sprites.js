@@ -209,7 +209,7 @@ const TIPOS_DE_PISO = ['vila', 'grama', 'mato', 'roca', 'plantacao', 'praia', 'm
 const TIPOS_DE_OBJETO = [
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
-  'peixe', 'biju', 'cataia', 'placa', 'lixeiraOrganica', 'lixeiraReciclavel',
+  'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'lixeiraOrganica', 'lixeiraReciclavel',
   'arbusto', 'flor', 'pedra', 'capim', 'cerca'
 ];
 const OBJETOS_GRANDES = new Set([
@@ -571,7 +571,7 @@ function pintarObjeto(ctx, tipo, variante) {
     ctx.fillStyle = '#8CCB5E';
     ctx.fillRect(9, 11, 4, 2);
     ctx.fillRect(19, 7, 4, 2);
-  } else if (tipo === 'placa') {
+  } else if (tipo === 'placa' || tipo === 'ponte-saber') {
     ctx.fillStyle = '#68452B';
     ctx.fillRect(15, 15, 3, 14);
     ctx.fillStyle = '#8A5A33';

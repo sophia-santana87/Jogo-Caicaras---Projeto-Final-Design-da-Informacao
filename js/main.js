@@ -793,6 +793,14 @@ function desenharIdentificacaoLocal(tile, camera) {
       y: edificio.entrada.y,
       alturaMarcador: 4
     })),
+    ...MAPA_DECORACOES
+      .filter((decoracao) => decoracao.tipo === 'ponte-saber')
+      .map((decoracao) => ({
+        nome: decoracao.nome,
+        x: decoracao.x,
+        y: decoracao.y,
+        alturaMarcador: 1.2
+      })),
     ...PONTOS_PESCA.map((ponto) => ({
       nome: ponto.tipo === 'mar' ? 'Píer' : 'Lagoa',
       x: ponto.x,

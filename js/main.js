@@ -97,6 +97,15 @@ const ITENS_DESTAQUE = new Set([
 ]);
 let coletaNotificacaoTimer = null;
 let portaAnimacao = null;
+const ESPECIES_PEIXES = [
+  { id: 'tainha', nome: 'Tainha', raridade: 4, ficha: 'Peixe ligado ao mar; redes de cerco fazem parte do saber artesanal. Época relevante depende da comunidade e do tempo local.' },
+  { id: 'robaldo', nome: 'Robalo', raridade: 3, ficha: 'Peixe de estuários e regiões costeiras. Sua presença varia com vento, maré e estação.' },
+  { id: 'parati', nome: 'Parati', raridade: 3, ficha: 'Peixe comum em águas costeiras e estuarinas. A pesca depende de observar o ambiente.' },
+  { id: 'bagre', nome: 'Bagre', raridade: 2, ficha: 'Pode ocorrer em rios, lagoas e áreas próximas. O preparo varia entre famílias e comunidades.' },
+  { id: 'corvina', nome: 'Corvina', raridade: 2, ficha: 'Peixe costeiro conhecido em pesca artesanal. Quantidade e época exigem atenção ao mar.' },
+  { id: 'savelha', nome: 'Savelha', raridade: 2, ficha: 'Peixe marinho usado em hábitos locais de alimentação. Os detalhes locais precisam ser validados.' },
+  { id: 'caranguejo', nome: 'Caranguejo', raridade: 1, ficha: 'Crustáceo associado a mangues e margens. Não confundir com peixe; coleta exige cuidado e regras locais.' }
+];
 
 function showScreen(id) {
   Object.entries(telas).forEach(([key, el]) => {
@@ -406,6 +415,19 @@ function abrirCaderno(abrirMapa = false) {
       sections[0].appendChild(article);
     });
   }
+
+  const colecao = document.createElement('article');
+  colecao.className = 'notebook-card';
+  const colecaoTitulo = document.createElement('h4');
+  colecaoTitulo.textContent = 'Coleção de peixes e crustáceos';
+  colecao.appendChild(colecaoTitulo);
+  ESPECIES_PEIXES.forEach((especie) => {
+    const capturada = estado.colecaoPeixes.includes(especie.id);
+    const item = document.createElement('p');
+    item.textContent = capturada ? `${especie.nome}: ${especie.ficha}` : '? espécie ainda não capturada';
+    colecao.appendChild(item);
+  });
+  sections[0].appendChild(colecao);
 
   content.append(tabs, ...sections);
 }
@@ -1309,6 +1331,16 @@ function abrirEscolhaPeixe() {
   });
 }
 
+function sortearEspecie() {
+  const pesoTotal = ESPECIES_PEIXES.reduce((total, especie) => total + especie.raridade, 0);
+  let sorte = Math.random() * pesoTotal;
+  for (const especie of ESPECIES_PEIXES) {
+    sorte -= especie.raridade;
+    if (sorte <= 0) return especie;
+  }
+  return ESPECIES_PEIXES[0];
+}
+
 function registrarPesca(guardar) {
   if (guardar) {
     estado.peixesDisponiveis = Math.max(0, estado.peixesDisponiveis - 1);
@@ -1318,6 +1350,8 @@ function registrarPesca(guardar) {
     ajustarIndicadores(estado, { Ambiente: 1 });
   }
   estado.horariosDePesca.push(estado.horario);
+  const especie = sortearEspecie();
+  if (!estado.colecaoPeixes.includes(especie.id)) estado.colecaoPeixes.push(especie.id);
   const carta = CONTEUDO.cartas.find((item) => item.id === 'registro-pesca');
   if (carta && !estado.cartasColetadas.includes(carta.texto)) {
     estado.cartasColetadas.push(carta.texto);
@@ -1325,8 +1359,8 @@ function registrarPesca(guardar) {
   dialogController.open({
     nome: 'Caderno de Saberes',
     texto: guardar
-      ? `Você guardou o peixe para compartilhar. Restam ${estado.peixesDisponiveis} peixes disponíveis no cenário.`
-      : `Você devolveu o peixe ao mar. Há ${estado.peixesDisponiveis} peixes disponíveis no cenário.`,
+      ? `Você encontrou ${especie.nome}. ${especie.ficha} Restam ${estado.peixesDisponiveis} peixes disponíveis no cenário.`
+      : `Você encontrou ${especie.nome} e devolveu ao mar. ${especie.ficha} Há ${estado.peixesDisponiveis} peixes disponíveis no cenário.`,
     typewriter: false
   });
   atualizarHud();
@@ -1695,6 +1729,15 @@ function desenharAnimacaoPesca(tile, camera, agora) {
   const progressoVisual = estado.reduzirMovimento ? 0 : progresso;
 
   ctx.save();
+  ctx.fillStyle = '#8A5A33';
+  ctx.strokeStyle = '#5A3A1E';
+  ctx.lineWidth = Math.max(2, tile * 0.035);
+  ctx.beginPath();
+  ctx.moveTo(maoX - tile * 0.02, maoY);
+  ctx.quadraticCurveTo(pontaX, pontaY - tile * 0.18, pontaX + tile * (direcao === 'left' ? -0.12 : 0.12), pontaY);
+  ctx.stroke();
+  ctx.fillStyle = '#D9A441';
+  ctx.fillRect(Math.round(maoX - tile * 0.06), Math.round(maoY - tile * 0.06), tile * 0.12, tile * 0.12);
   ctx.strokeStyle = '#5A3A1E';
   ctx.lineWidth = Math.max(2, tile * 0.035);
   ctx.beginPath();
@@ -1711,8 +1754,15 @@ function desenharAnimacaoPesca(tile, camera, agora) {
   if (pescaAnimacao.fase === 'lancamento') {
     const flutuadorX = pontaX + (aguaX - pontaX) * progressoVisual;
     const flutuadorY = pontaY + (aguaY - pontaY) * progressoVisual;
-    ctx.fillStyle = '#FFE066';
-    ctx.fillRect(Math.round(flutuadorX - tile * 0.035), Math.round(flutuadorY - tile * 0.035), tile * 0.07, tile * 0.07);
+    ctx.fillStyle = '#A64C3A';
+    ctx.fillRect(Math.round(flutuadorX - tile * 0.04), Math.round(flutuadorY - tile * 0.055), tile * 0.08, tile * 0.06);
+    ctx.fillStyle = '#F6E7C1';
+    ctx.fillRect(Math.round(flutuadorX - tile * 0.04), Math.round(flutuadorY), tile * 0.08, tile * 0.045);
+    ctx.strokeStyle = '#5A3A1E';
+    ctx.beginPath();
+    ctx.moveTo(flutuadorX, flutuadorY + tile * 0.09);
+    ctx.lineTo(flutuadorX + tile * 0.06, flutuadorY + tile * 0.16);
+    ctx.stroke();
   }
 
   if (pescaAnimacao.fase === 'lancamento' || pescaAnimacao.fase === 'fisgada') {

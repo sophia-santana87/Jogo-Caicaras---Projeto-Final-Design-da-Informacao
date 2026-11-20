@@ -273,21 +273,21 @@ export const MAPA_DECORACOES = [
   { tipo: 'flor', x: 40, y: 24 }
 ];
 
-export const CENA_FANDANGO = { x: 34, y: 9 };
+export const CENA_FANDANGO = { x: 23, y: 16 };
 
 export const DANCARINOS_FANDANGO = [
-  { x: 32, y: 9, estilo: 'homem' },
-  { x: 33, y: 7.5, estilo: 'mulher' },
-  { x: 35, y: 7.5, estilo: 'homem' },
-  { x: 36, y: 9, estilo: 'mulher' },
-  { x: 35, y: 10.5, estilo: 'homem' },
-  { x: 33, y: 10.5, estilo: 'mulher' }
+  { x: 21, y: 16, estilo: 'homem' },
+  { x: 22, y: 14.5, estilo: 'mulher' },
+  { x: 24, y: 14.5, estilo: 'homem' },
+  { x: 25, y: 16, estilo: 'mulher' },
+  { x: 24, y: 17.5, estilo: 'homem' },
+  { x: 22, y: 17.5, estilo: 'mulher' }
 ];
 
 export const MUSICOS_FANDANGO = [
-  { x: 39, y: 8, instrumento: 'viola' },
-  { x: 39, y: 9.5, instrumento: 'rabeca' },
-  { x: 39, y: 11, instrumento: 'adufo' }
+  { x: 27, y: 15, instrumento: 'viola' },
+  { x: 27, y: 16.5, instrumento: 'rabeca' },
+  { x: 27, y: 18, instrumento: 'adufo' }
 ];
 
 export const PESSOAS_CENARIO = [

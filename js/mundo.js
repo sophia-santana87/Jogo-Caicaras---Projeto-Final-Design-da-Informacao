@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=32';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=34';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 32;
@@ -254,7 +254,9 @@ export const MAPA_DECORACOES = [
   { tipo: 'capim', x: 37, y: 17 },
   { tipo: 'flor', x: 30, y: 20 },
   { tipo: 'arbusto', x: 30, y: 23 },
-  { tipo: 'pedra', x: 38, y: 22 },
+  { tipo: 'vitoria-regia', x: 38, y: 22 },
+  { tipo: 'junco', x: 40, y: 24 },
+  { tipo: 'tronco', x: 36, y: 24 },
   { tipo: 'flor', x: 39, y: 20 },
   { tipo: 'cerca', x: 41, y: 25 },
   { tipo: 'cerca', x: 44, y: 24 },
@@ -273,7 +275,6 @@ export const MAPA_DECORACOES = [
   { tipo: 'flor', x: 11, y: 22 },
   { tipo: 'arbusto', x: 39, y: 16 },
   { tipo: 'pedra', x: 34, y: 24 },
-  { tipo: 'flor', x: 40, y: 24 }
 ];
 
 export const CENA_FANDANGO = { x: 7, y: 18 };

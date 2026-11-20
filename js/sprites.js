@@ -210,7 +210,7 @@ const TIPOS_DE_OBJETO = [
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'banco', 'canoa', 'saco',
   'forno', 'prensa', 'peneira', 'rede', 'bandeira', 'luminaria', 'viola', 'rabeca', 'adufo',
   'peixe', 'biju', 'cataia', 'placa', 'ponte-saber', 'vara-pesca', 'lixeiraOrganica', 'lixeiraReciclavel',
-  'arbusto', 'flor', 'pedra', 'capim', 'cerca'
+  'arbusto', 'flor', 'pedra', 'capim', 'cerca', 'vitoria-regia', 'junco', 'tronco'
 ];
 const OBJETOS_GRANDES = new Set([
   'arvore', 'palmeira', 'mangue', 'casa', 'casaFarinha', 'casaRural', 'pavilhao', 'barraca', 'mercadinho', 'canoa'
@@ -668,6 +668,27 @@ function pintarObjeto(ctx, tipo, variante) {
     ctx.fillStyle = '#A78354';
     ctx.fillRect(6, 11, 2, 2);
     ctx.fillRect(24, 11, 2, 2);
+  } else if (tipo === 'vitoria-regia') {
+    ctx.fillStyle = '#2F6B3A';
+    ctx.fillRect(7, 14, 18, 8);
+    ctx.fillStyle = '#5FA844';
+    ctx.fillRect(10, 12, 12, 4);
+    ctx.fillRect(13, 18, 10, 3);
+  } else if (tipo === 'junco') {
+    ctx.fillStyle = '#2F6B3A';
+    ctx.fillRect(8, 8, 2, 20);
+    ctx.fillRect(15, 12, 2, 16);
+    ctx.fillRect(22, 6, 2, 22);
+    ctx.fillStyle = '#8CCB5E';
+    ctx.fillRect(6, 16, 5, 2);
+    ctx.fillRect(18, 17, 5, 2);
+  } else if (tipo === 'tronco') {
+    ctx.fillStyle = '#68452B';
+    ctx.fillRect(5, 16, 23, 6);
+    ctx.fillStyle = '#8A5A33';
+    ctx.fillRect(8, 14, 17, 3);
+    ctx.fillStyle = '#A78354';
+    ctx.fillRect(11, 15, 8, 1);
   } else if (tipo === 'lixeiraOrganica' || tipo === 'lixeiraReciclavel') {
     ctx.fillStyle = '#68452B';
     ctx.fillRect(8, 10, 16, 17);

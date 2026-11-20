@@ -44,3 +44,9 @@
 3. Aproximar-se e confirmar o botão "Pescar"; Interagir mostra a ação apenas com a vara disponível.
 4. Durante a pesca, confirmar haste longa curva, cabo, linha fina, boia vermelha/branca e anzol visível.
 5. Recarregar a página e confirmar que a vara continua no inventário salvo.
+
+## v2.1 - Itens iniciados
+- B concluido: cinco edificios no núcleo da vila, trilha lateral para o Terreiro e barracas em pontos separados.
+- C em andamento: lago irregular por tiles, peixes saltantes com reducao por movimento e ficha no Caderno.
+- D/E em andamento: canoas cairçaras com veios e barracas reduzidas.
+- F em andamento: interior comum em mesma escala/pixel/profundidade do exterior.

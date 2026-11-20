@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=32';
-import { INTERIORES } from '../dados/interiores.js?v=32';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=32';
-import { DialogoController } from './dialogo.js?v=32';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=32';
-import { SomManager } from './som.js?v=32';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=32';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=32';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=32';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=32';
+import { CONTEUDO } from '../dados/conteudo.js?v=34';
+import { INTERIORES } from '../dados/interiores.js?v=34';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=34';
+import { DialogoController } from './dialogo.js?v=34';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=34';
+import { SomManager } from './som.js?v=34';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=34';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=34';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=34';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=34';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -98,14 +98,18 @@ const ITENS_DESTAQUE = new Set([
 let coletaNotificacaoTimer = null;
 let portaAnimacao = null;
 let ritmoTentativa = [];
+let peixesSaltantes = [
+  { x: 36, y: 22, especieId: 'tainha', inicio: 0, proximo: 4200 },
+  { x: 38, y: 24, especieId: 'robalo', inicio: 0, proximo: 6700 },
+  { x: 35, y: 23, especieId: 'parati', inicio: 0, proximo: 5300 }
+];
 const ESPECIES_PEIXES = [
   { id: 'tainha', nome: 'Tainha', raridade: 4, ficha: 'Peixe ligado ao mar; redes de cerco fazem parte do saber artesanal. Época relevante depende da comunidade e do tempo local.' },
-  { id: 'robaldo', nome: 'Robalo', raridade: 3, ficha: 'Peixe de estuários e regiões costeiras. Sua presença varia com vento, maré e estação.' },
+  { id: 'robalo', nome: 'Robalo', raridade: 3, ficha: 'Peixe de estuários e regiões costeiras. Sua presença varia com vento, maré e estação.' },
   { id: 'parati', nome: 'Parati', raridade: 3, ficha: 'Peixe comum em águas costeiras e estuarinas. A pesca depende de observar o ambiente.' },
   { id: 'bagre', nome: 'Bagre', raridade: 2, ficha: 'Pode ocorrer em rios, lagoas e áreas próximas. O preparo varia entre famílias e comunidades.' },
   { id: 'corvina', nome: 'Corvina', raridade: 2, ficha: 'Peixe costeiro conhecido em pesca artesanal. Quantidade e época exigem atenção ao mar.' },
-  { id: 'savelha', nome: 'Savelha', raridade: 2, ficha: 'Peixe marinho usado em hábitos locais de alimentação. Os detalhes locais precisam ser validados.' },
-  { id: 'caranguejo', nome: 'Caranguejo', raridade: 1, ficha: 'Crustáceo associado a mangues e margens. Não confundir com peixe; coleta exige cuidado e regras locais.' }
+  { id: 'savelha', nome: 'Savelha', raridade: 2, ficha: 'Peixe marinho usado em hábitos locais de alimentação. Os detalhes locais precisam ser validados.' }
 ];
 
 function showScreen(id) {
@@ -1536,6 +1540,82 @@ function posicaoCamera(tile, agora = performance.now()) {
   };
 }
 
+function atualizarPeixesSaltantes(agora) {
+  if (estado.reduzirMovimento) return;
+  peixesSaltantes.forEach((peixe) => {
+    if (peixe.inicio === 0 && agora >= peixe.proximo) {
+      peixe.inicio = agora;
+      peixe.proximo = agora + 3000 + Math.random() * 5000;
+    }
+  });
+}
+
+function desenharPeixesSaltantes(tile, camera, agora) {
+  peixesSaltantes.forEach((peixe, indice) => {
+    const x = (peixe.x + 0.5) * tile - camera.x;
+    const y = (peixe.y + 0.5) * tile - camera.y;
+    if (estado.reduzirMovimento) {
+      ctx.save();
+      ctx.strokeStyle = 'rgba(246,231,193,0.8)';
+      ctx.lineWidth = Math.max(1, tile * 0.025);
+      ctx.beginPath();
+      ctx.ellipse(x, y, tile * 0.18, tile * 0.07, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.restore();
+      return;
+    }
+    if (peixe.inicio === 0) return;
+    const progresso = Math.max(0, Math.min(1, (agora - peixe.inicio) / 760));
+    if (progresso >= 1) {
+      peixe.inicio = 0;
+      return;
+    }
+    const arco = Math.sin(progresso * Math.PI) * tile * 0.48;
+    const saltoX = x + (indice % 2 ? 1 : -1) * tile * progresso * 0.32;
+    const saltoY = y - arco;
+    ctx.save();
+    ctx.fillStyle = '#5A3A1E';
+    ctx.fillRect(Math.round(saltoX - tile * 0.12), Math.round(saltoY - tile * 0.04), tile * 0.24, tile * 0.08);
+    ctx.fillStyle = '#F0D9A0';
+    ctx.fillRect(Math.round(saltoX - tile * 0.04), Math.round(saltoY - tile * 0.05), tile * 0.08, tile * 0.04);
+    ctx.strokeStyle = 'rgba(241,255,229,0.8)';
+    ctx.lineWidth = Math.max(1, tile * 0.025);
+    ctx.beginPath();
+    ctx.ellipse(x, y + tile * 0.06, tile * (0.16 + progresso * 0.12), tile * 0.06, 0, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  });
+}
+
+function abrirPeixeSaltante(peixe) {
+  const especie = ESPECIES_PEIXES.find((item) => item.id === peixe.especieId);
+  if (!especie) return;
+  if (!estado.colecaoPeixes.includes(especie.id)) estado.colecaoPeixes.push(especie.id);
+  ajustarIndicadores(estado, { Ambiente: 1 });
+  atualizarHud();
+  salvar();
+  dialogController.open({
+    nome: especie.nome,
+    texto: `${especie.ficha} Registro de observação adicionado ao Caderno.`,
+    typewriter: false
+  });
+}
+
+function tocarPeixeNaTela(event) {
+  if (estado.interiorAtivo || estado.fase !== 'jogo') return;
+  const rect = canvas.getBoundingClientRect();
+  const tile = escalaDoMapa() * 16;
+  const camera = posicaoCamera(tile);
+  const px = ((event.clientX - rect.left) / rect.width) * canvas.width + camera.x;
+  const py = ((event.clientY - rect.top) / rect.height) * canvas.height + camera.y;
+  const peixe = peixesSaltantes.find((item) => {
+    const x = (item.x + 0.5) * tile;
+    const y = (item.y + 0.5) * tile;
+    return Math.abs(px - x) <= tile * 0.75 && Math.abs(py - y) <= tile * 0.75;
+  });
+  if (peixe) abrirPeixeSaltante(peixe);
+}
+
 function desenharOndas(x, y, tile, mapaX, mapaY) {
   const tick = estado.reduzirMovimento ? 0 : animationTick;
   const movimento = (tick / 12 + mapaX * 0.7 + mapaY * 0.35) % 1;
@@ -2025,6 +2105,7 @@ function desenhoMapa(agora = performance.now()) {
     }
   }
 
+  desenharPeixesSaltantes(tile, camera, agora);
   desenharTerreiroFandango(tile, camera);
 
   const elements = [];
@@ -2191,6 +2272,7 @@ function loop(agora = performance.now()) {
     atualizarMovimentoAlvo(agora);
     atualizarCachorro(agora);
     atualizarAnimacaoPesca(agora);
+    atualizarPeixesSaltantes(agora);
     atualizarInteracao();
   }
   desenhoMapa(agora);
@@ -2329,7 +2411,10 @@ function setupEventos() {
     }
   });
 
-  canvas.addEventListener('pointerdown', tocarMapa);
+  canvas.addEventListener('pointerdown', (event) => {
+    tocarMapa(event);
+    tocarPeixeNaTela(event);
+  });
 
   const avatarGrid = document.getElementById('avatar-grid');
   CONTEUDO.avatares.forEach((avatar) => {

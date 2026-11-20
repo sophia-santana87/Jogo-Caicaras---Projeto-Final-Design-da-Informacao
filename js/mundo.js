@@ -108,9 +108,14 @@ MAPA[9][43] = 'caminho';
 MAPA[5][39] = 'grama';
 MAPA[6][39] = 'grama';
 for (let x = 19; x <= 28; x += 1) MAPA[15][x] = 'caminho';
-for (let y = 21; y <= 24; y += 1) {
-  for (let x = 35; x <= 39; x += 1) MAPA[y][x] = 'lagoa';
+for (let y = 21; y <= 25; y += 1) {
+  for (let x = 35; x <= 39; x += 1) MAPA[y][x] = 'grama';
 }
+[36, 37, 38].forEach((x) => { MAPA[21][x] = 'lagoa'; });
+[35, 36, 37, 38, 39].forEach((x) => { MAPA[22][x] = 'lagoa'; });
+[34, 35, 36, 37, 38, 39, 40].forEach((x) => { MAPA[23][x] = 'lagoa'; });
+[35, 36, 37, 38, 39, 40].forEach((x) => { MAPA[24][x] = 'lagoa'; });
+[36, 37, 38, 39].forEach((x) => { MAPA[25][x] = 'lagoa'; });
 
 for (let y = 6; y <= 12; y += 1) {
   for (let x = 29; x <= 38; x += 1) {
@@ -251,6 +256,9 @@ export const MAPA_DECORACOES = [
   { tipo: 'cerca', x: 44, y: 24 },
   { tipo: 'capim', x: 45, y: 23 },
   { tipo: 'capim', x: 34, y: 21 },
+  { tipo: 'capim', x: 33, y: 23 },
+  { tipo: 'pedra', x: 41, y: 23 },
+  { tipo: 'flor', x: 40, y: 25 },
   { tipo: 'capim', x: 40, y: 21 },
   { tipo: 'arbusto', x: 8, y: 17 },
   { tipo: 'flor', x: 9, y: 16 },

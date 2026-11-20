@@ -730,6 +730,34 @@ body.high-contrast .interior-item {
   to { opacity: 1; transform: translate(-50%, -50%); }
 }
 
+.interior-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  width: 100%;
+}
+
+.interior-canvas {
+  width: 100%;
+  max-height: 52vh;
+  aspect-ratio: 4 / 3;
+  image-rendering: pixelated;
+  border: 3px solid var(--borda);
+  background: #D9BE82;
+}
+
+.interior-controles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.45rem;
+}
+
+.interior-controles button {
+  min-height: 44px;
+  font-size: 0.78rem;
+  line-height: 1.15;
+}
+
 .interior-grid {
   position: relative;
   display: grid;

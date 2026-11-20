@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=35';
-import { INTERIORES } from '../dados/interiores.js?v=35';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=35';
-import { DialogoController } from './dialogo.js?v=35';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=35';
-import { SomManager } from './som.js?v=35';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=35';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=35';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=35';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=35';
+import { CONTEUDO } from '../dados/conteudo.js?v=36';
+import { INTERIORES } from '../dados/interiores.js?v=36';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=36';
+import { DialogoController } from './dialogo.js?v=36';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=36';
+import { SomManager } from './som.js?v=36';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=36';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=36';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=36';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=36';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -1125,48 +1125,87 @@ function renderizarInterior(edificio) {
   if (!interior) return;
 
   sala.replaceChildren();
-  sala.className = 'interior-grid';
-  sala.style.gridTemplateColumns = `repeat(${interior.largura}, 1fr)`;
-  sala.style.gridTemplateRows = `repeat(${interior.altura}, 1fr)`;
+  sala.className = 'interior-canvas-wrap';
   feedback.textContent = '';
 
-  const paredes = new Set(['0,0', '7,0', '0,5', '7,5']);
-  for (let y = 0; y < interior.altura; y += 1) {
-    for (let x = 0; x < interior.largura; x += 1) {
-      const piso = document.createElement('div');
-      piso.className = 'interior-piso';
-      piso.style.gridColumn = String(x + 1);
-      piso.style.gridRow = String(y + 1);
-      sala.appendChild(piso);
-    }
-  }
+  const canvasInterior = document.createElement('canvas');
+  canvasInterior.width = interior.largura * 48;
+  canvasInterior.height = interior.altura * 48;
+  canvasInterior.className = 'interior-canvas';
+  canvasInterior.setAttribute('role', 'img');
+  canvasInterior.setAttribute('aria-label', `Cena interna de ${interior.titulo}`);
+  canvasInterior.setAttribute('aria-describedby', 'interior-feedback');
+  const ctxInterior = canvasInterior.getContext('2d');
+  ctxInterior.imageSmoothingEnabled = false;
 
+  ctxInterior.fillStyle = '#D9BE82';
+  ctxInterior.fillRect(0, 0, canvasInterior.width, canvasInterior.height);
+  ctxInterior.fillStyle = '#68452B';
+  ctxInterior.fillRect(0, 0, canvasInterior.width, 48);
+  ctxInterior.fillRect(0, 48, 30, canvasInterior.height - 48);
+  ctxInterior.fillRect(canvasInterior.width - 30, 48, 30, canvasInterior.height - 48);
+  ctxInterior.fillStyle = '#F0D9A0';
+  ctxInterior.fillRect(30, 48, canvasInterior.width - 60, canvasInterior.height - 48);
+
+  ctxInterior.fillStyle = '#5A3A1E';
+  ctxInterior.fillRect((interior.saida.x + 0.5) * 48 - 34, (interior.altura - 0.35) * 48 - 18, 68, 24);
+  ctxInterior.fillStyle = '#A78354';
+  ctxInterior.fillRect((interior.saida.x + 0.5) * 48 - 26, (interior.altura - 0.35) * 48 - 14, 52, 16);
+
+  const elementos = interior.objetos.map((objeto, indice) => ({ tipo: 'objeto', objeto, indice }));
+  elementos.push({ tipo: 'player', y: estado.posicaoInterior.y, x: estado.posicaoInterior.x });
+  elementos.sort((a, b) => (a.tipo === 'player' ? a.y : a.objeto.y) - (b.tipo === 'player' ? b.y : b.objeto.y));
+
+  elementos.forEach((elemento) => {
+    if (elemento.tipo === 'player') {
+      const centerX = (elemento.x + 0.5) * 48;
+      const baseY = (elemento.y + 1) * 48;
+      desenharSombraInterno(ctxInterior, centerX, baseY);
+      desenharJogador(ctxInterior, centerX, baseY, 48, estado.reduzirMovimento ? 0 : animationTick, playerDirection, false, estado.avatar);
+      return;
+    }
+
+    const objeto = elemento.objeto;
+    const centerX = (objeto.x + 0.5) * 48;
+    const baseY = (objeto.y + 1) * 48;
+    desenharSombraInterno(ctxInterior, centerX, baseY);
+    const tipoSprite = objeto.tipo === 'farinha' && objeto.etapa === 2
+      ? 'prensa'
+      : objeto.tipo === 'farinha' && objeto.etapa === 3
+        ? 'peneira'
+        : objeto.tipo === 'farinha' && objeto.etapa === 4
+          ? 'forno'
+          : objeto.tipo === 'musica'
+            ? objeto.id
+            : objeto.tipo === 'produto'
+              ? (objeto.id === 'peixe-seco' || objeto.id === 'peixe' ? 'peixe' : 'placa')
+              : 'prensa';
+    if (['prensa', 'peneira', 'forno', 'viola', 'rabeca', 'adufo', 'peixe', 'placa'].includes(tipoSprite)) {
+      desenharObjeto(ctxInterior, tipoSprite, centerX, baseY, 48, elemento.indice);
+    }
+  });
+
+  const controles = document.createElement('div');
+  controles.className = 'interior-controles';
   interior.objetos.forEach((objeto) => {
     const botao = document.createElement('button');
     botao.type = 'button';
-    botao.className = 'interior-objeto';
     botao.textContent = objeto.nome;
-    botao.style.gridColumn = String(objeto.x + 1);
-    botao.style.gridRow = String(objeto.y + 1);
-    botao.addEventListener('click', interagirNoInterior);
-    sala.appendChild(botao);
+    botao.addEventListener('click', () => {
+      estado.posicaoInterior = { x: objeto.x, y: objeto.y };
+      renderizarInterior(edificio);
+      interagirNoInterior();
+    });
+    controles.appendChild(botao);
   });
+  const sair = document.createElement('button');
+  sair.type = 'button';
+  sair.textContent = 'Sair pela porta';
+  sair.className = 'btn-secondary';
+  sair.addEventListener('click', fecharInterior);
+  controles.appendChild(sair);
 
-  const saida = document.createElement('button');
-  saida.type = 'button';
-  saida.className = 'interior-saida';
-  saida.textContent = 'Sair pela porta';
-  saida.style.gridColumn = String(interior.saida.x + 1);
-  saida.style.gridRow = String(interior.saida.y + 1);
-  saida.addEventListener('click', fecharInterior);
-  sala.appendChild(saida);
-
-  const jogador = document.createElement('div');
-  jogador.className = 'interior-jogador';
-  jogador.setAttribute('aria-label', 'Posição do jogador no interior');
-  jogador.style.gridColumn = String(estado.posicaoInterior.x + 1);
-  jogador.style.gridRow = String(estado.posicaoInterior.y + 1);
-  sala.appendChild(jogador);
+  sala.append(canvasInterior, controles);
 
   if (edificio.id === 'casa-de-farinha') {
     descricao.textContent = 'Siga as estações da mandioca. Os passos podem ser feitos com um toque simples.';
@@ -1177,6 +1216,13 @@ function renderizarInterior(edificio) {
   } else {
     descricao.textContent = 'Você entrou no armazém da vila.';
   }
+}
+
+function desenharSombraInterno(ctxInterior, centerX, baseY) {
+  ctxInterior.fillStyle = 'rgba(43,26,14,0.22)';
+  ctxInterior.beginPath();
+  ctxInterior.ellipse(centerX, baseY + 3, 18, 5, 0, 0, Math.PI * 2);
+  ctxInterior.fill();
 }
 
 function moverNoInterior(dx, dy) {

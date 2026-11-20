@@ -934,6 +934,64 @@ export function desenharVaraPesca(ctx, maoX, maoY, pontaX, pontaY, aguaX, aguaY,
   ctx.restore();
 }
 
+export function desenharCanoaCaiçara(ctx, centroX, baseY, tile, variante = 0, reduzirMovimento = false) {
+  const largura = tile * (2.0 + (Math.abs(variante) % 3) * 0.18);
+  const altura = tile * 0.38;
+  const balanço = reduzirMovimento ? 0 : Math.sin((variante * 11 + Math.floor(performance.now() / 900)) * 0.24) * tile * 0.025;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(43,26,14,0.28)';
+  ctx.beginPath();
+  ctx.ellipse(centroX + tile * 0.12, baseY + tile * 0.05, largura * 0.48, altura * 0.24, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.translate(0, balanço);
+  const madeira = ctx.createLinearGradient(centroX - largura / 2, baseY - altura, centroX + largura / 2, baseY);
+  madeira.addColorStop(0, '#68452B');
+  madeira.addColorStop(0.25, '#A78354');
+  madeira.addColorStop(0.55, variante % 2 ? '#8A5A33' : '#B17A45');
+  madeira.addColorStop(1, '#5A3A1E');
+  ctx.fillStyle = madeira;
+  ctx.strokeStyle = '#4A321F';
+  ctx.lineWidth = Math.max(2, tile * 0.04);
+  ctx.beginPath();
+  ctx.moveTo(centroX - largura * 0.5, baseY - altura * 0.28);
+  ctx.quadraticCurveTo(centroX - largura * 0.18, baseY - altura * 0.72, centroX + largura * 0.48, baseY - altura * 0.30);
+  ctx.quadraticCurveTo(centroX + largura * 0.34, baseY + altura * 0.38, centroX - largura * 0.38, baseY + altura * 0.26);
+  ctx.closePath();
+  ctx.fill();
+  ctx.stroke();
+
+  ctx.strokeStyle = '#D9BE82';
+  ctx.lineWidth = Math.max(1, tile * 0.035);
+  ctx.beginPath();
+  ctx.moveTo(centroX - largura * 0.42, baseY - altura * 0.18);
+  ctx.quadraticCurveTo(centroX, baseY - altura * 0.34, centroX + largura * 0.42, baseY - altura * 0.18);
+  ctx.stroke();
+
+  ctx.strokeStyle = '#68452B';
+  ctx.lineWidth = Math.max(1, tile * 0.026);
+  for (let index = -2; index <= 2; index += 1) {
+    ctx.beginPath();
+    ctx.moveTo(centroX + index * largura * 0.14, baseY - altura * 0.26);
+    ctx.lineTo(centroX + index * largura * 0.12, baseY + altura * 0.18);
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = '#8A5A33';
+  ctx.lineWidth = Math.max(1, tile * 0.04);
+  ctx.beginPath();
+  ctx.moveTo(centroX + largura * 0.36, baseY - altura * 0.18);
+  ctx.lineTo(centroX + largura * 0.62, baseY - altura * 0.62);
+  ctx.stroke();
+  ctx.fillStyle = '#D9A441';
+  ctx.beginPath();
+  ctx.ellipse(centroX + largura * 0.66, baseY - altura * 0.66, tile * 0.09, tile * 0.22, -0.35, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
 export function desenharAve(ctx, x, y, tile, tick, pousada = false) {
   const px = Math.max(2, tile / 32);
   const flap = Math.floor(tick / 8) % 2;

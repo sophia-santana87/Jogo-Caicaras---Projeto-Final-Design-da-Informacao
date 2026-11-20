@@ -2,16 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=34';
-import { INTERIORES } from '../dados/interiores.js?v=34';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=34';
-import { DialogoController } from './dialogo.js?v=34';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=34';
-import { SomManager } from './som.js?v=34';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=34';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=34';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=34';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=34';
+import { CONTEUDO } from '../dados/conteudo.js?v=35';
+import { INTERIORES } from '../dados/interiores.js?v=35';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=35';
+import { DialogoController } from './dialogo.js?v=35';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=35';
+import { SomManager } from './som.js?v=35';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=35';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=35';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=35';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=35';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -1832,20 +1832,7 @@ function desenharBarcoDeFora(tile, camera) {
   if (estado.horario !== '17:30' || estado.eventoConcluido) return;
   const x = 16.5 * tile - camera.x;
   const y = 29.5 * tile - camera.y;
-  ctx.fillStyle = '#5A3A1E';
-  ctx.beginPath();
-  ctx.moveTo(x - tile * 1.6, y);
-  ctx.lineTo(x + tile * 1.6, y);
-  ctx.lineTo(x + tile * 1.1, y + tile * 0.38);
-  ctx.lineTo(x - tile * 1.05, y + tile * 0.38);
-  ctx.closePath();
-  ctx.fill();
-  ctx.fillStyle = '#F0D9A0';
-  ctx.fillRect(x - tile * 0.55, y - tile * 0.38, tile * 1.1, tile * 0.38);
-  ctx.fillStyle = '#A64C3A';
-  ctx.fillRect(x - tile * 0.72, y - tile * 0.55, tile * 0.62, tile * 0.18);
-  ctx.fillStyle = '#D9A441';
-  ctx.fillRect(x + tile * 0.15, y - tile * 0.55, tile * 0.5, tile * 0.18);
+  desenharCanoaCaiçara(ctx, x, y, tile, 3, estado.reduzirMovimento);
 }
 
 function desenharPeixe(x, y, escala) {
@@ -2149,7 +2136,11 @@ function desenhoMapa(agora = performance.now()) {
         ? Math.sin(tick / 13 + element.seed) * tile * 0.035
         : 0;
       desenharSombra(centerX, baseY, tile, grande ? 1.7 : 0.8, grande ? 1 : 0);
-      desenharObjeto(ctx, element.objeto, centerX, baseY - salto, tile, element.seed);
+      if (element.objeto === 'canoa') {
+        desenharCanoaCaiçara(ctx, centerX, baseY, tile, element.seed, estado.reduzirMovimento);
+      } else {
+        desenharObjeto(ctx, element.objeto, centerX, baseY - salto, tile, element.seed);
+      }
       const edificioDoObjeto = EDIFICIOS.find((item) => item.x === element.x && item.y === element.y);
       if (edificioDoObjeto?.enterable && distancia(estado.jogador.x, estado.jogador.y, edificioDoObjeto.entrada.x, edificioDoObjeto.entrada.y) <= 3.5) {
         ctx.save();

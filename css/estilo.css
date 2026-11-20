@@ -715,6 +715,67 @@ body.high-contrast .interior-item {
   display: none;
 }
 
+#interior-panel {
+  animation: interior-entrada 240ms ease-out;
+}
+
+#interior-panel.sem-fade,
+#interior-panel.fechando {
+  animation: none;
+  transition: none;
+}
+
+@keyframes interior-entrada {
+  from { opacity: 0; transform: translate(-50%, -48%); }
+  to { opacity: 1; transform: translate(-50%, -50%); }
+}
+
+.interior-grid {
+  position: relative;
+  display: grid;
+  width: 100%;
+  min-height: 300px;
+  border: 3px solid var(--borda);
+  background: #D9BE82;
+  gap: 2px;
+  overflow: hidden;
+}
+
+.interior-piso {
+  background: #F0D9A0;
+  border: 1px solid rgba(90,58,30,0.16);
+}
+
+.interior-objeto,
+.interior-saida {
+  z-index: 3;
+  align-self: center;
+  justify-self: center;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.35rem;
+  font-size: 0.72rem;
+  line-height: 1.1;
+  white-space: normal;
+}
+
+.interior-saida {
+  background: var(--botao-secundario);
+  color: var(--texto);
+}
+
+.interior-jogador {
+  z-index: 4;
+  align-self: center;
+  justify-self: center;
+  width: 18px;
+  height: 28px;
+  border: 3px solid #5A3A1E;
+  border-radius: 50% 50% 35% 35%;
+  background: #2F6B3A;
+  box-shadow: 0 3px 0 rgba(90,58,30,0.35);
+}
+
 .modal {
   position: absolute;
   inset: 50% auto auto 50%;

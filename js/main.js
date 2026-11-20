@@ -2,15 +2,16 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=28';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=28';
-import { DialogoController } from './dialogo.js?v=28';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=28';
-import { SomManager } from './som.js?v=28';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=28';
-import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=28';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=28';
-import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=28';
+import { CONTEUDO } from '../dados/conteudo.js?v=29';
+import { INTERIORES } from '../dados/interiores.js?v=29';
+import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=29';
+import { DialogoController } from './dialogo.js?v=29';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=29';
+import { SomManager } from './som.js?v=29';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=29';
+import { AVES_POUSADAS, CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=29';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=29';
+import { desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharDancarino, desenharJogador, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso } from './sprites.js?v=29';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -922,6 +923,10 @@ function iniciarOuRetomarMissao(missaoId) {
 
 function interagir() {
   if (estado.fase !== 'jogo' || pescaAnimacao || !dialogController.overlay.classList.contains('hidden')) return;
+  if (estado.interiorAtivo) {
+    interagirNoInterior();
+    return;
+  }
   const contexto = obterEtapaAtiva();
   const npcs = getNPCsNoHorario(estado.horario);
   const edificio = edificioProximo();
@@ -945,7 +950,7 @@ function interagir() {
   }
 
   if (contexto?.etapa.tipo === 'ir-ate' && edificio?.id === contexto.etapa.alvo) {
-    if (edificio.temInterior) {
+    if (edificio.enterable) {
       abrirInterior(edificio);
     } else {
       completarEtapaMissao(contexto.id);
@@ -1024,8 +1029,13 @@ function abrirInterior(edificio) {
   destinoAtual = null;
   document.getElementById('btn-interagir').classList.add('hidden');
   estado.interiorAtivo = edificio.id;
-  document.getElementById('interior-panel').classList.remove('hidden');
-  document.getElementById('interior-titulo').textContent = nomeEdificio(edificio);
+  estado.cenaAtual = 'interior';
+  const interior = INTERIORES[edificio.id];
+  estado.posicaoInterior = interior ? { ...interior.spawn } : { x: 4, y: 5 };
+  const panel = document.getElementById('interior-panel');
+  panel.classList.remove('hidden');
+  panel.classList.toggle('sem-fade', estado.reduzirMovimento);
+  document.getElementById('interior-titulo').textContent = interior?.titulo || nomeEdificio(edificio);
   const contexto = obterEtapaAtiva();
   if (contexto?.etapa.tipo === 'ir-ate' && contexto.etapa.alvo === edificio.id) {
     completarEtapaMissao(contexto.id, false);
@@ -1035,105 +1045,188 @@ function abrirInterior(edificio) {
 }
 
 function renderizarInterior(edificio) {
+  const interior = INTERIORES[edificio.id];
   const sala = document.getElementById('interior-sala');
   const descricao = document.getElementById('interior-descricao');
   const feedback = document.getElementById('interior-feedback');
+  if (!interior) return;
+
   sala.replaceChildren();
+  sala.className = 'interior-grid';
+  sala.style.gridTemplateColumns = `repeat(${interior.largura}, 1fr)`;
+  sala.style.gridTemplateRows = `repeat(${interior.altura}, 1fr)`;
   feedback.textContent = '';
 
+  const paredes = new Set(['0,0', '7,0', '0,5', '7,5']);
+  for (let y = 0; y < interior.altura; y += 1) {
+    for (let x = 0; x < interior.largura; x += 1) {
+      const piso = document.createElement('div');
+      piso.className = 'interior-piso';
+      piso.style.gridColumn = String(x + 1);
+      piso.style.gridRow = String(y + 1);
+      sala.appendChild(piso);
+    }
+  }
+
+  interior.objetos.forEach((objeto) => {
+    const botao = document.createElement('button');
+    botao.type = 'button';
+    botao.className = 'interior-objeto';
+    botao.textContent = objeto.nome;
+    botao.style.gridColumn = String(objeto.x + 1);
+    botao.style.gridRow = String(objeto.y + 1);
+    botao.addEventListener('click', interagirNoInterior);
+    sala.appendChild(botao);
+  });
+
+  const saida = document.createElement('button');
+  saida.type = 'button';
+  saida.className = 'interior-saida';
+  saida.textContent = 'Sair pela porta';
+  saida.style.gridColumn = String(interior.saida.x + 1);
+  saida.style.gridRow = String(interior.saida.y + 1);
+  saida.addEventListener('click', fecharInterior);
+  sala.appendChild(saida);
+
+  const jogador = document.createElement('div');
+  jogador.className = 'interior-jogador';
+  jogador.setAttribute('aria-label', 'Posição do jogador no interior');
+  jogador.style.gridColumn = String(estado.posicaoInterior.x + 1);
+  jogador.style.gridRow = String(estado.posicaoInterior.y + 1);
+  sala.appendChild(jogador);
+
   if (edificio.id === 'casa-de-farinha') {
-    descricao.textContent = 'Um espaço de trabalho e troca de saberes. As etapas abaixo são um rascunho a validar com a comunidade.';
-    ['Forno de barro', 'Prensa', 'Peneira', 'Cestos e sacos'].forEach((item) => {
-      const bloco = document.createElement('div');
-      bloco.className = 'interior-item';
-      bloco.textContent = item;
-      sala.appendChild(bloco);
-    });
-    const contexto = obterEtapaAtiva();
-    if (contexto?.etapa.tipo === 'ordenar') {
-      const progresso = contexto.progresso;
-      const proximaEtapa = contexto.etapa.itens[progresso.ordemIndice];
-      feedback.textContent = proximaEtapa
-        ? `Etapa ${progresso.ordemIndice + 1} de ${contexto.etapa.itens.length}: escolha o próximo passo.`
-        : 'Sequência registrada.';
-      contexto.etapa.itens.forEach((item) => {
-        const bloco = document.createElement('div');
-        bloco.className = 'interior-item';
-        const botao = document.createElement('button');
-        botao.type = 'button';
-        botao.textContent = item;
-        botao.addEventListener('click', () => {
-          if (item !== proximaEtapa) {
-            feedback.textContent = 'Confira as pistas na sala e tente outra sequência. Nenhuma escolha altera os indicadores.';
-            return;
-          }
-          progresso.ordemIndice += 1;
-          if (progresso.ordemIndice >= contexto.etapa.itens.length) {
-            completarEtapaMissao(contexto.id, false);
-          }
-          salvar();
-          renderizarInterior(edificio);
-        });
-        bloco.appendChild(botao);
-        sala.appendChild(bloco);
-      });
-    } else if (contexto) {
-      feedback.textContent = `Próxima etapa: ${contexto.etapa.texto}`;
+    descricao.textContent = 'Siga as estações da mandioca. Os passos podem ser feitos com um toque simples.';
+  } else if (edificio.id === 'pavilhao-fandango') {
+    descricao.textContent = 'A casa musical guarda instrumentos e ensina um padrão ritmico curto.';
+  } else if (edificio.id === 'mercadinho') {
+    descricao.textContent = 'Observe os produtos locais e seus saberes. Não há troca monetária neste prototipo.';
+  } else {
+    descricao.textContent = 'Você entrou no armazém da vila.';
+  }
+}
+
+function moverNoInterior(dx, dy) {
+  if (!estado.interiorAtivo) return;
+  const interior = INTERIORES[estado.interiorAtivo];
+  if (!interior) return;
+  const posicao = estado.posicaoInterior || interior.spawn;
+  const x = Math.max(0, Math.min(interior.largura - 1, posicao.x + dx));
+  const y = Math.max(0, Math.min(interior.altura - 1, posicao.y + dy));
+  estado.posicaoInterior = { x, y };
+  const edificio = EDIFICIOS.find((item) => item.id === estado.interiorAtivo);
+  if (edificio) renderizarInterior(edificio);
+  salvar();
+}
+
+function objetoInteriorProximo() {
+  const interior = INTERIORES[estado.interiorAtivo];
+  if (!interior) return null;
+  const posicao = estado.posicaoInterior || interior.spawn;
+  return interior.objetos.find((objeto) => Math.abs(objeto.x - posicao.x) + Math.abs(objeto.y - posicao.y) <= 1) || null;
+}
+
+function interagirNoInterior() {
+  const interior = INTERIORES[estado.interiorAtivo];
+  if (!interior) return;
+  const posicao = estado.posicaoInterior || interior.spawn;
+  if (posicao.x === interior.saida.x && posicao.y === interior.saida.y) {
+    fecharInterior();
+    return;
+  }
+  const objeto = objetoInteriorProximo();
+  const feedback = document.getElementById('interior-feedback');
+  if (!objeto) {
+    feedback.textContent = 'Aproxime-se de uma estação e use Interagir.';
+    return;
+  }
+
+  if (objeto.tipo === 'farinha') {
+    if (estado.progressoFarinha !== objeto.etapa) {
+      feedback.textContent = `Faça primeiro a etapa ${estado.progressoFarinha + 1}: ${interior.objetos[estado.progressoFarinha].nome}.`;
+      return;
+    }
+    const explicacoes = [
+      'A casca sai antes do processamento da mandioca.',
+      'Ralar transforma a raiz em massa para a próxima etapa.',
+      'O tipiti ou prensa ajuda a retirar o excesso de líquido. TODO: revisar detalhes com a comunidade.',
+      'Peneirar separa partes maiores e deixa a massa mais fina.',
+      'Torrar no forno transforma a massa em farinha e exige atenção ao calor.'
+    ];
+    estado.progressoFarinha += 1;
+    feedback.textContent = explicacoes[objeto.etapa];
+    ajustarIndicadores(estado, objeto.etapa === 4 ? { Cultura: 1, Renda: 1 } : { Cultura: 1 });
+    if (!estado.cartasColetadas.includes('A farinha guarda memória de trabalho coletivo.')) {
+      estado.cartasColetadas.push('A farinha guarda memória de trabalho coletivo.');
+    }
+    if (estado.progressoFarinha >= 5) {
+      estado.farinhaColetada = true;
+      estado.inventario.farinha = (Number(estado.inventario.farinha) || 0) + 1;
+      feedback.textContent = 'Processo concluído. A farinha foi registrada na mochila.';
+      mostrarNotificacaoColeta('Farinha +1');
+    }
+    atualizarHud();
+    salvar();
+    return;
+  }
+
+  if (objeto.tipo === 'musica') {
+    const nomes = { viola: 'Viola de fandango', rabeca: 'Rabeca', adufo: 'Adufe ou pandeiro' };
+    feedback.textContent = `${nomes[objeto.id]}: ${objeto.descricao}`;
+    if (som.enabled) {
+      const frequencia = { viola: 220, rabeca: 330, adufo: 150 }[objeto.id] || 220;
+      som.tocar(frequencia, 0.18, 0.035);
+    } else {
+      feedback.textContent += ' Visualização rítmica ativa: toque, pausa, toque.';
     }
     return;
   }
 
-  if (edificio.id === 'mercadinho') {
-    descricao.textContent = 'Conheça os produtos representados no protótipo. Compras e trocas dependem de uma definição com a comunidade.';
-    PRODUTOS_MERCADINHO.forEach((produto) => {
-      const bloco = document.createElement('div');
-      bloco.className = 'interior-item';
-      const nome = document.createElement('strong');
-      nome.textContent = produto;
-      const botao = document.createElement('button');
-      botao.type = 'button';
-      botao.textContent = 'Observar produto';
-      botao.addEventListener('click', () => {
-        feedback.textContent = `${produto} observado. Converse com os moradores para saber mais.`;
-      });
-      bloco.append(nome, botao);
-      sala.appendChild(bloco);
+  if (objeto.tipo === 'ritmo') {
+    dialogController.open({
+      nome: 'Mestre Tiao',
+      personagemId: 'tiao',
+      texto: 'Toque a sequência visual: forte, pausa, forte.',
+      choices: [{ text: 'Forte' }, { text: 'Pausa' }, { text: 'Forte' }, { text: 'Pular atividade' }],
+      onChoice: (indice) => {
+        if (indice === 3) {
+          feedback.textContent = 'Atividade pulada. Você ainda pode ouvir os instrumentos.';
+          return;
+        }
+        const correta = [0, 1, 2][indice] === indice;
+        if (correta) {
+          estado.ritmoMusicalConcluido = true;
+          ajustarIndicadores(estado, { Cultura: 1, Comunidade: 1 });
+          feedback.textContent = 'Ritmo registrado. O Terreiro dos Fandangos ficou mais vivo.';
+          atualizarHud();
+          salvar();
+        }
+      }
     });
     return;
   }
 
-  descricao.textContent = 'O armazém reúne produtos e conversas do cotidiano da vila.';
-  ITENS_ARMAZEM.forEach((item) => {
-    const bloco = document.createElement('div');
-    bloco.className = 'interior-item';
-    const nome = document.createElement('strong');
-    nome.textContent = item.nome;
-    const quantidade = Number(estado.inventario[item.id]) || 0;
-    const detalhe = document.createElement('small');
-    detalhe.textContent = `No inventário: ${quantidade}`;
-    const botao = document.createElement('button');
-    botao.type = 'button';
-    botao.disabled = estado.itensArmazemColetados.includes(item.id);
-    botao.textContent = botao.disabled ? 'Já coletado' : 'Adicionar ao inventário';
-    botao.addEventListener('click', () => {
-      if (estado.itensArmazemColetados.includes(item.id)) return;
-      estado.inventario[item.id] = (Number(estado.inventario[item.id]) || 0) + 1;
-      estado.itensArmazemColetados.push(item.id);
-      const confirmacao = `${item.nome} adicionado ao inventário. Quantidade: ${estado.inventario[item.id]}.`;
-      mostrarNotificacaoColeta(`${item.nome} +1 · adicionado ao inventário`);
+  if (objeto.tipo === 'produto') {
+    feedback.textContent = `${objeto.nome}: ${objeto.descricao}`;
+    if (!estado.locaisVisitados.includes(`produto-${objeto.id}`)) {
+      estado.locaisVisitados.push(`produto-${objeto.id}`);
+      ajustarIndicadores(estado, { Cultura: 1 });
       atualizarHud();
       salvar();
-      renderizarInterior(edificio);
-      document.getElementById('interior-feedback').textContent = confirmacao;
-    });
-    bloco.append(nome, detalhe, botao);
-    sala.appendChild(bloco);
-  });
+    }
+  }
 }
 
 function fecharInterior() {
-  document.getElementById('interior-panel').classList.add('hidden');
+  const panel = document.getElementById('interior-panel');
+  panel.classList.add(estado.reduzirMovimento ? 'hidden' : 'fechando');
+  setTimeout(() => {
+    panel.classList.add('hidden');
+    panel.classList.remove('fechando');
+  }, estado.reduzirMovimento ? 0 : 220);
   estado.interiorAtivo = null;
+  estado.cenaAtual = 'exterior';
+  estado.posicaoInterior = null;
   salvar();
 }
 
@@ -2083,6 +2176,15 @@ function setupEventos() {
 
   document.getElementById('btn-interagir').addEventListener('click', interagir);
   document.addEventListener('keydown', (event) => {
+    const keyInicial = event.key.toLowerCase();
+    if (estado.interiorAtivo && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(keyInicial)) {
+      event.preventDefault();
+      if (keyInicial === 'arrowup' || keyInicial === 'w') moverNoInterior(0, -1);
+      if (keyInicial === 'arrowdown' || keyInicial === 's') moverNoInterior(0, 1);
+      if (keyInicial === 'arrowleft' || keyInicial === 'a') moverNoInterior(-1, 0);
+      if (keyInicial === 'arrowright' || keyInicial === 'd') moverNoInterior(1, 0);
+      return;
+    }
     const ativo = document.activeElement;
     if (ativo && (
       ['INPUT', 'TEXTAREA', 'SELECT'].includes(ativo.tagName)

@@ -125,3 +125,5 @@ As etapas da farinha, o fandango, os sinais do tempo, a pesca, a missão da mata
 - Fluxos percorridos: abertura, tutorial, dialogos e botao Entendi, caderno/mapa, missoes, casa de farinha, mercadinho, armazem, casa musical, escola, pesca, canoa, trilha da mata, salvar/carregar e preferencias de contraste e movimento reduzido. Nenhum erro de console foi observado.
 - Em 360x640, o interior musical continua rolavel e o botao de saida permanece visivel. Verificacao de edificios: zero portas inacessiveis e zero pares em conflito.
 - Validacao feita no Chrome headless, nao em aparelhos fisicos; leitor de tela e saida de audio em hardware real nao foram verificados.
+
+- Paineis dos interiores reativam foco e interacao ao abrir, mesmo depois de um dialogo ter aplicado `inert` aos modais ocultos; ao sair, o painel volta a ficar inerte. Cache dos modulos atualizado para `v=67`.

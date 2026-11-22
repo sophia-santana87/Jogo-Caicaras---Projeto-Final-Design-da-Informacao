@@ -2,18 +2,18 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=66';
-import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=66';
-import { INTERIORES } from '../dados/interiores.js?v=66';
-import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=66';
-import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=66';
-import { DialogoController } from './dialogo.js?v=66';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=66';
-import { SomManager } from './som.js?v=66';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=66';
-import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=66';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=66';
-import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=66';
+import { CONTEUDO } from '../dados/conteudo.js?v=67';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=67';
+import { INTERIORES } from '../dados/interiores.js?v=67';
+import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=67';
+import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=67';
+import { DialogoController } from './dialogo.js?v=67';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=67';
+import { SomManager } from './som.js?v=67';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=67';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=67';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=67';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=67';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -1654,6 +1654,7 @@ function abrirInterior(edificio) {
   const interior = INTERIORES[edificio.id];
   estado.posicaoInterior = interior ? { ...interior.spawn } : { x: 4, y: 5 };
   const panel = document.getElementById('interior-panel');
+  panel.inert = false;
   panel.classList.remove('hidden');
   panel.classList.toggle('sem-fade', estado.reduzirMovimento);
   document.getElementById('interior-scroll').scrollTop = 0;
@@ -2219,6 +2220,7 @@ function interagirNoInterior() {
 
 function fecharInterior() {
   const panel = document.getElementById('interior-panel');
+  panel.inert = true;
   panel.classList.add(estado.reduzirMovimento ? 'hidden' : 'fechando');
   setTimeout(() => {
     panel.classList.add('hidden');

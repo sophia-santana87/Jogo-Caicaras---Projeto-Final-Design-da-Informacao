@@ -2,18 +2,18 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=70';
-import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=70';
-import { INTERIORES } from '../dados/interiores.js?v=70';
-import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=70';
-import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=70';
-import { DialogoController } from './dialogo.js?v=70';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=70';
-import { SomManager } from './som.js?v=70';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=70';
-import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=70';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=70';
-import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=70';
+import { CONTEUDO } from '../dados/conteudo.js?v=71';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=71';
+import { INTERIORES } from '../dados/interiores.js?v=71';
+import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=71';
+import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=71';
+import { DialogoController } from './dialogo.js?v=71';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=71';
+import { SomManager } from './som.js?v=71';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=71';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=71';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=71';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=71';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -1919,8 +1919,8 @@ function desenharSombraInterno(ctxInterior, centerX, baseY, tile = 16) {
 function desenharPensamentoEscola(ctxInterior, centerX, baseY, tile, conceitoId) {
   const conceito = CONCEITOS_ESCOLA.find((item) => item.id === conceitoId);
   if (!conceito) return;
-  const largura = tile * 2.6;
-  const altura = tile * 1.25;
+  const largura = tile * 3.4;
+  const altura = tile * 1.6;
   const x = centerX + tile * 0.25;
   const y = baseY - altura;
   ctxInterior.save();
@@ -1939,8 +1939,23 @@ function desenharPensamentoEscola(ctxInterior, centerX, baseY, tile, conceitoId)
   ctxInterior.font = `bold ${Math.max(7, tile * 0.25)}px sans-serif`;
   ctxInterior.textAlign = 'left';
   ctxInterior.textBaseline = 'middle';
-  ctxInterior.fillText(conceito.titulo, x + tile * 0.12, y + altura * 0.3, tile * 1.75);
-  desenharObjeto(ctxInterior, conceito.ilustracao, x + largura - tile * 0.45, y + altura * 0.83, tile * 0.75, 0);
+  const textoX = x + tile * 0.16;
+  const larguraTexto = tile * 2.35;
+  const linhas = [];
+  conceito.titulo.split(/\s+/).forEach((palavra) => {
+    const atual = linhas[linhas.length - 1];
+    const tentativa = atual ? `${atual} ${palavra}` : palavra;
+    if (atual && ctxInterior.measureText(tentativa).width > larguraTexto) linhas.push(palavra);
+    else if (atual) linhas[linhas.length - 1] = tentativa;
+    else linhas.push(palavra);
+  });
+  const alturaLinha = tile * 0.34;
+  const inicioTextoY = y + altura * 0.5 - ((linhas.length - 1) * alturaLinha) / 2;
+  linhas.slice(0, 3).forEach((linha, indice) => {
+    ctxInterior.fillText(linha, textoX, inicioTextoY + indice * alturaLinha, larguraTexto);
+  });
+  const escalaIlustracao = conceito.ilustracao === 'canoa' ? 0.32 : 0.72;
+  desenharObjeto(ctxInterior, conceito.ilustracao, x + largura - tile * 0.48, y + altura * 0.82, tile * escalaIlustracao, 0);
   ctxInterior.restore();
 }
 

@@ -2,18 +2,18 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=67';
-import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=67';
-import { INTERIORES } from '../dados/interiores.js?v=67';
-import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=67';
-import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=67';
-import { DialogoController } from './dialogo.js?v=67';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=67';
-import { SomManager } from './som.js?v=67';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=67';
-import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=67';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=67';
-import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=67';
+import { CONTEUDO } from '../dados/conteudo.js?v=70';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=70';
+import { INTERIORES } from '../dados/interiores.js?v=70';
+import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=70';
+import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=70';
+import { DialogoController } from './dialogo.js?v=70';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=70';
+import { SomManager } from './som.js?v=70';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=70';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=70';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=70';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=70';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
@@ -130,6 +130,8 @@ let temporizadorMensagemMapa = null;
 let sequenciaMensagemMapa = 0;
 let cachePontosCobertos = null;
 let cachePontosFrame = -1;
+let horarioPontosMissao = null;
+let pontosMissaoDinamicos = {};
 let portaAnimacao = null;
 let ritmoTentativa = [];
 let peixesSaltantes = [
@@ -393,6 +395,20 @@ function atualizarDescricaoCanvas(etapaAtiva, npcProximo) {
   if (canvas.getAttribute('aria-label') !== descricao) canvas.setAttribute('aria-label', descricao);
 }
 
+function pontoMissaoAtual(id) {
+  if (horarioPontosMissao !== estado.horario) {
+    const npcs = new Map(getNPCsNoHorario(estado.horario).map((npc) => [npc.id, npc]));
+    pontosMissaoDinamicos = Object.fromEntries(Object.entries(MISSOES_INFO).map(([missaoId, missao]) => {
+      const npc = npcs.get(missao.npcId);
+      return [missaoId, npc
+        ? { x: npc.x + (missao.marcador?.x || 0), y: npc.y + (missao.marcador?.y || 0) }
+        : MISSION_POINTS[missaoId]];
+    }));
+    horarioPontosMissao = estado.horario;
+  }
+  return pontosMissaoDinamicos[id] || MISSION_POINTS[id] || null;
+}
+
 function atualizarInteracao() {
   const interactButton = document.getElementById('btn-interagir');
   if (pescaAnimacao) {
@@ -401,10 +417,11 @@ function atualizarInteracao() {
     return;
   }
   const etapaAtiva = obterEtapaAtiva();
-  const pertoDeMissao = MISSION_ORDER.find((id) => (
-    !estado.missoesConcluidas.includes(id)
-    && distancia(estado.jogador.x, estado.jogador.y, MISSION_POINTS[id].x, MISSION_POINTS[id].y) <= 1.5
-  ));
+  const pertoDeMissao = MISSION_ORDER.find((id) => {
+    if (estado.missoesConcluidas.includes(id)) return false;
+    const ponto = pontoMissaoAtual(id);
+    return ponto && distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5;
+  });
   const npcs = getNPCsNoHorario(estado.horario);
   const npcDaEtapa = etapaAtiva?.etapa.tipo === 'conversar'
     ? npcs.find((npc) => npc.id === etapaAtiva.etapa.alvo
@@ -1074,7 +1091,7 @@ function destinoDaMissao() {
   const contexto = obterEtapaAtiva();
   if (!contexto) {
     const proximaMissao = MISSION_ORDER.find((id) => !estado.missoesConcluidas.includes(id));
-    return proximaMissao ? MISSION_POINTS[proximaMissao] : null;
+    return proximaMissao ? pontoMissaoAtual(proximaMissao) : null;
   }
 
   const { etapa } = contexto;
@@ -1356,27 +1373,11 @@ function abrirEscolhasMissao(missaoId) {
 function orientarEtapa(contexto) {
   if (!contexto) return;
   const { etapa, id } = contexto;
-  const orientacoes = {
-    'ir-ate': 'Toque em um ponto acessível do mapa para caminhar até o local. Ao chegar, use o botão de interação.',
-    observar: 'Caminhe até cada sinal e use o botão de interação para registrar o que percebeu.',
-    encontrar: 'Caminhe até cada instrumento e use o botão de interação para registrá-lo.',
-    separar: 'Caminhe até cada lixeira e use o botão de interação para observar a separação.',
-    conversar: 'Aproxime-se da pessoa indicada e use o botão de interação para conversar.',
-    ordenar: 'Entre na casa de farinha e organize as etapas no espaço de atividade.'
-  };
-  if (id === 'fandango' && etapa.tipo === 'encontrar') {
-    orientacoes.encontrar = 'Os instrumentos estão nas bancadas da sala. Toque em cada um para ler uma ficha curta e registrar o que observou.';
-  }
   dialogController.open({
     nome: nomePersonagem(MISSOES_INFO[id]?.npcId),
     personagemId: MISSOES_INFO[id]?.npcId,
     texto: etapa.texto,
-    choices: [{ text: 'Entendi' }],
-    onChoice: () => dialogController.open({
-      nome: 'Caderno de Saberes',
-      texto: orientacoes[etapa.tipo],
-      typewriter: false
-    })
+    choices: [{ text: 'Entendi' }]
   });
 }
 
@@ -1480,10 +1481,11 @@ function interagir() {
   const npcs = getNPCsNoHorario(estado.horario);
   const edificio = edificioProximo();
   const pontoPesca = pontoPescaProximo();
-  const pertoDeMissao = MISSION_ORDER.find((id) => (
-    !estado.missoesConcluidas.includes(id)
-    && distancia(estado.jogador.x, estado.jogador.y, MISSION_POINTS[id].x, MISSION_POINTS[id].y) <= 1.5
-  ));
+  const pertoDeMissao = MISSION_ORDER.find((id) => {
+    if (estado.missoesConcluidas.includes(id)) return false;
+    const ponto = pontoMissaoAtual(id);
+    return ponto && distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5;
+  });
 
   if (contexto?.etapa.tipo === 'conversar') {
     const npc = npcs.find((pessoa) => pessoa.id === contexto.etapa.alvo
@@ -1865,9 +1867,7 @@ function renderizarInterior(edificio) {
   controles.appendChild(sair);
 
   canvasInterior.style.cursor = 'pointer';
-  canvasInterior.addEventListener('pointerdown', (event) => {
-    if (event.button !== 0) return;
-    event.preventDefault();
+  canvasInterior.addEventListener('click', (event) => {
     const rect = canvasInterior.getBoundingClientRect();
     const x = Math.max(0, Math.min(interior.largura - 1,
       Math.floor(((event.clientX - rect.left) * canvasInterior.width / rect.width + Number(canvasInterior.dataset.cameraX)) / tile)));
@@ -3368,7 +3368,7 @@ function desenhoMapa(agora = performance.now()) {
   desenharAnimacaoPesca(tile, camera, agora);
 
   MISSION_ORDER.forEach((id) => {
-    const point = MISSION_POINTS[id];
+    const point = pontoMissaoAtual(id);
     if (estado.missaoAtiva || estado.missoesConcluidas.includes(id)) return;
     const centerX = (point.x + 0.5) * tile - camera.x;
     const tick = estado.reduzirMovimento ? 0 : animationTick;

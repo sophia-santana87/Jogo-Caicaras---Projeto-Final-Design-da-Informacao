@@ -34,7 +34,7 @@
   --z-interaction: 9;
   --z-hint: 10;
   --z-notice: 11;
-  --z-dialog: 15;
+  --z-dialog: 19;
   --z-modal: 18;
   --z-pause: 20;
   --z-interior-objeto: 3;
@@ -971,7 +971,10 @@ body.pause-overlay #pause-menu {
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
+  touch-action: pan-y;
 }
+
+.interior-canvas { touch-action: pan-y; }
 
 #btn-sair-interior {
   flex: 0 0 auto;

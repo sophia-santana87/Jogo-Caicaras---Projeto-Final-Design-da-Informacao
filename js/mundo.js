@@ -2,7 +2,7 @@
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=67';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=70';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 38;
@@ -181,7 +181,7 @@ export const NPCS = [
   { ...PERSONAGENS['dona-cida'], x: 21, y: 10 },
   { ...PERSONAGENS.nelson, x: 13, y: 26 },
   { ...PERSONAGENS.jaque, x: 34, y: 27 },
-  { ...PERSONAGENS.tiao, x: 29, y: 15 },
+  { ...PERSONAGENS.tiao, x: 26, y: 17 },
   { ...PERSONAGENS.rita, x: 39, y: 26 },
   { ...PERSONAGENS.davi, x: 11, y: 23 },
   { ...PERSONAGENS.erveiro, x: 40, y: 5 },

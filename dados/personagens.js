@@ -52,7 +52,7 @@ export const ROTINAS_VILA = {
   '08:00': {},
   '10:30': {
     'dona-cida': { x: 23, y: 8 },
-    tiao: { x: 30, y: 15 },
+    tiao: { x: 26, y: 17 },
     davi: { x: 15, y: 27 }
   },
   '13:30': {
@@ -60,10 +60,10 @@ export const ROTINAS_VILA = {
   },
   '16:00': {
     nelson: { x: 12, y: 27 },
-    tiao: { x: 29, y: 14 }
+    tiao: { x: 12, y: 18 }
   },
   '17:30': {
     nelson: { x: 12, y: 27 },
-    tiao: { x: 29, y: 14 }
+    tiao: { x: 12, y: 18 }
   }
 };

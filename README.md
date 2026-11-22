@@ -127,3 +127,8 @@ As etapas da farinha, o fandango, os sinais do tempo, a pesca, a missão da mata
 - Validacao feita no Chrome headless, nao em aparelhos fisicos; leitor de tela e saida de audio em hardware real nao foram verificados.
 
 - Paineis dos interiores reativam foco e interacao ao abrir, mesmo depois de um dialogo ter aplicado `inert` aos modais ocultos; ao sair, o painel volta a ficar inerte. Cache dos modulos atualizado para `v=67`.
+
+- Casa musical: o dialogo agora fica acima do painel do interior; Mestre Tiao foi reposicionado fora da area coberta pelo telhado e sua rotina da tarde fica junto ao terreiro. A opcao Entendi encerra a orientacao da missao sem abrir outro dialogo por cima.
+- No celular, toques no canvas nao bloqueiam a rolagem vertical da sala. O toque curto continua selecionando objetos, e o botao Voltar ao mapa permanece fixo e visivel. Reteste no Chrome: musical, farinha, Entendi da missao e da dica em 360x640; rolagem vertical avancou 122 px, dialogos ficaram clicaveis e a saida ficou visivel.
+- A bolinha e a seta de missao acompanham a posicao atual do personagem conforme o horario; a posicao de Mestre Tiao e o marcador ficam em tiles caminhaveis, fora da fachada.
+- Imports e cache estatico atualizados para `v=70`.

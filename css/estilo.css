@@ -25,6 +25,22 @@
   --pixel-scale: 4;
   --font: "Trebuchet MS", Verdana, system-ui, sans-serif;
   --panel-shadow: 0 0 0 3px var(--borda);
+  --z-canvas: 0;
+  --z-tint: 1;
+  --z-screen: 5;
+  --z-hud: 6;
+  --z-missions: 7;
+  --z-floating: 8;
+  --z-interaction: 9;
+  --z-hint: 10;
+  --z-notice: 11;
+  --z-dialog: 15;
+  --z-modal: 18;
+  --z-pause: 20;
+  --z-interior-objeto: 3;
+  --z-interior-jogador: 4;
+  --zona-topo: max(12px, env(safe-area-inset-top));
+  --zona-base: max(96px, calc(env(safe-area-inset-bottom) + 88px));
 }
 
 * {
@@ -37,6 +53,8 @@ html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
+  overscroll-behavior: none;
+  touch-action: manipulation;
   background: var(--areia-umida);
   color: var(--texto);
   font-family: var(--font);
@@ -99,7 +117,7 @@ button.btn-secondary {
   inset: 0;
   background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(0,0,0,0.06));
   pointer-events: none;
-  z-index: 1;
+  z-index: var(--z-tint);
 }
 
 #gameCanvas {
@@ -119,7 +137,7 @@ button.btn-secondary {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 5;
+  z-index: var(--z-screen);
 }
 
 .screen.active {
@@ -146,6 +164,8 @@ button.btn-secondary {
 
 .opening-card, .large-panel {
   width: min(520px, calc(100% - 24px));
+  min-width: 0;
+  max-width: calc(100vw - 20px);
   max-height: calc(100dvh - 24px);
   overflow: auto;
   padding: 1.2rem;
@@ -166,6 +186,8 @@ h1, h2, h3 {
 h1 {
   font-size: clamp(2rem, 7vw, 3.4rem);
   text-align: center;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   margin-bottom: 1rem;
 }
 
@@ -295,8 +317,8 @@ input[type="text"] {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  z-index: 4;
-  padding: max(12px, env(safe-area-inset-top)) 12px 0 12px;
+  z-index: var(--z-hud);
+  padding: var(--zona-topo) 12px 0 12px;
   pointer-events: none;
 }
 
@@ -387,11 +409,11 @@ input[type="text"] {
   top: min(8vh, 82px);
   right: 12px;
   width: min(320px, calc(100% - 24px));
-  max-height: 55vh;
+  max-height: min(40dvh, 420px);
   overflow: auto;
   padding: 0.75rem;
   border-radius: 10px;
-  z-index: 7;
+  z-index: var(--z-missions);
 }
 
 .missao-item {
@@ -452,7 +474,7 @@ input[type="text"] {
 }
 
 .interior-item button {
-  min-height: 42px;
+  min-height: 44px;
 }
 
 .interior-feedback {
@@ -488,7 +510,7 @@ body.high-contrast .interior-item {
   position: absolute;
   right: 12px;
   bottom: max(12px, env(safe-area-inset-bottom));
-  z-index: 8;
+  z-index: var(--z-floating);
   border-radius: 16px;
   padding: 0.65rem 1rem;
 }
@@ -499,7 +521,7 @@ body.high-contrast .interior-item {
   bottom: max(18px, calc(env(safe-area-inset-bottom) + 10px));
   transform: translateX(-50%);
   min-height: 56px;
-  z-index: 9;
+  z-index: var(--z-interaction);
   padding: 0.8rem 2rem;
 }
 
@@ -516,7 +538,7 @@ body.high-contrast .interior-item {
   left: 50%;
   bottom: max(86px, calc(env(safe-area-inset-bottom) + 78px));
   transform: translateX(-50%);
-  z-index: 11;
+  z-index: var(--z-notice);
   width: max-content;
   max-width: calc(100% - 24px);
   padding: 0.65rem 0.9rem;
@@ -530,7 +552,7 @@ body.high-contrast .interior-item {
   left: 50%;
   transform: translateX(-50%);
   width: min(420px, calc(100% - 24px));
-  z-index: 10;
+  z-index: var(--z-hint);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -554,7 +576,7 @@ body.high-contrast .interior-item {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  z-index: 15;
+  z-index: var(--z-dialog);
 }
 
 .dialogo-box {
@@ -737,14 +759,14 @@ body.high-contrast .interior-item {
   gap: 0.55rem;
   width: 100%;
   overflow: hidden;
-  background: var(--areia-umida);
+  background: var(--painel-fundo);
 }
 
 .interior-canvas {
   display: block;
   flex: 0 0 auto;
   image-rendering: pixelated;
-  background: var(--areia-umida);
+  background: var(--painel-fundo);
 }
 
 .interior-controles {
@@ -777,7 +799,7 @@ body.high-contrast .interior-item {
 
 .interior-objeto,
 .interior-saida {
-  z-index: 3;
+  z-index: var(--z-interior-objeto);
   align-self: center;
   justify-self: center;
   min-width: 44px;
@@ -794,7 +816,7 @@ body.high-contrast .interior-item {
 }
 
 .interior-jogador {
-  z-index: 4;
+  z-index: var(--z-interior-jogador);
   align-self: center;
   justify-self: center;
   width: 18px;
@@ -814,7 +836,7 @@ body.high-contrast .interior-item {
   padding: 1rem;
   max-height: calc(100dvh - 24px);
   overflow: auto;
-  z-index: 18;
+  z-index: var(--z-modal);
 }
 
 .hidden {
@@ -903,28 +925,112 @@ body.pause-overlay::before {
   position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.25);
-  z-index: 10;
+  z-index: var(--z-hint);
   pointer-events: none;
 }
 
 body.pause-overlay #pause-menu {
-  z-index: 20;
+  z-index: var(--z-pause);
+}
+
+.system-notice {
+  position: absolute;
+  z-index: var(--z-pause);
+  left: 50%;
+  top: var(--zona-topo);
+  transform: translateX(-50%);
+  width: min(520px, calc(100vw - 24px));
+  margin: 0;
+  padding: 0.7rem 0.9rem;
+  font-weight: 700;
+}
+
+.indicator-toggle,
+.tutorial-hint button,
+.interior-controles button {
+  min-height: 44px;
+  touch-action: manipulation;
+}
+
+#indicator-panel {
+  max-height: min(60dvh, 420px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#interior-panel {
+  max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom)));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+#interior-scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#btn-sair-interior {
+  flex: 0 0 auto;
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+#pause-menu {
+  max-height: calc(100dvh - max(16px, env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom)));
+  overscroll-behavior: contain;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body:not(.motion-choice-saved) *,
+  body:not(.motion-choice-saved) *::before,
+  body:not(.motion-choice-saved) *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body.reduce-motion *,
+body.reduce-motion *::before,
+body.reduce-motion *::after {
+  scroll-behavior: auto !important;
+  animation: none !important;
+  transition: none !important;
+}
+
+@media (prefers-contrast: more) {
+  body:not(.contrast-choice-saved) {
+    --painel-fundo: #000000;
+    --texto: #FFFFFF;
+    --borda: #FFE066;
+    --botao-principal: #000000;
+    --botao-principal-texto: #FFFFFF;
+    --botao-secundario: #000000;
+    --destaque-missao: #FFE066;
+  }
 }
 
 @media (max-width: 540px) {
   #interior-panel { width: calc(100% - 8px); padding: 0.35rem; }
 
+  .side-panel { max-height: min(34dvh, 300px); }
+
   .opening-card, .large-panel {
-    width: calc(100% - 20px);
+    width: calc(100vw - 20px);
   }
 
   .tutorial-hint {
-    top: max(112px, calc(env(safe-area-inset-top) + 96px));
+    top: max(140px, calc(env(safe-area-inset-top) + 124px));
     align-items: flex-start;
   }
 
   .tutorial-hint button {
-    min-height: 40px;
+    min-height: 44px;
     padding: 0.4rem 0.55rem;
   }
 
@@ -967,7 +1073,7 @@ body.pause-overlay #pause-menu {
 
   .interact-button {
     left: max(8px, env(safe-area-inset-left));
-    right: calc(12px + 84px + env(safe-area-inset-right));
+    right: calc(12px + 92px + env(safe-area-inset-right));
     width: auto;
     min-width: 0;
     padding: 0.65rem 0.5rem;
@@ -1001,7 +1107,7 @@ body.pause-overlay #pause-menu {
   }
 
   .indicator-toggle {
-    min-height: 36px;
+    min-height: 44px;
     padding: 0.3rem 0.45rem;
     font-size: 0.78rem;
   }
@@ -1039,6 +1145,8 @@ body.pause-overlay #pause-menu {
   .dialogo-box {
     gap: 0.4rem;
     padding: 0.55rem 0.7rem;
+    max-height: min(62dvh, 300px);
+    overscroll-behavior: contain;
   }
 
   .dialogo-body {

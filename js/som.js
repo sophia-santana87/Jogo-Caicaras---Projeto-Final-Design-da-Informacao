@@ -1,4 +1,4 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
@@ -12,7 +12,15 @@ export class SomManager {
     if (!this.audioCtx && window.AudioContext) {
       this.audioCtx = new window.AudioContext();
     }
-    this.enabled = true;
+    return this.audioCtx?.resume().then(() => {
+      this.enabled = this.audioCtx.state === 'running';
+      return this.enabled;
+    }) || Promise.resolve(false);
+  }
+
+  desativar() {
+    this.enabled = false;
+    return this.audioCtx?.suspend() || Promise.resolve();
   }
 
   tocar(freq = 440, duration = 0.06, volume = 0.02) {

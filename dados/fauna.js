@@ -2,17 +2,17 @@
 export const ESPECIES_FAUNA = {
   caranguejo: {
     nome: 'Caranguejo',
-    ficha: 'Crustáceo observado na faixa costeira. Espécie, época e comportamento locais precisam de confirmação.',
+    ficha: 'Crustáceo ilustrado na faixa costeira. Observe como se move pela areia.',
     validar: true
   },
   lagarto: {
     nome: 'Lagarto',
-    ficha: 'Réptil observado em áreas de terra e pedras. A identificação local precisa de confirmação.',
+    ficha: 'Réptil ilustrado entre pedras e vegetação. Observe seu caminho pela trilha.',
     validar: true
   },
   passaro: {
     nome: 'Pássaro',
-    ficha: 'Ave observada perto da água e do píer. Espécie e hábitos locais precisam de confirmação.',
+    ficha: 'Ave ilustrada perto da água e do píer. Observe onde escolhe pousar.',
     validar: true
   }
 };

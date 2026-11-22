@@ -1,7 +1,7 @@
 # AGENTS.md: Dia na Ponta Oeste
 
 ## Projeto
-Jogo educativo web (HTML, CSS e JavaScript puro, módulos ES, sem build) sobre a vida da comunidade caiçara da Ponta Oeste, no litoral do Paraná. Público: crianças e adolescentes de 10 a 16 anos, em computador ou celular. Projeto extensionista da UFPR (Gestão da Informação). Código, comentários e textos em português.
+Jogo educativo web (HTML, CSS e JavaScript puro, módulos ES, sem build) sobre a vida da comunidade caiçara da Ponta Oeste, no litoral do Paraná. Público: crianças e adolescentes de 10 a 16 anos, em computador ou celular. Projeto da UFPR (Gestão da Informação). Código, comentários e textos em português.
 
 ## Como rodar e verificar
 - Rodar: `python -m http.server 8000` na raiz e abrir http://localhost:8000

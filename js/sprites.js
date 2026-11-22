@@ -1,4 +1,4 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
@@ -76,7 +76,7 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
     retanguloPixel(ctx, x + 3, y + 2, 10, 7, cabelo);
     retanguloPixel(ctx, x + 2, y + 4, 2, 4, cabelo);
     retanguloPixel(ctx, x + 12, y + 4, 2, 4, cabelo);
-    retanguloPixel(ctx, x + 5, y + 10, 6, 1, c.detalhe);
+    retanguloPixel(ctx, x + 5, y + 10, 6, 1, c.detalheTorso || c.detalhe);
   } else {
     retanguloPixel(ctx, x + 4 + pernaEsquerda, y + 16, 3, 5, c.calca);
     retanguloPixel(ctx, x + 9 + pernaDireita, y + 16, 3, 5, c.calca);
@@ -85,7 +85,7 @@ function desenharQuadro(ctx, x, y, paleta, direcao, passo) {
     retanguloPixel(ctx, x + 3, y + 10 + bracoEsquerdo, 2, 6, c.blusa);
     retanguloPixel(ctx, x + 11, y + 10 + bracoDireito, 2, 6, c.blusa);
     retanguloPixel(ctx, x + 4, y + 9, 8, 8, c.blusa);
-    retanguloPixel(ctx, x + 5, y + 15, 6, 2, c.detalhe);
+    retanguloPixel(ctx, x + 5, y + 15, 6, 2, c.detalheTorso || c.detalhe);
     retanguloPixel(ctx, x + 2, y + 12 + bracoEsquerdo, 2, 3, c.pele);
     retanguloPixel(ctx, x + 12, y + 12 + bracoDireito, 2, 3, c.pele);
 
@@ -184,14 +184,14 @@ const PALETAS = {
 };
 
 const AVATAR_PALETAS = {
-  a1: { ...PALETAS.jogador, cabeloTipo: 'cacheado' },
-  a2: { ...PALETAS.jogador, pele: '#5D382E', cabeloTipo: 'crespo', blusa: '#3D7180', calca: '#5E5040' },
-  a3: { ...PALETAS.jogador, pele: '#E1B78E', cabelo: '#35251D', cabeloTipo: 'liso', blusa: '#A64C3A' },
-  a4: { ...PALETAS.jogador, pele: '#4B302A', cabeloTipo: 'trancas', blusa: '#7A4F8A' },
-  a5: { ...PALETAS.jogador, pele: '#E1B78E', cabelo: '#5B3827', cabeloTipo: 'cacheado', blusa: '#D9A441', calca: '#496A79' },
-  a6: { ...PALETAS.jogador, pele: '#9B5D3F', cabeloTipo: 'trancas', blusa: '#3D7180', calca: '#56483E' },
-  a7: { ...PALETAS.jogador, pele: '#4B302A', cabeloTipo: 'liso', blusa: '#5FA844', calca: '#394A65' },
-  a8: { ...PALETAS.jogador, pele: '#C9865A', cabeloTipo: 'crespo', blusa: '#A64C3A', calca: '#5E5040' }
+  a1: { ...PALETAS.jogador, cabeloTipo: 'cacheado', detalheTorso: '#2F6B3A' },
+  a2: { ...PALETAS.jogador, pele: '#5D382E', cabeloTipo: 'crespo', blusa: '#3D7180', calca: '#5E5040', detalheTorso: '#3D7180' },
+  a3: { ...PALETAS.jogador, pele: '#E1B78E', cabelo: '#35251D', cabeloTipo: 'liso', blusa: '#A64C3A', detalheTorso: '#A64C3A' },
+  a4: { ...PALETAS.jogador, pele: '#4B302A', cabeloTipo: 'trancas', blusa: '#7A4F8A', detalheTorso: '#7A4F8A' },
+  a5: { ...PALETAS.jogador, pele: '#E1B78E', cabelo: '#5B3827', cabeloTipo: 'cacheado', blusa: '#D9A441', calca: '#496A79', detalheTorso: '#D9A441' },
+  a6: { ...PALETAS.jogador, pele: '#9B5D3F', cabeloTipo: 'trancas', blusa: '#3D7180', calca: '#56483E', detalheTorso: '#3D7180' },
+  a7: { ...PALETAS.jogador, pele: '#4B302A', cabeloTipo: 'liso', blusa: '#5FA844', calca: '#394A65', detalheTorso: '#5FA844' },
+  a8: { ...PALETAS.jogador, pele: '#C9865A', cabeloTipo: 'crespo', blusa: '#A64C3A', calca: '#5E5040', detalheTorso: '#A64C3A' }
 };
 
 const PALETAS_MORADORES = [
@@ -826,11 +826,18 @@ function pintarObjeto(ctx, tipo, variante) {
     ctx.fillRect(18, 17, 5, 2);
   } else if (tipo === 'tronco') {
     ctx.fillStyle = '#68452B';
-    ctx.fillRect(5, 16, 23, 6);
-    ctx.fillStyle = '#8A5A33';
-    ctx.fillRect(8, 14, 17, 3);
+    ctx.fillRect(4, 17, 24, 6);
+    ctx.fillRect(6, 15, 20, 2);
     ctx.fillStyle = '#A78354';
-    ctx.fillRect(11, 15, 8, 1);
+    ctx.fillRect(8, 16, 16, 1);
+    ctx.fillRect(5, 18, 2, 4);
+    ctx.fillRect(25, 18, 2, 4);
+    ctx.fillStyle = '#5A3A1E';
+    ctx.fillRect(6, 19, 1, 2);
+    ctx.fillRect(25, 19, 1, 2);
+    ctx.fillStyle = '#8A5A33';
+    ctx.fillRect(10, 20, 6, 1);
+    ctx.fillRect(19, 18, 4, 1);
   } else if (tipo === 'tronco-caido') {
     ctx.fillStyle = 'rgba(43,26,14,0.22)';
     ctx.fillRect(4, 24, 24, 3);
@@ -937,7 +944,7 @@ export function desenharObjeto(ctx, tipo, x, y, tile, seed = 0) {
     const objetoAtlas = criarAtlasObjetos();
     const objetoIndex = TIPOS_DE_OBJETO.indexOf(objeto) * 3 + variante;
     const objetoFrame = atlasIndex(objetoAtlas, objetoIndex);
-    const tamanho = ['casa', 'casaFarinha', 'casaRural', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(objeto)
+    const tamanho = ['casa', 'casaFarinha', 'casaRural', 'casaMusical', 'mercadinho', 'escola', 'capela', 'peixaria'].includes(objeto)
       ? tile * 3.6
       : OBJETOS_GRANDES.has(objeto) ? tile * 2 : tile;
     objetoAtlas.drawFrame(

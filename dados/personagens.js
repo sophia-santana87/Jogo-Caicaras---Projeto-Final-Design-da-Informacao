@@ -8,7 +8,7 @@ export const PERSONAGENS = {
   erveiro: {
     id: 'erveiro',
     nome: 'Seu Ari',
-    fala: 'Oi! Sou um personagem fictício. Podemos conversar sobre plantas e frutos, mas os saberes locais precisam ser confirmados com a comunidade.',
+    fala: 'Oi! Podemos conversar sobre plantas e frutos da mata.',
     emoji: '🧓',
     ficticio: true,
     validar: true
@@ -24,7 +24,7 @@ export const PERSONAGENS = {
   'hortela-da-vila': {
     id: 'hortela-da-vila',
     nome: 'Nina, cuidadora da horta',
-    fala: 'Estou cuidando dos canteiros de couve, alface e mandioca. Cada plantio tem seu tempo; os detalhes locais devem ser confirmados com a comunidade.',
+    fala: 'Estou cuidando dos canteiros de couve, alface e mandioca. Cada plantio tem seu tempo e pede observação.',
     emoji: '🧑‍🌾',
     ficticio: true,
     validar: true
@@ -38,7 +38,7 @@ export const MISSOES_CADASTRO = {
   visitantes: { nome: 'O Conflito Contemporâneo', descricao: 'Converse sobre turismo, autoria e cuidado com o território.', npcId: 'rita', marcador: { x: 1, y: 0 } },
   mata: {
     nome: 'Trilha dos Saberes da Mata',
-    descricao: 'Observe plantas da mata com cuidado e escute saberes a validar.',
+    descricao: 'Observe plantas da mata com cuidado e converse sobre o que percebe.',
     npcId: 'erveiro',
     marcador: { x: -1, y: 0 },
     ficticio: true,

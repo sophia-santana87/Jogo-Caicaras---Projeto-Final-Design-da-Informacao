@@ -1,32 +1,57 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { CONTEUDO } from '../dados/conteudo.js?v=56';
-import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=56';
-import { INTERIORES } from '../dados/interiores.js?v=56';
-import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=56';
-import { ESTADO_PADRAO, ajustarIndicadores, carregarEstado, salvarEstado } from './estado.js?v=56';
-import { DialogoController } from './dialogo.js?v=56';
-import { aplicarAcessibilidade } from './acessibilidade.js?v=56';
-import { SomManager } from './som.js?v=56';
-import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=56';
-import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=56';
-import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=56';
-import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=56';
+import { CONTEUDO } from '../dados/conteudo.js?v=66';
+import { ESPECIES_FAUNA, FAUNA } from '../dados/fauna.js?v=66';
+import { INTERIORES } from '../dados/interiores.js?v=66';
+import { CONCEITOS_ESCOLA, ELEMENTOS_LAGOA, ETAPAS_FARINHA, EXPLICACAO_FANDANGO, FICHAS_INSTRUMENTOS, PRODUTOS_PEIXARIA, TEXTO_CIDA_FINALIZACAO } from '../dados/locais.js?v=66';
+import { ESTADO_PADRAO, ajustarIndicadores, apagarEstadoSalvo, carregarEstado, falhaArmazenamento, salvarEstado } from './estado.js?v=66';
+import { DialogoController } from './dialogo.js?v=66';
+import { aplicarAcessibilidade } from './acessibilidade.js?v=66';
+import { SomManager } from './som.js?v=66';
+import { renderHorario, renderIndicadores, renderMissoes } from './ui.js?v=66';
+import { CENA_FANDANGO, DANCARINOS_FANDANGO, EDIFICIOS, ENTRADA_COMUNIDADE, HORTA_CENTRAL, MAPA, MAPA_DECORACOES, MISSION_POINTS, MUSICOS_FANDANGO, NPCS, PESSOAS_CENARIO, POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR, PRACA_CENTRAL, PONTOS_ATRACACAO, PONTOS_EMBARQUE, PONTOS_DE_OBSERVACAO, PONTOS_PESCA, distancia, findPath, getNPCsNoHorario, isPassable, tileAt, verificarEdificios } from './mundo.js?v=66';
+import { MISSION_ORDER, MISSOES_INFO } from './missoes.js?v=66';
+import { desenharAlunoSentado, desenharAve, desenharCachorro, desenharCantosArredondadosMapa, desenharCanoaCaiçara, desenharDancarino, desenharJogador, desenharJogadorSentado, desenharMorador, desenharMusico, desenharNpc, desenharObjeto, desenharPiso, desenharVaraPesca } from './sprites.js?v=66';
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d', { alpha: false });
 const dialogController = new DialogoController(document);
 const som = new SomManager();
 const estado = carregarEstado();
+const falhaInicialArmazenamento = falhaArmazenamento;
 const modoDebug = new URLSearchParams(window.location.search).get('debug') === '1';
 
 function syncAudioState() {
-  som.enabled = Boolean(estado.somLigado);
-  if (estado.somLigado) {
-    som.ativar();
-  }
+  som.enabled = Boolean(estado.somLigado && som.audioCtx?.state === 'running');
+}
+
+function atualizarEstadoBotoesAcessibilidade() {
+  const opcoes = [
+    { chave: 'letra', ativo: estado.letraNivel === 2, nome: 'Letra maior' },
+    { chave: 'facil', ativo: estado.letraNivel === 3, nome: 'Leitura fácil' },
+    { chave: 'contraste', ativo: estado.altoContraste, nome: 'Alto contraste' },
+    { chave: 'movimento', ativo: estado.reduzirMovimento, nome: 'Reduzir movimento' },
+    { chave: 'setas', ativo: estado.mostrarSetas, nome: 'Setas na tela' }
+  ];
+  opcoes.forEach(({ chave, ativo, nome }) => {
+    const ligado = ativo ? 'ligada' : 'desligada';
+    [`btn-opening-${chave}`, `btn-pause-${chave}`].forEach((id) => {
+      const botao = document.getElementById(id);
+      if (!botao) return;
+      botao.textContent = `${nome}: ${ligado}`;
+      botao.setAttribute('aria-pressed', String(ativo));
+    });
+  });
+  const textoSom = estado.somLigado ? (som.enabled ? 'Som: ligado' : 'Som: suspenso') : 'Som: desligado';
+  ['btn-opening-som', 'btn-pause-som'].forEach((id) => {
+    const botao = document.getElementById(id);
+    if (botao) {
+      botao.textContent = textoSom;
+      botao.setAttribute('aria-pressed', String(estado.somLigado));
+    }
+  });
 }
 
 function atualizarMenuPausa() {
@@ -49,12 +74,7 @@ function atualizarMenuPausa() {
     botaoContraste.textContent = estado.altoContraste ? 'Contraste normal' : 'Alto contraste';
   }
   if (botaoSetas) botaoSetas.textContent = estado.mostrarSetas ? 'Ocultar setas na tela' : 'Mostrar setas na tela';
-  document.getElementById('btn-opening-letra').textContent = estado.letraNivel === 2 ? 'Letra normal' : 'Aumentar texto';
-  document.getElementById('btn-opening-facil').textContent = estado.letraNivel === 3 ? 'Leitura padrão' : 'Leitura fácil';
-  document.getElementById('btn-opening-contraste').textContent = estado.altoContraste ? 'Contraste normal' : 'Alto contraste';
-  document.getElementById('btn-opening-movimento').textContent = estado.reduzirMovimento ? 'Movimento normal' : 'Reduzir movimento';
-  document.getElementById('btn-opening-som').textContent = estado.somLigado ? 'Som ligado' : 'Som desligado';
-  document.getElementById('btn-opening-setas').textContent = estado.mostrarSetas ? 'Ocultar setas na tela' : 'Mostrar setas na tela';
+  atualizarEstadoBotoesAcessibilidade();
 }
 
 const telas = {
@@ -104,7 +124,12 @@ const ITENS_DESTAQUE = new Set([
   'viola', 'rabeca', 'adufo', 'cataia',
   'planta-medicinal-a', 'planta-medicinal-b', 'planta-medicinal-c', 'canteiro'
 ]);
-let coletaNotificacaoTimer = null;
+let filaMensagensMapa = [];
+let mensagemMapaAtiva = null;
+let temporizadorMensagemMapa = null;
+let sequenciaMensagemMapa = 0;
+let cachePontosCobertos = null;
+let cachePontosFrame = -1;
 let portaAnimacao = null;
 let ritmoTentativa = [];
 let peixesSaltantes = [
@@ -138,16 +163,83 @@ function showScreen(id) {
     menuPausa.classList.add('hidden');
   }
   if (id === 'screen-game') canvas.focus({ preventScroll: true });
+  else {
+    const titulo = telas[id]?.querySelector('h1, h2');
+    if (titulo) {
+      titulo.tabIndex = -1;
+      titulo.focus({ preventScroll: true });
+    }
+  }
   window.__activeScreen = id;
 }
 
 function mostrarDicaContextual(texto) {
-  document.getElementById('tutorial-hint-text').textContent = texto;
-  document.getElementById('tutorial-hint').classList.remove('hidden');
+  filaMensagensMapa = filaMensagensMapa.filter((mensagem) => mensagem.tipo !== 'dica');
+  if (mensagemMapaAtiva?.tipo === 'dica') {
+    if (mensagemMapaAtiva.texto === texto) return;
+    dispensarMensagemMapa(mensagemMapaAtiva.id);
+  }
+  ['panel-missoes', 'indicator-panel'].forEach((id) => {
+    document.getElementById(id)?.classList.add('hidden');
+  });
+  document.getElementById('btn-missoes')?.setAttribute('aria-expanded', 'false');
+  document.getElementById('btn-indicadores')?.setAttribute('aria-expanded', 'false');
+  enfileirarMensagemMapa('dica', texto, 2);
 }
 
 function ocultarDicaContextual() {
+  if (mensagemMapaAtiva) {
+    dispensarMensagemMapa(mensagemMapaAtiva.id);
+    return;
+  }
+  document.getElementById('tutorial-hint')?.classList.add('hidden');
+}
+
+function mostrarProximaMensagemMapa() {
+  if (mensagemMapaAtiva || !filaMensagensMapa.length) return;
+  mensagemMapaAtiva = filaMensagensMapa.shift();
+  const dica = document.getElementById('tutorial-hint');
+  const notificacao = document.getElementById('coleta-notificacao');
+  dica.classList.add('hidden');
+  notificacao.classList.add('hidden');
+
+  if (mensagemMapaAtiva.tipo === 'dica') {
+    document.getElementById('tutorial-hint-text').textContent = mensagemMapaAtiva.texto;
+    dica.classList.remove('hidden');
+    return;
+  }
+
+  const mensagem = mensagemMapaAtiva;
+  notificacao.textContent = mensagem.texto;
+  notificacao.classList.remove('hidden');
+  temporizadorMensagemMapa = setTimeout(
+    () => dispensarMensagemMapa(mensagem.id),
+    mensagem.duracao
+  );
+}
+
+function enfileirarMensagemMapa(tipo, texto, prioridade, duracao = 0) {
+  if (mensagemMapaAtiva?.texto === texto || filaMensagensMapa.some((item) => item.texto === texto)) return;
+  const mensagem = { id: ++sequenciaMensagemMapa, tipo, texto, prioridade, duracao };
+  if (mensagemMapaAtiva && prioridade > mensagemMapaAtiva.prioridade) {
+    filaMensagensMapa.push(mensagemMapaAtiva);
+    mensagemMapaAtiva = null;
+    clearTimeout(temporizadorMensagemMapa);
+    temporizadorMensagemMapa = null;
+  }
+  filaMensagensMapa.push(mensagem);
+  filaMensagensMapa.sort((a, b) => b.prioridade - a.prioridade || a.id - b.id);
+  mostrarProximaMensagemMapa();
+}
+
+function dispensarMensagemMapa(id) {
+  if (!mensagemMapaAtiva || mensagemMapaAtiva.id !== id) return;
+  clearTimeout(temporizadorMensagemMapa);
+  temporizadorMensagemMapa = null;
   document.getElementById('tutorial-hint').classList.add('hidden');
+  document.getElementById('coleta-notificacao').classList.add('hidden');
+  mensagemMapaAtiva = null;
+  mostrarProximaMensagemMapa();
 }
 
 function alternarPausa(ativo = !estado.pausa) {
@@ -157,12 +249,26 @@ function alternarPausa(ativo = !estado.pausa) {
     menuPausa.classList.toggle('hidden', !estado.pausa);
   }
   document.body.classList.toggle('pause-overlay', estado.pausa);
+  document.getElementById(estado.pausa ? 'btn-pause-continuar' : 'btn-pausa')?.focus({ preventScroll: true });
   salvar();
 }
 
 function salvar() {
   estado.progressoSalvo = true;
-  salvarEstado(estado);
+  const salvo = salvarEstado(estado);
+  const aviso = document.getElementById('system-notice');
+  if (aviso) {
+    aviso.textContent = salvo ? '' : 'Não foi possível salvar neste aparelho. Seu progresso pode não continuar depois que fechar o jogo.';
+    aviso.classList.toggle('hidden', salvo);
+  }
+}
+
+function mostrarFalhaDeLeituraSeNecessario() {
+  if (!falhaInicialArmazenamento) return;
+  const aviso = document.getElementById('system-notice');
+  if (!aviso) return;
+  aviso.textContent = 'Não foi possível ler o progresso salvo. Você pode continuar, mas o progresso anterior não foi carregado.';
+  aviso.classList.remove('hidden');
 }
 
 function nomeJogadorAtivo() {
@@ -196,6 +302,7 @@ function alternarLeituraFacil() {
 
 function alternarContraste() {
   estado.altoContraste = !estado.altoContraste;
+  document.body.classList.add('contrast-choice-saved');
   aplicarAcessibilidade(estado);
   atualizarMenuPausa();
   salvar();
@@ -203,15 +310,59 @@ function alternarContraste() {
 
 function alternarMovimento() {
   estado.reduzirMovimento = !estado.reduzirMovimento;
+  document.body.classList.add('motion-choice-saved');
   atualizarMenuPausa();
   salvar();
 }
 
 function alternarSom() {
   estado.somLigado = !estado.somLigado;
+  const ligar = estado.somLigado;
+  let operacao;
+  try {
+    operacao = ligar ? som.ativar() : som.desativar();
+  } catch {
+    operacao = Promise.resolve(false);
+  }
+  if (som.audioCtx) {
+    som.audioCtx.onstatechange = () => {
+      syncAudioState();
+      atualizarMenuPausa();
+    };
+  }
   syncAudioState();
   atualizarMenuPausa();
   salvar();
+  Promise.resolve(operacao).catch(() => false).then(() => {
+    if (estado.somLigado !== ligar) return;
+    syncAudioState();
+    atualizarMenuPausa();
+  });
+}
+
+function apagarProgresso() {
+  if (!window.confirm('Apagar todo o progresso salvo neste aparelho e começar um novo jogo?')) return;
+  const preferencias = {
+    letraNivel: estado.letraNivel,
+    altoContraste: estado.altoContraste,
+    reduzirMovimento: estado.reduzirMovimento,
+    mostrarSetas: estado.mostrarSetas,
+    somLigado: false
+  };
+  apagarEstadoSalvo();
+  Object.assign(estado, structuredClone(ESTADO_PADRAO), preferencias);
+  som.enabled = false;
+  som.desativar();
+  novaJornada = false;
+  estado.progressoSalvo = false;
+  aplicarAcessibilidade(estado);
+  atualizarMenuPausa();
+  showScreen('screen-opening');
+  const aviso = document.getElementById('system-notice');
+  if (aviso) {
+    aviso.textContent = falhaArmazenamento ? 'Não foi possível apagar o progresso salvo neste aparelho.' : '';
+    aviso.classList.toggle('hidden', !falhaArmazenamento);
+  }
 }
 
 function alternarSetas() {
@@ -232,10 +383,21 @@ function atualizarHud() {
   document.getElementById('caderno-contador').textContent = String(estado.cartasColetadas.length + itensNoInventario + (estado.colecaoFauna?.length || 0));
 }
 
+function atualizarDescricaoCanvas(etapaAtiva, npcProximo) {
+  const edificio = edificioProximo();
+  const local = edificio ? nomeEdificio(edificio) : 'vila';
+  const proximaMissao = MISSION_ORDER.find((id) => !estado.missoesConcluidas.includes(id));
+  const objetivo = etapaAtiva?.etapa.texto || (proximaMissao ? MISSOES_INFO[proximaMissao].nome : 'explorar a vila');
+  const pessoa = npcProximo ? ` Pessoa próxima: ${npcProximo.nome}.` : '';
+  const descricao = `Mapa do jogo. Local atual: ${local}. Objetivo: ${objetivo}.${pessoa} Use as setas ou WASD para caminhar e E para interagir.`;
+  if (canvas.getAttribute('aria-label') !== descricao) canvas.setAttribute('aria-label', descricao);
+}
+
 function atualizarInteracao() {
   const interactButton = document.getElementById('btn-interagir');
   if (pescaAnimacao) {
     interactButton.classList.add('hidden');
+    atualizarDescricaoCanvas(obterEtapaAtiva(), null);
     return;
   }
   const etapaAtiva = obterEtapaAtiva();
@@ -243,7 +405,12 @@ function atualizarInteracao() {
     !estado.missoesConcluidas.includes(id)
     && distancia(estado.jogador.x, estado.jogador.y, MISSION_POINTS[id].x, MISSION_POINTS[id].y) <= 1.5
   ));
-  const pertoNpc = getNPCsNoHorario(estado.horario).find((npc) => distancia(estado.jogador.x, estado.jogador.y, npc.x, npc.y) <= 1.5);
+  const npcs = getNPCsNoHorario(estado.horario);
+  const npcDaEtapa = etapaAtiva?.etapa.tipo === 'conversar'
+    ? npcs.find((npc) => npc.id === etapaAtiva.etapa.alvo
+      && distancia(estado.jogador.x, estado.jogador.y, npc.x, npc.y) <= 1.5)
+    : null;
+  const pertoNpc = npcDaEtapa || npcs.find((npc) => distancia(estado.jogador.x, estado.jogador.y, npc.x, npc.y) <= 1.5);
   const pertoDoCachorro = distancia(estado.jogador.x, estado.jogador.y, estado.cachorro.x, estado.cachorro.y) <= 1.5;
   const edificio = edificioProximo();
   const alvo = alvoDaEtapaProximo(etapaAtiva);
@@ -254,13 +421,15 @@ function atualizarInteracao() {
   const elementoLagoa = pontoPesca || animal ? null : elementoLagoaProximo();
   let texto = '';
 
-  if (pertoNpc && !estado.tutorialInteracaoVisto) {
+  if (!estado.emCanoa && pertoNpc && !estado.tutorialInteracaoVisto) {
     estado.tutorialInteracaoVisto = true;
     mostrarDicaContextual('Aproxime-se de uma pessoa e pressione E ou toque em Interagir para conversar.');
     salvar();
   }
 
-  if (etapaAtiva?.etapa.tipo === 'conversar' && pertoNpc?.id === etapaAtiva.etapa.alvo) {
+  if (estado.emCanoa && atracacao) {
+    texto = 'Sair da canoa';
+  } else if (etapaAtiva?.etapa.tipo === 'conversar' && pertoNpc?.id === etapaAtiva.etapa.alvo) {
     texto = `Conversar com ${pertoNpc.nome}`;
   } else if (etapaAtiva?.etapa.tipo === 'ir-ate' && edificio?.id === etapaAtiva.etapa.alvo) {
     texto = acaoNoEdificio(edificio);
@@ -270,16 +439,14 @@ function atualizarInteracao() {
     texto = `Investigar ${alvo.nome}`;
   } else if (pertoDeMissao && (!estado.missaoAtiva || estado.missaoAtiva === pertoDeMissao)) {
     texto = estado.progressoMissoes[pertoDeMissao] ? 'Retomar missão' : 'Começar missão';
-  } else if (pertoNpc) {
-    texto = `Conversar com ${pertoNpc.nome}`;
-  } else if (pertoDoCachorro) {
-    texto = 'Fazer carinho';
-  } else if (estado.emCanoa && atracacao) {
-    texto = 'Sair da canoa';
-  } else if (!estado.emCanoa && embarque) {
-    texto = 'Entrar na canoa';
   } else if (pontoPesca) {
     texto = 'Pescar com cuidado';
+  } else if (pertoNpc && !estado.emCanoa) {
+    texto = `Conversar com ${pertoNpc.nome}`;
+  } else if (pertoDoCachorro && !estado.emCanoa) {
+    texto = 'Fazer carinho';
+  } else if (!estado.emCanoa && embarque) {
+    texto = 'Entrar na canoa';
   } else if (animal) {
     texto = `Observar ${ESPECIES_FAUNA[animal.especieId].nome.toLowerCase()}`;
   } else if (elementoLagoa) {
@@ -289,14 +456,11 @@ function atualizarInteracao() {
   }
   interactButton.classList.toggle('hidden', !texto);
   if (texto) interactButton.textContent = `E / toque · ${texto}`;
+  atualizarDescricaoCanvas(etapaAtiva, pertoNpc);
 }
 
 function mostrarNotificacaoColeta(texto) {
-  const notificacao = document.getElementById('coleta-notificacao');
-  notificacao.textContent = texto;
-  notificacao.classList.remove('hidden');
-  clearTimeout(coletaNotificacaoTimer);
-  coletaNotificacaoTimer = setTimeout(() => notificacao.classList.add('hidden'), 3000);
+  enfileirarMensagemMapa('coleta', texto, 3, 3000);
 }
 
 function mostrarExplicacao(texto, efeitos = null) {
@@ -305,6 +469,7 @@ function mostrarExplicacao(texto, efeitos = null) {
   const detalhe = efeitos ? Object.entries(efeitos).map(([e, v]) => `${e} ${v >= 0 ? '+' : ''}${v}`).join(', ') : '';
   content.innerHTML = `<p>${texto}</p>${detalhe ? `<p>${detalhe}</p>` : ''}`;
   box.classList.remove('hidden');
+  document.getElementById('btn-explicacao-fechar').focus({ preventScroll: true });
 }
 
 function esconderExplicacao() {
@@ -329,6 +494,7 @@ function mostrarResumo() {
     <p>Este protótipo não substitui a voz da comunidade caiçara. As decisões sobre o território são coletivas.</p>
   `;
   resumo.classList.remove('hidden');
+  document.getElementById('btn-resumo-fechar').focus({ preventScroll: true });
 }
 
 function fecharResumo() {
@@ -431,7 +597,7 @@ function abrirCaderno(abrirMapa = false) {
       const title = document.createElement('h4');
       title.textContent = conceito.titulo;
       const description = document.createElement('p');
-      description.textContent = `${conceito.texto} (a validar com a comunidade)`;
+      description.textContent = `${conceito.texto}`;
       article.append(title, description);
       sections[0].appendChild(article);
     });
@@ -442,7 +608,7 @@ function abrirCaderno(abrirMapa = false) {
     const title = document.createElement('h4');
     title.textContent = 'Peixaria · produtos para observar';
     const description = document.createElement('p');
-    description.textContent = `${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}. Identificações a validar com a comunidade.`;
+    description.textContent = `${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}. Produtos para observação.`;
     article.append(title, description);
     sections[0].appendChild(article);
   }
@@ -457,7 +623,7 @@ function abrirCaderno(abrirMapa = false) {
       const title = document.createElement('h4');
       title.textContent = elemento.nome;
       const description = document.createElement('p');
-      description.textContent = `${elemento.texto} (a validar)`;
+      description.textContent = `${elemento.texto}`;
       article.append(title, description);
       sections[0].appendChild(article);
     });
@@ -473,7 +639,7 @@ function abrirCaderno(abrirMapa = false) {
       const title = document.createElement('h4');
       title.textContent = instrumento.nome;
       const description = document.createElement('p');
-      description.textContent = `${instrumento.texto} (a validar)`;
+      description.textContent = `${instrumento.texto}`;
       article.append(title, description);
       sections[0].appendChild(article);
     });
@@ -528,7 +694,7 @@ function abrirCaderno(abrirMapa = false) {
   Object.entries(ESPECIES_FAUNA).forEach(([id, especie]) => {
     const item = document.createElement('p');
     item.textContent = estado.colecaoFauna.includes(id)
-      ? `${especie.nome}: ${especie.ficha} (a validar)`
+      ? `${especie.nome}: ${especie.ficha}`
       : '? espécie ainda não observada';
     fauna.appendChild(item);
   });
@@ -721,6 +887,7 @@ function abrirEventoFinal() {
     personagemId: eventStep === 0 ? 'nelson' : 'rita',
     texto: `${evento.abertura} ${fase.texto}`,
     choices: fase.opcoes.map((op) => ({ text: op.texto })),
+    allowEscape: false,
     onChoice: (index) => {
       const opcao = fase.opcoes[index];
       ajustarIndicadores(estado, opcao.efeito);
@@ -736,6 +903,7 @@ function abrirEventoFinal() {
         personagemId: eventStep === 0 ? 'nelson' : 'rita',
         texto: `${opcao.explicacao} A decisão final é coletiva.`,
         choices: [{ text: proximaAcao }],
+        allowEscape: false,
         onChoice: () => {
           if (estado.progressoEvento < evento.etapas.length) {
             abrirEventoFinal();
@@ -810,9 +978,24 @@ function pontoPescaProximo() {
 }
 
 function atracacaoProxima() {
-  return PONTOS_ATRACACAO.find((ponto) => distancia(
-    estado.jogador.x, estado.jogador.y, estado.emCanoa ? ponto.agua.x : ponto.x, estado.emCanoa ? ponto.agua.y : ponto.y
-  ) <= 1.5);
+  if (!estado.emCanoa) {
+    return [...PONTOS_ATRACACAO, ...PONTOS_EMBARQUE].find((ponto) => (
+      isPassable(ponto.x, ponto.y, 'pe')
+      && distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5
+    ));
+  }
+  const conhecida = [...PONTOS_ATRACACAO, ...PONTOS_EMBARQUE].find((ponto) => (
+    ponto.agua?.x === estado.jogador.x && ponto.agua?.y === estado.jogador.y
+    && isPassable(ponto.x, ponto.y, 'pe')
+  ));
+  if (conhecida) return conhecida;
+  const margem = [
+    { x: estado.jogador.x, y: estado.jogador.y - 1 },
+    { x: estado.jogador.x + 1, y: estado.jogador.y },
+    { x: estado.jogador.x, y: estado.jogador.y + 1 },
+    { x: estado.jogador.x - 1, y: estado.jogador.y }
+  ].find((ponto) => isPassable(ponto.x, ponto.y, 'pe'));
+  return margem ? { ...margem, agua: { x: estado.jogador.x, y: estado.jogador.y } } : null;
 }
 
 function embarqueCanoaProximo() {
@@ -881,8 +1064,9 @@ function nomeObjeto(tipo) {
 }
 
 function alvoDaEtapaProximo(contexto) {
+  const alcance = contexto?.id === 'mata' && contexto.etapa.tipo === 'encontrar' ? 2 : 1.5;
   return pontosDaEtapa(contexto).find((ponto) => (
-    distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= 1.5
+    distancia(estado.jogador.x, estado.jogador.y, ponto.x, ponto.y) <= alcance
   ));
 }
 
@@ -909,8 +1093,31 @@ function destinoDaMissao() {
   return pontosDaEtapa(contexto)[0] || null;
 }
 
+function pontosCobertosPelaInterface() {
+  if (cachePontosFrame === animationTick && cachePontosCobertos) return cachePontosCobertos;
+  const seletores = [
+    '#clock-panel', '#btn-indicadores', '#indicator-panel', '#btn-pausa', '#btn-missoes',
+    '#panel-missoes', '#btn-caderno', '#btn-interagir', '#coleta-notificacao', '#tutorial-hint', '#system-notice'
+  ];
+  const areaCanvas = canvas.getBoundingClientRect();
+  cachePontosCobertos = seletores.flatMap((seletor) => {
+    const elemento = document.querySelector(seletor);
+    if (!elemento || elemento.classList.contains('hidden')) return [];
+    const area = elemento.getBoundingClientRect();
+    return [{
+      esquerda: (area.left - areaCanvas.left) * larguraCanvasLogica() / areaCanvas.width,
+      direita: (area.right - areaCanvas.left) * larguraCanvasLogica() / areaCanvas.width,
+      topo: (area.top - areaCanvas.top) * alturaCanvasLogica() / areaCanvas.height,
+      base: (area.bottom - areaCanvas.top) * alturaCanvasLogica() / areaCanvas.height
+    }];
+  });
+  cachePontosFrame = animationTick;
+  return cachePontosCobertos;
+}
+
 function desenharIndicadorMissao(tile, camera) {
   if (!estado.mostrarSetas) return;
+  if (!dialogController.overlay.classList.contains('hidden') || estado.pausa) return;
   const destino = destinoDaMissao();
   if (!destino || distancia(estado.jogador.x, estado.jogador.y, destino.x, destino.y) <= 1.5) return;
 
@@ -919,19 +1126,26 @@ function desenharIndicadorMissao(tile, camera) {
   const margem = Math.max(24, tile * 0.45);
   const areaSegura = {
     esquerda: margem,
-    direita: canvas.width - margem,
-    topo: Math.max(margem, canvas.width <= 540 ? 112 : 76),
-    base: canvas.height - Math.max(margem, canvas.height <= 520 ? 108 : 88)
+    direita: larguraCanvasLogica() - margem,
+    topo: Math.max(margem, larguraCanvasLogica() <= 540 ? 112 : 76),
+    base: alturaCanvasLogica() - Math.max(margem, alturaCanvasLogica() <= 520 ? 108 : 88)
   };
-  const dentroDaTela = x >= areaSegura.esquerda && x <= areaSegura.direita
+  const obstaculos = pontosCobertosPelaInterface();
+  const raioIndicador = Math.max(20, tile * 0.4);
+  const coberto = (px, py) => obstaculos.some((area) => (
+    px + raioIndicador >= area.esquerda && px - raioIndicador <= area.direita
+    && py + raioIndicador >= area.topo && py - raioIndicador <= area.base
+  ));
+  const dentroDaArea = x >= areaSegura.esquerda && x <= areaSegura.direita
     && y >= areaSegura.topo && y <= areaSegura.base;
+  const dentroDaTela = dentroDaArea && !coberto(x, y);
   const pulso = estado.reduzirMovimento ? 1 : 1 + Math.sin(animationTick / 16) * 0.08;
 
   if (dentroDaTela) {
     ctx.save();
-    ctx.globalAlpha = 0.82;
-    ctx.fillStyle = '#FFE066';
-    ctx.strokeStyle = estado.altoContraste ? '#FFFFFF' : '#5A3A1E';
+    ctx.globalAlpha = estado.altoContraste ? 1 : 0.82;
+    ctx.fillStyle = estado.altoContraste ? '#FFFFFF' : '#FFE066';
+    ctx.strokeStyle = '#2B1A0E';
     ctx.lineWidth = Math.max(2, tile * 0.055);
     ctx.beginPath();
     ctx.arc(x, y, tile * 0.2 * pulso, 0, Math.PI * 2);
@@ -945,8 +1159,8 @@ function desenharIndicadorMissao(tile, camera) {
     return;
   }
 
-  const centroX = canvas.width / 2;
-  const centroY = canvas.height / 2;
+  const centroX = larguraCanvasLogica() / 2;
+  const centroY = alturaCanvasLogica() / 2;
   const dx = x - centroX;
   const dy = y - centroY;
   const escalaX = dx > 0
@@ -955,9 +1169,15 @@ function desenharIndicadorMissao(tile, camera) {
   const escalaY = dy > 0
     ? (areaSegura.base - centroY) / dy
     : dy < 0 ? (areaSegura.topo - centroY) / dy : Infinity;
-  const escala = Math.min(escalaX > 0 ? escalaX : Infinity, escalaY > 0 ? escalaY : Infinity);
-  const pontaX = centroX + dx * escala;
-  const pontaY = centroY + dy * escala;
+  let escala = dentroDaArea ? 0.78 : Math.min(escalaX > 0 ? escalaX : Infinity, escalaY > 0 ? escalaY : Infinity);
+  let pontaX = centroX + dx * escala;
+  let pontaY = centroY + dy * escala;
+  while (escala > 0.08 && coberto(pontaX, pontaY)) {
+    escala -= 0.06;
+    pontaX = centroX + dx * escala;
+    pontaY = centroY + dy * escala;
+  }
+  if (escala <= 0.08 && coberto(pontaX, pontaY)) return;
   const angulo = Math.atan2(dy, dx);
   const tamanho = Math.max(11, Math.min(18, tile * 0.34));
   ctx.save();
@@ -978,6 +1198,7 @@ function desenharIndicadorMissao(tile, camera) {
 }
 
 function desenharIdentificacaoLocal(tile, camera) {
+  if (!dialogController.overlay.classList.contains('hidden') || mensagemMapaAtiva || filaMensagensMapa.length) return;
   const locais = [
     {
       nome: 'Terreiro dos Fandangos',
@@ -1013,14 +1234,43 @@ function desenharIdentificacaoLocal(tile, camera) {
     .sort((a, b) => a.distancia - b.distancia)[0];
   if (!local) return;
 
-  const x = (local.x + 0.5) * tile - camera.x;
-  const y = local.y * tile - camera.y - tile * local.alturaMarcador;
+  let x = (local.x + 0.5) * tile - camera.x;
+  let y = local.y * tile - camera.y - tile * local.alturaMarcador;
   ctx.save();
   ctx.font = `bold ${Math.max(11, Math.min(16, tile * 0.34))}px sans-serif`;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   const largura = ctx.measureText(local.nome).width + 16;
   const altura = Math.max(23, tile * 0.48);
+  const zonaTopo = Math.max(76, larguraCanvasLogica() <= 540 ? 116 : 76);
+  const zonaBase = Math.max(92, alturaCanvasLogica() <= 520 ? 108 : 88);
+  x = Math.max(8 + largura / 2, Math.min(larguraCanvasLogica() - 8 - largura / 2, x));
+  if (y + altura / 2 > alturaCanvasLogica() - zonaBase) y -= tile * 1.25;
+  const atores = [
+    ...getNPCsNoHorario(estado.horario),
+    ...EDIFICIOS.map((edificio) => ({ x: edificio.entrada.x, y: edificio.entrada.y })),
+    estado.jogador
+  ];
+  const interfaceMapa = pontosCobertosPelaInterface();
+  for (let tentativa = 0; tentativa < 4; tentativa += 1) {
+    const caixa = { esquerda: x - largura / 2, direita: x + largura / 2, topo: y - altura / 2, base: y + altura / 2 };
+    const sobreAtor = atores.some((ator) => {
+      const centroX = (ator.x + 0.5) * tile - camera.x;
+      const baseY = (ator.y + 1) * tile - camera.y;
+      return caixa.direita >= centroX - tile * 0.55 && caixa.esquerda <= centroX + tile * 0.55
+        && caixa.base >= baseY - tile * 1.55 && caixa.topo <= baseY;
+    });
+    const sobreInterface = interfaceMapa.some((area) => (
+      caixa.direita >= area.esquerda && caixa.esquerda <= area.direita
+      && caixa.base >= area.topo && caixa.topo <= area.base
+    ));
+    if (!sobreAtor && !sobreInterface) break;
+    y -= tile * 0.8;
+  }
+  if (y - altura / 2 < zonaTopo || y + altura / 2 > alturaCanvasLogica() - zonaBase) {
+    ctx.restore();
+    return;
+  }
   ctx.fillStyle = estado.altoContraste ? '#000000' : 'rgba(246,231,193,0.94)';
   ctx.strokeStyle = estado.altoContraste ? '#FFE066' : '#68452B';
   ctx.lineWidth = 2;
@@ -1072,7 +1322,7 @@ function desenharDebugMapa(tile, camera) {
 
     const texto = `${objeto.id} | ${objeto.nome}`;
     const medida = ctx.measureText(texto);
-    const textoX = Math.max(2, Math.min(canvas.width - medida.width - 4, esquerda));
+    const textoX = Math.max(2, Math.min(larguraCanvasLogica() - medida.width - 4, esquerda));
     const textoY = Math.max(10, topo - 2);
     ctx.fillStyle = 'rgba(0,0,0,0.82)';
     ctx.fillRect(textoX - 2, textoY - 12, medida.width + 4, 14);
@@ -1085,16 +1335,6 @@ function desenharDebugMapa(tile, camera) {
     }
   });
 
-  const jogadorX = (estado.jogador.x + 0.5) * tile - camera.x;
-  const jogadorY = (estado.jogador.y + 1) * tile - camera.y;
-  ctx.strokeStyle = '#FF0000';
-  ctx.lineWidth = Math.max(2, tile * 0.05);
-  ctx.strokeRect(jogadorX - tile * 0.5, jogadorY - tile, tile, tile);
-  const textoJogador = `jogador | x=${estado.jogador.x} y=${estado.jogador.y}`;
-  ctx.fillStyle = 'rgba(0,0,0,0.82)';
-  ctx.fillRect(jogadorX - tile * 0.5, jogadorY - tile - 14, ctx.measureText(textoJogador).width + 8, 14);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.fillText(textoJogador, jogadorX - tile * 0.5 + 4, jogadorY - tile - 3);
   ctx.restore();
 }
 
@@ -1108,6 +1348,7 @@ function abrirEscolhasMissao(missaoId) {
     personagemId,
     texto: `Você concluiu as etapas de “${MISSOES_INFO[missaoId].nome}”. Agora a comunidade pode conversar sobre diferentes caminhos.`,
     choices,
+    allowEscape: false,
     onChoice: (index) => concluirMissao(missaoId, index)
   });
 }
@@ -1223,9 +1464,22 @@ function interagir() {
     interagirNoInterior();
     return;
   }
+  if (estado.emCanoa) {
+    const atracacao = atracacaoProxima();
+    if (atracacao) {
+      estado.emCanoa = false;
+      estado.canoaEmbarcada = null;
+      estado.jogador = { x: atracacao.x, y: atracacao.y, nome: nomeJogadorAtivo() };
+      playerMotion = null;
+      destinoAtual = null;
+      salvar();
+      return;
+    }
+  }
   const contexto = obterEtapaAtiva();
   const npcs = getNPCsNoHorario(estado.horario);
   const edificio = edificioProximo();
+  const pontoPesca = pontoPescaProximo();
   const pertoDeMissao = MISSION_ORDER.find((id) => (
     !estado.missoesConcluidas.includes(id)
     && distancia(estado.jogador.x, estado.jogador.y, MISSION_POINTS[id].x, MISSION_POINTS[id].y) <= 1.5
@@ -1279,7 +1533,7 @@ function interagir() {
     salvar();
     dialogController.open({
       nome: 'Peixaria da vila',
-      texto: `Balcão de observação, sem compra ou venda. Produtos cadastrados para validação: ${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}.`,
+      texto: `Balcão de observação, sem compra ou venda. Produtos observáveis: ${PRODUTOS_PEIXARIA.map((item) => item.nome).join(', ')}.`,
       typewriter: false
     });
     return;
@@ -1300,7 +1554,7 @@ function interagir() {
   }
 
   const npc = npcs.find((pessoa) => distancia(estado.jogador.x, estado.jogador.y, pessoa.x, pessoa.y) <= 1.5);
-  if (npc) {
+  if (npc && !pontoPesca) {
     dialogController.open({
       nome: npc.nome,
       personagemId: npc.id,
@@ -1317,7 +1571,6 @@ function interagir() {
     return;
   }
 
-  const pontoPesca = pontoPescaProximo();
   const varaNoPier = MAPA_DECORACOES.find((item) => item.tipo === 'vara-pesca'
     && distancia(estado.jogador.x, estado.jogador.y, item.x, item.y) <= 1.5);
   if (varaNoPier && !estado.temVara) {
@@ -1334,10 +1587,15 @@ function interagir() {
     salvar();
     return;
   }
+  if (pontoPesca) {
+    interagirComPesca(pontoPesca);
+    return;
+  }
   const atracacao = atracacaoProxima();
   const embarque = embarqueCanoaProximo();
   if (estado.emCanoa && atracacao) {
     estado.emCanoa = false;
+    estado.canoaEmbarcada = null;
     estado.jogador = { x: atracacao.x, y: atracacao.y, nome: nomeJogadorAtivo() };
     playerMotion = null;
     salvar();
@@ -1345,9 +1603,12 @@ function interagir() {
   }
   if (!estado.emCanoa && embarque) {
     estado.emCanoa = true;
+    estado.canoaEmbarcada = { x: embarque.x, y: embarque.y };
     estado.jogador = { ...embarque.agua, nome: nomeJogadorAtivo() };
     playerMotion = null;
+    destinoAtual = null;
     salvar();
+    mostrarDicaContextual('Ao chegar perto da margem, pressione E ou toque em Interagir para sair da canoa.');
     return;
   }
   const animal = pontoPesca ? null : faunaProxima();
@@ -1367,7 +1628,7 @@ function interagir() {
     salvar();
     dialogController.open({
       nome: elementoLagoa.nome,
-      texto: `${elementoLagoa.texto} Esta informação precisa de validação local.`,
+      texto: `${elementoLagoa.texto}`,
       typewriter: false
     });
     return;
@@ -1395,6 +1656,8 @@ function abrirInterior(edificio) {
   const panel = document.getElementById('interior-panel');
   panel.classList.remove('hidden');
   panel.classList.toggle('sem-fade', estado.reduzirMovimento);
+  document.getElementById('interior-scroll').scrollTop = 0;
+  document.getElementById('btn-sair-interior').focus({ preventScroll: true });
   document.getElementById('interior-titulo').textContent = interior?.titulo || nomeEdificio(edificio);
   const contexto = obterEtapaAtiva();
   if (contexto?.etapa.tipo === 'ir-ate' && contexto.etapa.alvo === edificio.id) {
@@ -1418,6 +1681,8 @@ function abrirInterior(edificio) {
 function renderizarInterior(edificio) {
   const interior = INTERIORES[edificio.id];
   const sala = document.getElementById('interior-sala');
+  const scrollInterior = document.getElementById('interior-scroll');
+  const scrollTopAnterior = scrollInterior.scrollTop;
   const descricao = document.getElementById('interior-descricao');
   const feedback = document.getElementById('interior-feedback');
   if (!interior) return;
@@ -1453,7 +1718,7 @@ function renderizarInterior(edificio) {
   sala.style.justifyContent = 'flex-start';
   sala.style.alignItems = 'flex-start';
   sala.style.gap = '0';
-  ctxInterior.fillStyle = '#D9BE82';
+  ctxInterior.fillStyle = '#F6E7C1';
   ctxInterior.fillRect(0, 0, canvasInterior.width, canvasInterior.height);
   for (let y = 0; y < interior.altura; y += 1) {
     for (let x = 0; x < interior.largura; x += 1) {
@@ -1494,6 +1759,8 @@ function renderizarInterior(edificio) {
 
   const camX = Math.max(0, Math.min(larguraSala - larguraJanela, (estado.posicaoInterior.x + 0.5) * tile - larguraJanela / 2));
   const camY = Math.max(0, Math.min(alturaSala - alturaJanela, (estado.posicaoInterior.y + 0.5) * tile - alturaJanela * 0.62));
+  canvasInterior.dataset.cameraX = String(camX);
+  canvasInterior.dataset.cameraY = String(camY);
   ctxInterior.save();
   ctxInterior.translate(-camX, -camY);
   const elementos = interior.objetos.map((objeto, indice) => ({ tipo: 'objeto', objeto, indice, y: objeto.y }));
@@ -1596,8 +1863,37 @@ function renderizarInterior(edificio) {
   sair.addEventListener('click', fecharInterior);
   controles.appendChild(sair);
 
+  canvasInterior.style.cursor = 'pointer';
+  canvasInterior.addEventListener('pointerdown', (event) => {
+    if (event.button !== 0) return;
+    event.preventDefault();
+    const rect = canvasInterior.getBoundingClientRect();
+    const x = Math.max(0, Math.min(interior.largura - 1,
+      Math.floor(((event.clientX - rect.left) * canvasInterior.width / rect.width + Number(canvasInterior.dataset.cameraX)) / tile)));
+    const y = Math.max(0, Math.min(interior.altura - 1,
+      Math.floor(((event.clientY - rect.top) * canvasInterior.height / rect.height + Number(canvasInterior.dataset.cameraY)) / tile)));
+    const clicado = interior.objetos
+      .map((objeto) => ({ objeto, distancia: Math.abs(objeto.x - x) + Math.abs(objeto.y - y) }))
+      .filter((item) => item.distancia <= 1)
+      .sort((a, b) => a.distancia - b.distancia)[0]?.objeto;
+    if (clicado) {
+      estado.posicaoInterior = { x: clicado.x, y: clicado.y };
+      salvar();
+      interagirNoInterior();
+      return;
+    }
+    if (Math.abs(interior.saida.x - x) + Math.abs(interior.saida.y - y) <= 1) {
+      fecharInterior();
+      return;
+    }
+    estado.posicaoInterior = { x, y };
+    salvar();
+    renderizarInterior(edificio);
+  });
+
   sala.append(canvasInterior);
   sala.after(controles);
+  scrollInterior.scrollTop = scrollTopAnterior;
 
   if (edificio.id === 'casa-de-farinha') {
     descricao.textContent = 'Dona Cida acompanha cinco estações. Toque em cada etapa na ordem para ouvir uma explicação curta.';
@@ -1606,7 +1902,7 @@ function renderizarInterior(edificio) {
   } else if (edificio.id === 'mercadinho') {
     descricao.textContent = 'Toque em cada produto para observar sua ilustração e descrição. Não há compra ou venda.';
   } else if (edificio.id === 'escola') {
-    descricao.textContent = 'Converse com a professora para conhecer dois conceitos. Os registros culturais estão marcados para validação comunitária.';
+    descricao.textContent = 'Converse com a professora para conhecer dois conceitos.';
   } else {
     descricao.textContent = 'Você entrou no armazém da vila.';
   }
@@ -1696,10 +1992,9 @@ function interagirNoInterior() {
       dialogController.open({
         nome: 'Dona Cida',
         personagemId: 'dona-cida',
-        texto: `${TEXTO_CIDA_FINALIZACAO.texto} Este rascunho precisa de validação local.`,
+        texto: `${TEXTO_CIDA_FINALIZACAO.texto}`,
         typewriter: false,
         onContinue: () => {
-          dialogController.close();
           completarEtapaMissao(contextoInstrutor.id);
         }
       });
@@ -1708,7 +2003,7 @@ function interagirNoInterior() {
     dialogController.open({
       nome: 'Dona Cida',
       personagemId: 'dona-cida',
-      texto: 'Posso acompanhar cada estação. Observe os objetos e faça uma etapa por vez; alguns detalhes precisam ser confirmados com a comunidade.',
+      texto: 'Posso acompanhar cada estação. Observe os objetos e faça uma etapa por vez.',
       typewriter: false
     });
     return;
@@ -1723,7 +2018,6 @@ function interagirNoInterior() {
       texto: conceito.texto,
       typewriter: false,
       onContinue: () => {
-        dialogController.close();
         if (!estado.conceitosEscola.includes(conceito.id)) estado.conceitosEscola.push(conceito.id);
         salvar();
         renderizarInterior({ id: 'escola' });
@@ -1792,10 +2086,9 @@ function interagirNoInterior() {
     if (contextoFandango?.id === 'fandango' && contextoFandango.etapa.tipo === 'encontrar') {
       dialogController.open({
         nome: ficha?.nome || objeto.nome,
-        texto: `${textoFicha} Esta ficha está marcada para validação.`,
+        texto: `${textoFicha} `,
         typewriter: false,
         onContinue: () => {
-          dialogController.close();
           registrarInstrumento();
           registrarAlvoEtapa(contextoFandango, { id: objeto.id, nome: ficha?.nome || objeto.nome });
         }
@@ -1805,7 +2098,7 @@ function interagirNoInterior() {
     registrarInstrumento();
     dialogController.open({
       nome: ficha?.nome || objeto.nome,
-      texto: `${textoFicha} Esta ficha está marcada para validação com a comunidade.`,
+      texto: `${textoFicha} `,
       typewriter: false
     });
     if (som.enabled) {
@@ -1823,10 +2116,9 @@ function interagirNoInterior() {
       dialogController.open({
         nome: 'Mestre Tião',
         personagemId: 'tiao',
-        texto: `${EXPLICACAO_FANDANGO.texto} Este texto está marcado para validação com a comunidade.`,
+        texto: `${EXPLICACAO_FANDANGO.texto}`,
         typewriter: false,
         onContinue: () => {
-          dialogController.close();
           completarEtapaMissao('fandango');
         }
       });
@@ -2149,8 +2441,8 @@ function atualizarCachorro(agora) {
 }
 
 function escalaDoMapa() {
-  const larguraCanvas = canvas.clientWidth || canvas.width;
-  const alturaCanvas = canvas.clientHeight || canvas.height;
+  const larguraCanvas = canvas.clientWidth || larguraCanvasLogica();
+  const alturaCanvas = canvas.clientHeight || alturaCanvasLogica();
   const celular = larguraCanvas <= 540;
   const larguraDesejadaEmTiles = celular ? 11 : 15;
   const alturaDesejadaEmTiles = celular && alturaCanvas >= larguraCanvas ? 10 : 12;
@@ -2163,21 +2455,60 @@ function escalaDoMapa() {
 }
 
 function redimensionarCanvas() {
+  const larguraViewport = Math.round(canvas.parentElement?.clientWidth || canvas.clientWidth);
+  const altura = Math.round(canvas.parentElement?.clientHeight || canvas.clientHeight);
+  if (!larguraViewport || !altura) return;
+  if (larguraViewport <= 540) {
+    const tilesAlturaDesejada = altura >= larguraViewport ? 10 : 12;
+    const escalaInteira = Math.max(1, Math.floor(Math.min(
+      5,
+      larguraViewport / (11 * 16),
+      altura / (tilesAlturaDesejada * 16)
+    )));
+    const tile = 16 * escalaInteira;
+    const larguraEmTiles = Math.floor(larguraViewport / tile);
+    canvas.style.width = `${larguraEmTiles * tile}px`;
+    canvas.style.left = '50%';
+    canvas.style.right = 'auto';
+    canvas.style.transform = 'translateX(-50%)';
+  } else {
+    canvas.style.width = '100%';
+    canvas.style.left = '0';
+    canvas.style.right = '0';
+    canvas.style.transform = 'none';
+  }
   const largura = Math.round(canvas.clientWidth);
-  const altura = Math.round(canvas.clientHeight);
-  if (!largura || !altura || (canvas.width === largura && canvas.height === altura)) return;
-  canvas.width = largura;
-  canvas.height = altura;
+  const proporcao = Math.max(1, Math.min(3, window.devicePixelRatio || 1));
+  if (!largura) return;
+  if (canvas.width === Math.round(largura * proporcao)
+    && canvas.height === Math.round(altura * proporcao)
+    && Number(canvas.dataset.pixelRatio) === proporcao) return;
+  canvas.width = Math.round(largura * proporcao);
+  canvas.height = Math.round(altura * proporcao);
+  canvas.dataset.pixelRatio = String(proporcao);
+  ctx.setTransform(proporcao, 0, 0, proporcao, 0, 0);
   ctx.imageSmoothingEnabled = false;
+}
+
+function larguraCanvasLogica() {
+  return canvas.clientWidth || canvas.width / (Number(canvas.dataset.pixelRatio) || 1);
+}
+
+function alturaCanvasLogica() {
+  return canvas.clientHeight || canvas.height / (Number(canvas.dataset.pixelRatio) || 1);
 }
 
 function posicaoCamera(tile, agora = performance.now()) {
   const jogador = posicaoVisual(estado.jogador, playerMotion, agora);
-  const retrato = canvas.clientHeight > canvas.clientWidth;
-  const margemVertical = retrato ? 0.38 : 0.45;
+  const zonaTopo = Math.max(76, larguraCanvasLogica() <= 540 ? 116 : 76);
+  const zonaBase = Math.max(92, alturaCanvasLogica() <= 520 ? 108 : 88);
+  const conversaAberta = !dialogController.overlay.classList.contains('hidden');
+  const centroDesejado = conversaAberta ? alturaCanvasLogica() * 0.32 : (alturaCanvasLogica() + zonaTopo - zonaBase) / 2;
+  const centroSeguro = Math.max(zonaTopo, Math.min(alturaCanvasLogica() - zonaBase, centroDesejado));
+  const margemVertical = centroSeguro / Math.max(1, alturaCanvasLogica());
   return {
-    x: Math.max(0, Math.min(MAPA[0].length * tile - canvas.width, jogador.x * tile - canvas.width * 0.45)),
-    y: Math.max(0, Math.min(MAPA.length * tile - canvas.height, jogador.y * tile - canvas.height * margemVertical))
+    x: Math.max(0, Math.min(MAPA[0].length * tile - larguraCanvasLogica(), jogador.x * tile - larguraCanvasLogica() * 0.45)),
+    y: Math.max(0, Math.min(MAPA.length * tile - alturaCanvasLogica(), jogador.y * tile - alturaCanvasLogica() * margemVertical))
   };
 }
 
@@ -2223,10 +2554,29 @@ function desenharPeixesSaltantes(tile, camera, agora) {
     const saltoX = x + (indice % 2 ? 1 : -1) * tile * progresso * 0.32;
     const saltoY = y - arco;
     ctx.save();
-    ctx.fillStyle = '#5A3A1E';
-    ctx.fillRect(Math.round(saltoX - tile * 0.12), Math.round(saltoY - tile * 0.04), tile * 0.24, tile * 0.08);
-    ctx.fillStyle = '#F0D9A0';
-    ctx.fillRect(Math.round(saltoX - tile * 0.04), Math.round(saltoY - tile * 0.05), tile * 0.08, tile * 0.04);
+    const direcao = indice % 2 ? -1 : 1;
+    ctx.translate(saltoX, saltoY);
+    ctx.scale(direcao, 1);
+    ctx.fillStyle = '#2BB5C9';
+    ctx.beginPath();
+    ctx.ellipse(0, 0, tile * 0.2, tile * 0.105, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(-tile * 0.16, 0);
+    ctx.lineTo(-tile * 0.3, -tile * 0.11);
+    ctx.lineTo(-tile * 0.3, tile * 0.11);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#F6E7C1';
+    ctx.fillRect(tile * 0.095, -tile * 0.035, tile * 0.035, tile * 0.035);
+    ctx.fillStyle = '#1B7FA0';
+    ctx.beginPath();
+    ctx.moveTo(-tile * 0.04, tile * 0.06);
+    ctx.lineTo(tile * 0.035, tile * 0.13);
+    ctx.lineTo(tile * 0.09, tile * 0.055);
+    ctx.closePath();
+    ctx.fill();
+    ctx.restore();
     ctx.strokeStyle = 'rgba(241,255,229,0.8)';
     ctx.lineWidth = Math.max(1, tile * 0.025);
     ctx.beginPath();
@@ -2237,7 +2587,6 @@ function desenharPeixesSaltantes(tile, camera, agora) {
       ctx.fillRect(Math.round(x - tile * 0.2), Math.round(y - tile * 0.14 - arco * 0.2), tile * 0.045, tile * 0.06);
       ctx.fillRect(Math.round(x + tile * 0.16), Math.round(y - tile * 0.1 - arco * 0.15), tile * 0.04, tile * 0.05);
     }
-    ctx.restore();
   });
 }
 
@@ -2250,6 +2599,7 @@ function abrirPeixeSaltante(peixe) {
   salvar();
   dialogController.open({
     nome: especie.nome,
+    retratoTipo: 'peixe',
     texto: `${especie.ficha} Registro de observação adicionado ao Caderno.`,
     typewriter: false
   });
@@ -2263,7 +2613,8 @@ function registrarFauna(especieId) {
   salvar();
   dialogController.open({
     nome: 'Caderno de Saberes',
-    texto: `${especie.nome}: ${especie.ficha} Esta ficha precisa de validação com a comunidade.`,
+    texto: `${especie.nome}: ${especie.ficha}`,
+    retratoTipo: especieId,
     typewriter: false
   });
 }
@@ -2273,8 +2624,8 @@ function tocarPeixeNaTela(event) {
   const rect = canvas.getBoundingClientRect();
   const tile = escalaDoMapa() * 16;
   const camera = posicaoCamera(tile);
-  const px = ((event.clientX - rect.left) / rect.width) * canvas.width + camera.x;
-  const py = ((event.clientY - rect.top) / rect.height) * canvas.height + camera.y;
+  const px = ((event.clientX - rect.left) / rect.width) * larguraCanvasLogica() + camera.x;
+  const py = ((event.clientY - rect.top) / rect.height) * alturaCanvasLogica() + camera.y;
   const peixe = peixesSaltantes.find((item) => {
     const x = (item.x + 0.5) * tile;
     const y = (item.y + 0.5) * tile;
@@ -2299,8 +2650,8 @@ function tocarMapa(event) {
   const scale = escalaDoMapa();
   const tile = 16 * scale;
   const camera = posicaoCamera(tile);
-  const pixelX = ((event.clientX - rect.left) / rect.width) * canvas.width + camera.x;
-  const pixelY = ((event.clientY - rect.top) / rect.height) * canvas.height + camera.y;
+  const pixelX = ((event.clientX - rect.left) / rect.width) * larguraCanvasLogica() + camera.x;
+  const pixelY = ((event.clientY - rect.top) / rect.height) * alturaCanvasLogica() + camera.y;
   const destino = { x: Math.floor(pixelX / tile), y: Math.floor(pixelY / tile) };
   destinoAtual = isPassable(destino.x, destino.y, estado.emCanoa ? 'canoa' : 'pe') ? destino : null;
 }
@@ -2344,7 +2695,7 @@ function desenharParticulas(tile, camera) {
 
     const x = Math.round((mundoX + ((tempo % 1) * 0.5)) * tile - camera.x);
     const y = Math.round(mundoY * tile - camera.y);
-    if (x < -tile || y < -tile || x > canvas.width + tile || y > canvas.height + tile) return;
+    if (x < -tile || y < -tile || x > larguraCanvasLogica() + tile || y > alturaCanvasLogica() + tile) return;
 
     if (particula.tipo === 0) {
       ctx.fillStyle = 'rgba(217,164,65,0.75)';
@@ -2533,25 +2884,16 @@ function desenharIluminacao() {
     '17:30': 'rgba(60,73,125,0.2)'
   };
   ctx.fillStyle = luzes[estado.horario] || luzes['08:00'];
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-}
-
-function posicaoOcultaPorEdificio(posicao) {
-  return EDIFICIOS.find((edificio) => (
-    posicao.x >= edificio.x - 1.8
-    && posicao.x <= edificio.x + 1.8
-    && posicao.y >= edificio.y - 3.6
-    && posicao.y <= edificio.y + 1
-  )) || null;
+  ctx.fillRect(0, 0, larguraCanvasLogica(), alturaCanvasLogica());
 }
 
 function desenharLuzes(tile, camera) {
-  if (estado.horario !== '17:30' || estado.reduzirMovimento) return;
+  if (!['16:00', '17:30'].includes(estado.horario)) return;
   MAPA_DECORACOES.filter((item) => item.tipo === 'luminaria').forEach((luz) => {
     const x = (luz.x + 0.5) * tile - camera.x;
     const y = (luz.y + 0.5) * tile - camera.y;
-    const brilho = ctx.createRadialGradient(x, y, tile * 0.08, x, y, tile * 1.15);
-    brilho.addColorStop(0, 'rgba(255,215,120,0.42)');
+    const brilho = ctx.createRadialGradient(x, y, tile * 0.08, x, y, tile * 1.3);
+    brilho.addColorStop(0, estado.horario === '17:30' ? 'rgba(255,215,120,0.7)' : 'rgba(255,215,120,0.42)');
     brilho.addColorStop(1, 'rgba(255,215,120,0)');
     ctx.fillStyle = brilho;
     ctx.fillRect(x - tile * 1.15, y - tile * 1.15, tile * 2.3, tile * 2.3);
@@ -2742,11 +3084,11 @@ function desenharMinimapa(canvas, ampliar = false) {
   if (!canvas) return;
   const ctxMinimapa = canvas.getContext('2d');
   ctxMinimapa.imageSmoothingEnabled = false;
-  ctxMinimapa.clearRect(0, 0, canvas.width, canvas.height);
-  ctxMinimapa.drawImage(criarCamadaEstaticaMinimapa(), 0, 0, canvas.width, canvas.height);
+  ctxMinimapa.clearRect(0, 0, larguraCanvasLogica(), alturaCanvasLogica());
+  ctxMinimapa.drawImage(criarCamadaEstaticaMinimapa(), 0, 0, larguraCanvasLogica(), alturaCanvasLogica());
 
-  const escalaX = canvas.width / (MAPA[0].length * 16);
-  const escalaY = canvas.height / (MAPA.length * 16);
+  const escalaX = larguraCanvasLogica() / (MAPA[0].length * 16);
+  const escalaY = alturaCanvasLogica() / (MAPA.length * 16);
   const px = (x) => x * 16 * escalaX;
   const py = (y) => y * 16 * escalaY;
 
@@ -2775,11 +3117,11 @@ function desenharMinimapa(canvas, ampliar = false) {
   const escalaTela = escalaDoMapa();
   const mundoLargura = MAPA[0].length * 16;
   const mundoAltura = MAPA.length * 16;
-  const larguraVisibleMundo = canvas.width * (canvas.width / (16 * escalaTela)) * 16 / mundoLargura;
-  const alturaVisibleMundo = canvas.height * (canvas.height / (16 * escalaTela)) * 16 / mundoAltura;
+  const larguraVisibleMundo = larguraCanvasLogica() * (larguraCanvasLogica() / (16 * escalaTela)) * 16 / mundoLargura;
+  const alturaVisibleMundo = alturaCanvasLogica() * (alturaCanvasLogica() / (16 * escalaTela)) * 16 / mundoAltura;
   ctxMinimapa.strokeRect(
-    camera.x / mundoLargura * canvas.width,
-    camera.y / mundoAltura * canvas.height,
+    camera.x / mundoLargura * larguraCanvasLogica(),
+    camera.y / mundoAltura * alturaCanvasLogica(),
     larguraVisibleMundo,
     alturaVisibleMundo
   );
@@ -2825,7 +3167,7 @@ function desenhoMapa(agora = performance.now()) {
   const cachorroVisual = posicaoVisual(estado.cachorro, dogMotion, agora);
 
   ctx.imageSmoothingEnabled = false;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.clearRect(0, 0, larguraCanvasLogica(), alturaCanvasLogica());
   const skyColors = [
     { time: '08:00', color: '#F4C47A' },
     { time: '10:30', color: '#E8D5A2' },
@@ -2835,7 +3177,7 @@ function desenhoMapa(agora = performance.now()) {
   ];
   const actualSky = skyColors.find((entry) => entry.time === estado.horario) || skyColors[0];
   ctx.fillStyle = actualSky.color;
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillRect(0, 0, larguraCanvasLogica(), alturaCanvasLogica());
 
   const fundo = criarCamadaEstatica();
   ctx.drawImage(
@@ -2851,9 +3193,9 @@ function desenhoMapa(agora = performance.now()) {
   );
 
   const inicioX = Math.max(0, Math.floor(camera.x / tile) - 1);
-  const fimX = Math.min(MAPA[0].length, Math.ceil((camera.x + canvas.width) / tile) + 1);
+  const fimX = Math.min(MAPA[0].length, Math.ceil((camera.x + larguraCanvasLogica()) / tile) + 1);
   const inicioY = Math.max(0, Math.floor(camera.y / tile) - 1);
-  const fimY = Math.min(MAPA.length, Math.ceil((camera.y + canvas.height) / tile) + 1);
+  const fimY = Math.min(MAPA.length, Math.ceil((camera.y + alturaCanvasLogica()) / tile) + 1);
 
   for (let y = inicioY; y < fimY; y += 1) {
     for (let x = inicioX; x < fimX; x += 1) {
@@ -2871,6 +3213,8 @@ function desenhoMapa(agora = performance.now()) {
     for (let x = Math.max(0, inicioX - 2); x < Math.min(MAPA[0].length, fimX + 2); x += 1) {
       const tipo = MAPA[y][x];
       if (tipo !== 'mato' && !['casa', 'casaFarinha', 'casaRural', 'casaMusical', 'pavilhao', 'barraca', 'mercadinho', 'escola', 'capela', 'peixaria', 'canoa', 'saco'].includes(tipo)) continue;
+      if (estado.emCanoa && tipo === 'canoa'
+        && estado.canoaEmbarcada?.x === x && estado.canoaEmbarcada?.y === y) continue;
       elements.push({ tipo: 'objeto', objeto: tipo, x, y, seed: x * 17 + y * 31 });
     }
   }
@@ -2934,6 +3278,14 @@ function desenhoMapa(agora = performance.now()) {
         ctx.fillRect(Math.round(centerX - tile * 0.22), Math.round(pontoY - tile * 0.08), tile * 0.07, tile * 0.07);
         ctx.fillRect(Math.round(centerX + tile * 0.16), Math.round(pontoY + tile * 0.06), tile * 0.06, tile * 0.06);
         ctx.fillRect(Math.round(centerX + tile * 0.02), Math.round(pontoY - tile * 0.2), tile * 0.055, tile * 0.055);
+        if (estado.altoContraste) {
+          ctx.strokeStyle = '#2B1A0E';
+          ctx.lineWidth = Math.max(4, tile * 0.12);
+          ctx.strokeRect(centerX - tile * 0.25, pontoY - tile * 0.25, tile * 0.5, tile * 0.5);
+          ctx.strokeStyle = '#FFFFFF';
+          ctx.lineWidth = Math.max(2, tile * 0.05);
+          ctx.strokeRect(centerX - tile * 0.25, pontoY - tile * 0.25, tile * 0.5, tile * 0.5);
+        }
       }
     } else if (element.tipo === 'npc') {
       desenharSombra(centerX, baseY, tile, 0.75);
@@ -3003,13 +3355,6 @@ function desenhoMapa(agora = performance.now()) {
         ctx.translate(quadros % 2 ? tile * 0.08 : -tile * 0.08, 0);
         ctx.restore();
       }
-      if (element.tipo === 'player' && estado.altoContraste && posicaoOcultaPorEdificio(jogadorVisual)) {
-        ctx.save();
-        ctx.strokeStyle = '#FFE066';
-        ctx.lineWidth = Math.max(2, tile * 0.08);
-        ctx.strokeRect(centerX - tile * 0.28, baseY - tile * 1.1, tile * 0.56, tile * 1.1);
-        ctx.restore();
-      }
     }
   });
 
@@ -3046,7 +3391,7 @@ function desenhoMapa(agora = performance.now()) {
 }
 
 function loop(agora = performance.now()) {
-  animationTick += 1;
+  if (!estado.reduzirMovimento) animationTick += 1;
   if (estado.fase === 'jogo' && !estado.pausa && !estado.interiorAtivo) {
     atualizarMovimentoPlayer(agora);
     atualizarMovimentoAlvo(agora);
@@ -3057,8 +3402,39 @@ function loop(agora = performance.now()) {
     atualizarFauna(agora);
     atualizarInteracao();
   }
-  desenhoMapa(agora);
+  if (estado.fase === 'jogo' && !estado.pausa && !estado.interiorAtivo) desenhoMapa(agora);
   requestAnimationFrame(loop);
+}
+
+function tratarTecladoModal(event) {
+  const modal = [...document.querySelectorAll('#interior-panel, #card-explicacao, #card-resumo, #pause-menu')]
+    .find((elemento) => !elemento.classList.contains('hidden'));
+  if (!modal) return false;
+  if (event.key === 'Escape') {
+    event.preventDefault();
+    if (modal.id === 'interior-panel') fecharInterior();
+    if (modal.id === 'card-explicacao') esconderExplicacao();
+    if (modal.id === 'card-resumo') fecharResumo();
+    if (modal.id === 'pause-menu') alternarPausa(false);
+    return true;
+  }
+  if (event.key !== 'Tab') return false;
+  const focaveis = [...modal.querySelectorAll('button:not([disabled]), input:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')]
+    .filter((elemento) => elemento.getClientRects().length > 0);
+  if (!focaveis.length) return false;
+  const primeiro = focaveis[0];
+  const ultimo = focaveis[focaveis.length - 1];
+  if (!modal.contains(document.activeElement)) {
+    event.preventDefault();
+    (event.shiftKey ? ultimo : primeiro).focus();
+  } else if (event.shiftKey && document.activeElement === primeiro) {
+    event.preventDefault();
+    ultimo.focus();
+  } else if (!event.shiftKey && document.activeElement === ultimo) {
+    event.preventDefault();
+    primeiro.focus();
+  }
+  return false;
 }
 
 function setupEventos() {
@@ -3068,6 +3444,9 @@ function setupEventos() {
       const edificio = EDIFICIOS.find((item) => item.id === estado.interiorAtivo);
       if (edificio) renderizarInterior(edificio);
     }
+  });
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => window.dispatchEvent(new Event('resize')), 80);
   });
   document.getElementById('btn-jogar').addEventListener('click', () => {
     novaJornada = true;
@@ -3093,6 +3472,7 @@ function setupEventos() {
   document.getElementById('btn-opening-som').addEventListener('click', alternarSom);
   document.getElementById('btn-opening-setas').addEventListener('click', alternarSetas);
   document.getElementById('btn-abertura-creditos').addEventListener('click', () => showScreen('screen-creditos'));
+  document.getElementById('btn-apagar-progresso').addEventListener('click', apagarProgresso);
 
   document.getElementById('btn-continuar').addEventListener('click', continuarJogo);
 
@@ -3147,7 +3527,9 @@ function setupEventos() {
 
   document.getElementById('btn-missoes').addEventListener('click', () => {
     const panel = document.getElementById('panel-missoes');
-    panel.classList.toggle('hidden');
+    const abrir = panel.classList.contains('hidden');
+    panel.classList.toggle('hidden', !abrir);
+    document.getElementById('btn-missoes').setAttribute('aria-expanded', String(abrir));
   });
 
   document.getElementById('btn-indicadores').addEventListener('click', (event) => {
@@ -3161,6 +3543,7 @@ function setupEventos() {
 
   document.getElementById('btn-interagir').addEventListener('click', interagir);
   document.addEventListener('keydown', (event) => {
+    if (tratarTecladoModal(event)) return;
     const keyInicial = event.key.toLowerCase();
     if (estado.interiorAtivo && ['arrowup', 'arrowdown', 'arrowleft', 'arrowright', 'w', 'a', 's', 'd'].includes(keyInicial)) {
       event.preventDefault();
@@ -3288,6 +3671,7 @@ function init() {
   criarPaginaTesteSprites();
   aplicarAcessibilidade(estado);
   atualizarMenuPausa();
+  mostrarFalhaDeLeituraSeNecessario();
   showScreen('screen-opening');
   window.__appReady = true;
   window.__activeScreen = 'screen-opening';

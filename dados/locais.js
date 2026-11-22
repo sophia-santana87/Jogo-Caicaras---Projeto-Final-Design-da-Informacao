@@ -25,7 +25,7 @@ export const PRODUTOS_PEIXARIA = [
 export const ETAPAS_FARINHA = [
   { id: 'descascar', explicacao: 'A primeira estação representa a retirada da casca. Observe a raiz antes de seguir.', validar: true },
   { id: 'ralar', explicacao: 'Nesta estação, a mandioca é ralada para virar massa. Os modos de fazer podem variar.', validar: true },
-  { id: 'prensar', explicacao: 'A prensa ou o tipiti ajuda a retirar líquido da massa. A comunidade confirma os detalhes do processo.', validar: true },
+  { id: 'prensar', explicacao: 'A prensa ou o tipiti aparece nesta etapa do cenário. Observe como a massa segue para a peneira.', validar: true },
   { id: 'peneirar', explicacao: 'A peneira ajuda a separar partes da massa antes de torrar. Cada casa pode organizar o trabalho de um jeito.', validar: true },
   { id: 'torrar', explicacao: 'A massa é torrada para virar farinha. É uma etapa que pede atenção ao calor e a quem trabalha junto.', validar: true }
 ];
@@ -42,11 +42,11 @@ export const EXPLICACAO_FANDANGO = {
 export const FICHAS_INSTRUMENTOS = [
   { id: 'viola', nome: 'Viola de fandango', texto: 'Instrumento de cordas associado a rodas de fandango. Formas de tocar e repertórios variam entre comunidades.', validar: true },
   { id: 'rabeca', nome: 'Rabeca', texto: 'Instrumento de arco que pode acompanhar encontros de fandango. Sua construção e seu uso variam entre lugares e pessoas.', validar: true },
-  { id: 'adufo', nome: 'Adufo', texto: 'Instrumento de percussão que aparece em algumas rodas. Nome, formato e função precisam de confirmação local.', validar: true }
+  { id: 'adufo', nome: 'Adufo', texto: 'Instrumento de percussão ilustrado na casa musical. O jogo apresenta o nome adufo.', validar: true }
 ];
 
 export const ELEMENTOS_LAGOA = [
-  { id: 'vitoria-regia', nome: 'Folhas aquáticas', texto: 'O cenário representa folhas de uma planta aquática. A identificação local precisa ser confirmada com a comunidade.', validar: true },
-  { id: 'junco', nome: 'Junco na margem', texto: 'A planta foi desenhada perto da borda da lagoa. A espécie e seu nome local precisam de validação.', validar: true },
+  { id: 'vitoria-regia', nome: 'Folhas aquáticas', texto: 'Folhas ilustradas perto da água compõem o cenário da lagoa.', validar: true },
+  { id: 'junco', nome: 'Planta da margem', texto: 'Uma planta ilustrada cresce perto da borda da lagoa.', validar: true },
   { id: 'tronco', nome: 'Tronco na margem', texto: 'Este tronco é um elemento do cenário junto à margem, sem afirmar uma espécie ou uso local.', validar: true }
 ];

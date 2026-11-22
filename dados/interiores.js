@@ -4,7 +4,7 @@ export const INTERIORES = {
     titulo: 'Casa de farinha',
     largura: 14,
     altura: 9,
-    spawn: { x: 7, y: 8 },
+    spawn: { x: 7, y: 7 },
     saida: { x: 7, y: 8 },
     instrutor: { id: 'dona-cida', x: 12, y: 3 },
     objetos: [
@@ -19,7 +19,7 @@ export const INTERIORES = {
     titulo: 'Casa musical do Mestre Tiao',
     largura: 14,
     altura: 9,
-    spawn: { x: 7, y: 8 },
+    spawn: { x: 7, y: 7 },
     saida: { x: 7, y: 8 },
     objetos: [
       { id: 'viola', nome: 'Viola de fandango', descricao: 'Instrumento de cordas; toque para conhecer o instrumento.', x: 3, y: 3, tipo: 'musica' },
@@ -32,7 +32,7 @@ export const INTERIORES = {
     titulo: 'Mercadinho',
     largura: 14,
     altura: 9,
-    spawn: { x: 7, y: 8 },
+    spawn: { x: 7, y: 7 },
     saida: { x: 7, y: 8 },
     objetos: [
       { id: 'farinha', nome: 'Farinha', descricao: 'Produto demonstrativo. Toque para observar.', x: 3, y: 3, tipo: 'produto' },
@@ -45,19 +45,19 @@ export const INTERIORES = {
     titulo: 'Armazem da vila',
     largura: 14,
     altura: 9,
-    spawn: { x: 7, y: 8 },
+    spawn: { x: 7, y: 7 },
     saida: { x: 7, y: 8 },
     objetos: [
-      { id: 'farinha', nome: 'Farinha', descricao: 'Farinha guardada em sacos para uso e troca.', x: 3, y: 3, tipo: 'produto' },
-      { id: 'peixe', nome: 'Peixe seco', descricao: 'Peixe preparado para guardar e compartilhar.', x: 6, y: 3, tipo: 'produto' },
-      { id: 'produtos-comunidade', nome: 'Produtos da comunidade', descricao: 'Itens produzidos por diferentes moradores da vila.', x: 9, y: 3, tipo: 'produto' }
+      { id: 'farinha', nome: 'Farinha', descricao: 'Farinha guardada em sacos para uso e troca.', x: 3, y: 3, tipo: 'produto', retirar: true },
+      { id: 'peixe', nome: 'Peixe seco', descricao: 'Peixe preparado para guardar e compartilhar.', x: 6, y: 3, tipo: 'produto', retirar: true },
+      { id: 'produtos-comunidade', nome: 'Produtos da comunidade', descricao: 'Itens produzidos por diferentes moradores da vila.', x: 9, y: 3, tipo: 'produto', retirar: true }
     ]
   },
   escola: {
     titulo: 'Escola da vila',
     largura: 14,
     altura: 9,
-    spawn: { x: 7, y: 8 },
+    spawn: { x: 7, y: 7 },
     saida: { x: 7, y: 8 },
     professora: { id: 'professora-marina', x: 7, y: 2 },
     alunos: [

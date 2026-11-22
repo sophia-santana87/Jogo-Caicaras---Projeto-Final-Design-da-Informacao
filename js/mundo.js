@@ -1,8 +1,8 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=56';
+import { PERSONAGENS, MISSOES_CADASTRO, ROTINAS_VILA } from '../dados/personagens.js?v=66';
 
 export const MAPA_LARGURA = 48;
 export const MAPA_ALTURA = 38;
@@ -92,7 +92,7 @@ export const POSICOES_EDIFICIOS = {
   escola: { x: 11, y: 10, tipo: 'escola' },
   capela: { x: 18, y: 10, tipo: 'capela' },
   'casa-de-farinha': { x: 25, y: 10, tipo: 'casaFarinha' },
-  armazem: { x: 15, y: 16, tipo: 'casa' },
+  armazem: { x: 32, y: 13, tipo: 'casa' },
   mercadinho: { x: 21, y: 16, tipo: 'mercadinho' },
   'casa-musical': { x: 29, y: 16, tipo: 'casaMusical' },
   'casa-fechada': { x: 36, y: 16, tipo: 'casa' },
@@ -107,7 +107,7 @@ export const HORTA_CENTRAL = {
     { x: 15, y: 13, variante: 2 }
   ]
 };
-export const ENTRADA_COMUNIDADE = { x: 10, y: 18, nome: 'Entrada da comunidade' };
+export const ENTRADA_COMUNIDADE = { x: 13, y: 20, nome: 'Entrada da comunidade' };
 
 for (let y = 0; y < MAPA_ALTURA; y += 1) {
   for (let x = 0; x < MAPA_LARGURA; x += 1) {
@@ -290,13 +290,13 @@ export const MAPA_DECORACOES = [
   ...HORTA_CENTRAL.canteiros.map((canteiro) => ({ tipo: 'canteiro', ...canteiro })),
   { tipo: 'planta-medicinal-a', x: 38, y: 4 },
   { tipo: 'planta-medicinal-b', x: 45, y: 4 },
-  { tipo: 'planta-medicinal-c', x: 46, y: 6 },
+  { tipo: 'planta-medicinal-c', x: 42, y: 5 },
   { tipo: 'arvore', x: 40, y: 3 },
   { tipo: 'arbusto', x: 47, y: 5 },
   { tipo: 'arbusto', x: 47, y: 4 },
   { tipo: 'placa', x: 14, y: 27, nome: 'Pescar com cuidado' },
-  { tipo: 'lixeiraOrganica', x: 8, y: 25 },
-  { tipo: 'lixeiraReciclavel', x: 10, y: 25 },
+  { tipo: 'lixeiraOrganica', x: 3, y: 24 },
+  { tipo: 'lixeiraReciclavel', x: 4, y: 24 },
   { tipo: 'vitoria-regia', x: 35, y: 22 },
   { tipo: 'junco', x: 40, y: 24 },
   { tipo: 'tronco', x: 35, y: 24 },

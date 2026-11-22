@@ -1,4 +1,4 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
@@ -112,11 +112,6 @@ export const CONTEUDO = {
       ],
       escolhas: [
         {
-          texto: 'Sair de canoa agora.',
-          efeito: { Renda: 2, Ambiente: -1, Comunidade: 0, Cultura: 0 },
-          explicacao: 'A pesca artesanal ainda é renda principal na Ponta Oeste, mas o tempo do mar pede atenção e cuidado.'
-        },
-        {
           texto: 'Esperar e observar melhor.',
           efeito: { Renda: 0, Ambiente: 2, Comunidade: 1, Cultura: 0 },
           explicacao: 'Esperar é uma forma de leitura do mar. A canoa não usa motor e a pesca da tainha exige respeito ao tempo do local.'
@@ -135,7 +130,7 @@ export const CONTEUDO = {
     },
     {
       id: 'fandango',
-      abertura: 'Na casa musical, você pode conhecer os instrumentos e conversar sobre a roda do fandango. Os textos são rascunhos para validação.',
+      abertura: 'Na casa musical, você pode conhecer os instrumentos e conversar sobre a roda do fandango.',
       validar: true,
       etapas: [
         { tipo: 'ir-ate', alvo: 'casa-musical', texto: 'Entre na casa musical para conhecer os instrumentos e Mestre Tião.' },
@@ -199,10 +194,10 @@ export const CONTEUDO = {
     },
     {
       id: 'mata',
-      abertura: 'Seu Ari, um personagem fictício, convida você a conversar sobre plantas e frutos da mata. Os saberes locais precisam ser validados com a comunidade.',
+      abertura: 'Seu Ari convida você a observar plantas e frutos da mata.',
       validar: true,
       etapas: [
-        { tipo: 'conversar', alvo: 'erveiro', texto: 'Converse com Seu Ari sobre usos de plantas medicinais e frutos locais, como a cataia. Confirme esses saberes antes de publicar.', validar: true },
+        { tipo: 'conversar', alvo: 'erveiro', texto: 'Converse com Seu Ari sobre plantas e frutos da trilha. Pergunte antes de divulgar qualquer saber que ele compartilhar.', validar: true },
         { tipo: 'encontrar', texto: 'Encontre três plantas na trilha. Observe sem retirar partes delas.', alvos: ['planta-medicinal-a', 'planta-medicinal-b', 'planta-medicinal-c'], validar: true },
         { tipo: 'observar', texto: 'Observe o ponto indicado e converse sobre como cuidar da planta mãe. A orientação depende dos saberes locais.', alvos: ['manejo-mata'], validar: true }
       ],
@@ -220,12 +215,12 @@ export const CONTEUDO = {
         {
           texto: 'Agradecer e continuar observando sem coletar.',
           efeito: { Cultura: 1, Comunidade: 1, Ambiente: 2, Renda: 0 },
-          explicacao: 'Observar sem retirar nada é uma forma de cuidado. Cada orientação sobre coleta precisa ser confirmada localmente.'
+          explicacao: 'Observar sem retirar nada é uma forma de cuidado com a mata.'
         }
       ],
       carta: {
         titulo: 'Carta da Mata e dos Remédios da Terra',
-        texto: 'Os saberes sobre plantas e frutos pertencem a quem os compartilha. Pergunte, escute e confirme com a comunidade antes de registrar ou divulgar.',
+        texto: 'Os saberes sobre plantas e frutos pertencem a quem os compartilha. Escute e respeite o que cada pessoa autoriza divulgar.',
         categoria: 'Natureza e Mar',
         validar: true
       }

@@ -1,8 +1,8 @@
-// Cabeçalho de autoria: Projeto final extensionista do curso de Gestão da Informação da UFPR.
+// Cabeçalho de autoria: Projeto final do curso de Gestão da Informação da UFPR.
 // Equipe: Bianca Vasconcelos de Lima; Katryni Haaby dos Santos Bueno; Luana Harmatiuk Guimarães; Sophia Santana da Silva; Vanessa da Silva Costa.
 // Disciplina: Design da Informação • 2026.
 
-import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=56';
+import { POSICAO_INICIAL_CACHORRO, POSICAO_INICIAL_JOGADOR } from './mundo.js?v=66';
 
 export const ESTADO_PADRAO = {
   nomeJogador: 'Visitante',
@@ -38,6 +38,7 @@ export const ESTADO_PADRAO = {
   colecaoPeixes: [],
   temVara: true,
   emCanoa: false,
+  canoaEmbarcada: null,
   colecaoFauna: [],
   conceitosEscola: [],
   cenaAtual: 'exterior',
@@ -55,17 +56,35 @@ export const ESTADO_PADRAO = {
   progressoSalvo: false
 };
 
+export let falhaArmazenamento = false;
+
+function preferenciaInicial(nome, padrao) {
+  try {
+    return window.matchMedia?.(nome).matches ?? padrao;
+  } catch {
+    return padrao;
+  }
+}
+
+function estadoInicialDoSistema() {
+  const estado = structuredClone(ESTADO_PADRAO);
+  estado.reduzirMovimento = preferenciaInicial('(prefers-reduced-motion: reduce)', false);
+  estado.altoContraste = preferenciaInicial('(prefers-contrast: more)', false);
+  return estado;
+}
+
 export function carregarEstado() {
   try {
     const raw = localStorage.getItem('dia-na-ponta-oeste');
+    falhaArmazenamento = false;
     if (!raw) {
-      return structuredClone(ESTADO_PADRAO);
+      return estadoInicialDoSistema();
     }
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
       throw new TypeError('O estado salvo do jogo não tem um formato válido.');
     }
-    return {
+    const estado = {
       ...structuredClone(ESTADO_PADRAO),
       ...parsed,
       interiorAtivo: parsed.interiorAtivo === 'pavilhao-fandango' ? 'casa-musical' : parsed.interiorAtivo,
@@ -91,20 +110,46 @@ export function carregarEstado() {
       colecaoPeixes: Array.isArray(parsed.colecaoPeixes) ? parsed.colecaoPeixes.filter((id) => typeof id === 'string') : [],
       colecaoFauna: Array.isArray(parsed.colecaoFauna) ? parsed.colecaoFauna.filter((id) => typeof id === 'string') : [],
       conceitosEscola: Array.isArray(parsed.conceitosEscola) ? parsed.conceitosEscola.filter((id) => typeof id === 'string') : [],
-      emCanoa: parsed.emCanoa === true
+      emCanoa: parsed.emCanoa === true,
+      canoaEmbarcada: parsed.canoaEmbarcada
+        && Number.isFinite(parsed.canoaEmbarcada.x)
+        && Number.isFinite(parsed.canoaEmbarcada.y)
+        ? { x: parsed.canoaEmbarcada.x, y: parsed.canoaEmbarcada.y }
+        : null
     };
+    if (!Object.hasOwn(parsed, 'reduzirMovimento')) {
+      estado.reduzirMovimento = preferenciaInicial('(prefers-reduced-motion: reduce)', false);
+    }
+    if (!Object.hasOwn(parsed, 'altoContraste')) {
+      estado.altoContraste = preferenciaInicial('(prefers-contrast: more)', false);
+    }
+    document.body?.classList.toggle('contrast-choice-saved', Object.hasOwn(parsed, 'altoContraste'));
+    document.body?.classList.toggle('motion-choice-saved', Object.hasOwn(parsed, 'reduzirMovimento'));
+    return estado;
   } catch (error) {
-    console.error('Não foi possível carregar o estado salvo do jogo.', error);
-    return structuredClone(ESTADO_PADRAO);
+    falhaArmazenamento = true;
+    return estadoInicialDoSistema();
   }
 }
 
 export function salvarEstado(estado) {
   try {
     localStorage.setItem('dia-na-ponta-oeste', JSON.stringify(estado));
+    falhaArmazenamento = false;
     return true;
   } catch (error) {
-    console.error('Não foi possível salvar o estado do jogo.', error);
+    falhaArmazenamento = true;
+    return false;
+  }
+}
+
+export function apagarEstadoSalvo() {
+  try {
+    localStorage.removeItem('dia-na-ponta-oeste');
+    falhaArmazenamento = false;
+    return true;
+  } catch {
+    falhaArmazenamento = true;
     return false;
   }
 }
